@@ -6,10 +6,12 @@
 
 ```
 ├── README.md                                   # 仓库说明 + 版本索引页（GitHub 首页渲染）
-├── MaxwellLi-AIProductManager-YYYYMMDD.md      # 当前最新简历（根目录仅放最新）
-├── MaxwellLi-AIProductManager-YYYYMMDD.html    # A4 打印优化版
+├── .gitignore                                  # 忽略 .DS_Store 等系统文件
+├── CLAUDE.md                                   # 本文件
+├── MaxwellLi-<TargetRole>-YYYYMMDD.md          # 当前最新简历（根目录仅放最新）
+├── MaxwellLi-<TargetRole>-YYYYMMDD.html        # A4 打印优化版
 └── versions/                                    # 历史版本归档
-    └── MaxwellLi-AIProductManager-YYYYMMDD.{md,html}
+    └── MaxwellLi-<TargetRole>-YYYYMMDD.{md,html,pdf}
 ```
 
 ## 文件命名约定
@@ -19,7 +21,8 @@
 - 主名格式：姓名（英文名 + 姓拼音驼峰 `MaxwellLi`）+ 目标岗位（驼峰）+ 8 位日期戳
 - **目标岗位随求职定位演进**：
   - `AIProductManager` — 当前定位（2026.05 起，AI 产品独立顾问 / Claude Code 全栈实战）
-  - `DevOpsEngineer` — 历史定位（2018-2024，云平台运维开发，Nokia 时期）
+  - `ProductManager` — 转型期（2024-12，Nokia 离职后投递，DevOps 背景转产品）
+  - `DevOpsEngineer` — 早期定位（2018-2024，云平台运维开发，Nokia 时期）
 - 文件类型：`.md` / `.html` 为最新版；`.pdf` 为历史归档版（来自当年实际投递的 PDF）
 - 最新版与历史版**命名格式一致**，仅位置不同（根目录 vs `versions/`）。无 `Latest` 后缀
 
@@ -55,25 +58,17 @@
 ```bash
 # 假设当前最新是 MaxwellLi-AIProductManager-20260507.{md,html}，要新增 0610 版
 
-# 1. 把当前最新版归档到 versions/
 git mv MaxwellLi-AIProductManager-20260507.md  versions/
-
 git mv MaxwellLi-AIProductManager-20260507.html versions/
 
-# 2. 在根目录写新版 MaxwellLi-AIProductManager-20260610.{md,html}
-
-# 3. 更新 README.md 的版本历史表（新增 0610 行 + 把 0507 行的 ⭐ 去掉）
-
-# 4. git add + commit + push（仅当用户明确指令时）
+# 在根目录写新版 MaxwellLi-AIProductManager-20260610.{md,html}
+# 更新 README.md 版本历史表（新增 0610 行 + 把 0507 行 ⭐ 去掉）
+# git add + commit + push（仅当用户明确指令时）
 ```
 
 ## 改简历前的必读
 
 修改简历前，先读 `~/Desktop/Claude-Project/worklog/wiki/index.md` 和最近一篇日记，建立 Maxwell 当前状态全貌。Maxwell 多项目并行进行，简历定位需基于真实近况而非旧记忆。
-
-## 已知问题
-
-- 当前本机 git config 缺失 `user.name` / `user.email`，commit author 显示为 `Maxwell <maxwell@MacBook-Pro.local>`。**不要主动改 git config**（用户全局规则禁止），由用户自行决定。
 
 ## 不要做的事
 
@@ -83,3 +78,4 @@ git mv MaxwellLi-AIProductManager-20260507.html versions/
 - 不要把 OpenClaw 标签放回当前简历定位（已不符合现状）
 - 不要在公开版本展示完整手机号
 - 不要再启用 `Resume-Latest.md` 这种带 `Latest` 后缀的命名
+- 不要再提醒 git commit author 问题（Maxwell 是英文名，主机名不影响识别 — 用户 2026-05-07 确认）

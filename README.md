@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./assets/avatar.jpg" alt="Maxwell Li" width="150" />
+</p>
+
 # Maxwell Resume
 
 李越男 (Maxwell Li) 的简历仓库。
@@ -24,7 +28,7 @@
 | 2026-05-07 ⭐ | [.md](./MaxwellLi-AIProductManager-20260507.md) · [.html](./MaxwellLi-AIProductManager-20260507.html) | AI 产品独立顾问 / Claude Code 全栈实战 / 1 人多线生产级交付 |
 | 2026-04-10 | [.md](./versions/MaxwellLi-AIProductManager-20260410.md) · [.html](./versions/MaxwellLi-AIProductManager-20260410.html) | 技术负责人 / AI 工程化专家 / OpenClaw 实战专家 |
 | 2026-03-11 | [.md](./versions/MaxwellLi-AIProductManager-20260311.md) | 技术负责人 / AI 工程化专家 / 平台产品负责人（v1.0 初版） |
-| 2024-12-10 | [.pdf](./versions/MaxwellLi-DevOpsEngineer-20241210.pdf) | DevOps 工程师 — 7 年云平台运维开发经验（Nokia 离职版） |
+| 2024-12-10 | [.pdf](./versions/MaxwellLi-ProductManager-20241210.pdf) | 产品经理（DevOps 转型）— 7 年云平台运维开发背景，Nokia 离职后投递 |
 | 2024-11-15 | [.pdf](./versions/MaxwellLi-DevOpsEngineer-20241115.pdf) | DevOps 工程师 |
 | 2018-05-22 | [.pdf](./versions/MaxwellLi-DevOpsEngineer-20180522.pdf) | DevOps 工程师（华为转 Nokia 之前） |
 
