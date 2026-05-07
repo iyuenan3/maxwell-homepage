@@ -1,15 +1,15 @@
 # 李越男 Maxwell
 
 xxxxx170755 | limaxwell93@gmail.com  
-LinkedIn: linkedin.com/in/iyuenan3 | GitHub: github.com/iyuenan3 | Blog: maxwellii.com
+LinkedIn: linkedin.com/in/iyuenan3 | GitHub: github.com/iyuenan3 | Blog: limaxwell93.wordpress.com
 
 ---
 
 ## 个人定位
 
-**AI 产品独立顾问 | Claude Code 全栈实战 | 1 人多线生产级交付**
+**AI 产品经理 | AI 落地顾问 | Vibe Coding 全栈工程师**
 
-10 年技术研发与产品管理复合背景（华为 → Nokia → 全境骑行 AI 产品负责人）。2026.04 离职后转入独立项目与顾问实战，建立了 Multi-Agent 编排、LLM Wiki 知识库工程化、生产级 SaaS/H5 全栈交付的完整方法论闭环。擅长以第一性原理重构业务流程，能力定位是"带 Claude Code 进入企业的早期 builder" — 既适合独立顾问交付，也适合加入 AI 初创 Day One 团队。
+10 年技术研发与产品管理复合背景（华为 → Nokia → 全境骑行 AI 产品负责人）。2026.04 离职后转入独立项目与顾问实战，建立了 Multi-Agent 编排、LLM Wiki 知识库工程化、生产级 SaaS/H5 全栈交付的完整方法论闭环。擅长以第一性原理重构业务流程，能力定位是"助企业把 AI 工作流真正落到生产的实战 builder" — 既适合独立顾问交付，也适合加入 AI 初创 Day One 团队。
 
 > 已交付 2 个上生产 AI 产品：[naming.maxwellii.com](https://naming.maxwellii.com)（海外华人取名 SaaS）+ [tale.maxwellii.com](https://tale.maxwellii.com)（多人实时叙事 H5）；同步推进 6 个并行工程化项目。
 
@@ -17,7 +17,7 @@ LinkedIn: linkedin.com/in/iyuenan3 | GitHub: github.com/iyuenan3 | Blog: maxwell
 
 ## 核心技能
 
-  - **Claude Code 全栈实战**：Skill 开发、多项目并行编排、SOP 化提示词系统、Sub-Agent 协作、Karpathy LLM Wiki 知识库工程化
+  - **Vibe Coding 全栈实战**：Claude Code 主战工具、Skill 开发、多项目并行编排、SOP 化提示词系统、Sub-Agent 协作、Karpathy LLM Wiki 知识库工程化
   - **AI 产品工程化**：Multi-Agent 架构（OpenClaw → Claude Code CLI 演进实践）、Prompt Engineering、RAG 知识库、零代码到生产级的全栈交付
   - **全栈技术栈**：Next.js 16 / Vue 3 / TypeScript / Python / Node.js / Socket.IO / Redis / 火山引擎 doubao / DeepSeek V4 Flash
   - **基础设施与 DevOps**：Kubernetes 容器化、Jenkins/GitHub Actions CI/CD、autossh + FRP 双通道隧道、阿里云架构（FinOps 成本优化 31%）

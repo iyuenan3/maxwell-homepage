@@ -1,1 +1,5 @@
 .DS_Store
+
+# maxwellii.com static site — 本地配置（含 SSH 别名 / 远端路径覆盖）
+site/.env
+site/.env.local
