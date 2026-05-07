@@ -2,28 +2,31 @@
 
 李越男 (Maxwell Li) 的简历仓库。
 
-## 最新版本
+## 当前简历
 
 | 文件 | 说明 |
 |------|------|
-| [Resume-Latest.md](./Resume-Latest.md) | 当前简历正文（Markdown） |
-| [Resume-Latest.html](./Resume-Latest.html) | 打印 / PDF 优化版（A4 单页布局，朱砂红配色） |
+| [MaxwellLi-AIProductManager-20260507.md](./MaxwellLi-AIProductManager-20260507.md) | 简历正文（Markdown） |
+| [MaxwellLi-AIProductManager-20260507.html](./MaxwellLi-AIProductManager-20260507.html) | 打印 / PDF 优化版（A4 单页布局，朱砂红配色） |
 
-**当前定位**：AI 产品独立顾问 | Claude Code 全栈实战 | 1 人多线生产级交付
+**定位**：AI 产品独立顾问 | Claude Code 全栈实战 | 1 人多线生产级交付
 
 **已交付的生产级产品**：
 - [naming.maxwellii.com](https://naming.maxwellii.com) — 海外华人取名 SaaS
 - [tale.maxwellii.com](https://tale.maxwellii.com) — 多人实时共创叙事 H5
 
-## 历史版本
+## 版本历史
 
-按时间线归档于 `versions/` 目录，便于追溯不同时期的求职定位与项目侧重。
+按时间倒序排列。标 ⭐ 为当前最新版（位于仓库根目录），其余归档于 `versions/`。
 
-| 版本 | 日期 | 定位 |
+| 日期 | 文件 | 定位 |
 |------|------|------|
-| [Resume-20260311.md](./versions/Resume-20260311.md) | 2026-03-11 | 技术负责人 / AI 工程化专家 / 平台产品负责人（v1.0 初版） |
-| [Resume-20260410.md](./versions/Resume-20260410.md) · [.html](./versions/Resume-20260410.html) | 2026-04-10 | 技术负责人 / AI 工程化专家 / OpenClaw 实战专家 |
-| Resume-Latest | 2026-05-07 | AI 产品独立顾问 / Claude Code 全栈实战 / 1 人多线生产级交付 |
+| 2026-05-07 ⭐ | [.md](./MaxwellLi-AIProductManager-20260507.md) · [.html](./MaxwellLi-AIProductManager-20260507.html) | AI 产品独立顾问 / Claude Code 全栈实战 / 1 人多线生产级交付 |
+| 2026-04-10 | [.md](./versions/MaxwellLi-AIProductManager-20260410.md) · [.html](./versions/MaxwellLi-AIProductManager-20260410.html) | 技术负责人 / AI 工程化专家 / OpenClaw 实战专家 |
+| 2026-03-11 | [.md](./versions/MaxwellLi-AIProductManager-20260311.md) | 技术负责人 / AI 工程化专家 / 平台产品负责人（v1.0 初版） |
+| 2024-12-10 | [.pdf](./versions/MaxwellLi-DevOpsEngineer-20241210.pdf) | DevOps 工程师 — 7 年云平台运维开发经验（Nokia 离职版） |
+| 2024-11-15 | [.pdf](./versions/MaxwellLi-DevOpsEngineer-20241115.pdf) | DevOps 工程师 |
+| 2018-05-22 | [.pdf](./versions/MaxwellLi-DevOpsEngineer-20180522.pdf) | DevOps 工程师（华为转 Nokia 之前） |
 
 ## 联系方式
 
@@ -36,4 +39,12 @@
 
 ## 导出 PDF
 
-用任意 Markdown 编辑器（Typora / VS Code）打开 `Resume-Latest.md`，或浏览器打开 `Resume-Latest.html` → 打印为 PDF（A4，无页眉页脚）。
+用任意 Markdown 编辑器（Typora / VS Code）打开当前简历的 `.md` 文件，或浏览器打开 `.html` 文件 → 打印为 PDF（A4，无页眉页脚）。
+
+## 文件命名约定
+
+`MaxwellLi-AIProductManager-YYYYMMDD.{md,html}`
+
+- 主名固定：姓名（英文名+姓拼音驼峰）+ 目标岗位（驼峰）
+- 后缀：8 位日期戳标识版本
+- 最新版位于根目录，旧版归档至 `versions/`，命名格式一致
