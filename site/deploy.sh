@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Optional: source .env for custom SSH host / remote dir
 [ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"
 
-SSH_HOST="${SSH_HOST:-singapore}"
+SSH_HOST="${SSH_HOST:-alicloud-sg}"
 REMOTE_DIR="${REMOTE_DIR:-/home/admin/maxwellii-site}"
 LOCAL_DIR="$SCRIPT_DIR/public"
 
