@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{title}} — ~/iyuenan3/p</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<div class="window">
+
+  <div class="titlebar">
+    <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    <div class="path">~/iyuenan3/p/{{slug}} — bash — 100×40</div>
+    <div class="meta">tmux 0:project*</div>
+  </div>
+
+  <div class="body">
+
+    <div class="back-link" data-reveal>
+      <span class="sigil">$</span> <a class="cd-link" href="../"><span class="cmd">cd</span> <span class="arg">..</span></a> <span class="comment"># 返回 ~/iyuenan3</span>
+    </div>
+
+    <div class="page-header" data-reveal>
+      <div class="page-title">{{title}}</div>
+      <div class="page-meta">
+        <span class="page-status status-{{status}}">{{status_label}}</span>
+        <span class="dim">since {{since}}</span>
+      </div>
+    </div>
+
+{{blocks}}
+
+    <div class="signoff" data-reveal>
+      <div class="lines">
+        <div class="echo">$ <span class="amber">echo</span> "# end of {{slug}}.md"<span class="cursor"></span></div>
+        <div class="end"># <a href="../">back to ~/iyuenan3</a></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    }
+  }, { threshold: 0.05 });
+  document.querySelectorAll('[data-reveal]').forEach((el, i) => {
+    el.style.transitionDelay = (i * 0.06) + 's';
+    io.observe(el);
+  });
+</script>
+
+</body>
+</html>

@@ -20,6 +20,21 @@ if [ ! -f "$LOCAL_DIR/index.html" ]; then
     exit 1
 fi
 
+# Build project detail pages (site/data/projects/*.md → site/public/p/*.html)
+if ! command -v node >/dev/null 2>&1; then
+    echo "Error: node not found. Detail pages require Node.js to build."
+    exit 1
+fi
+echo "=== Building project detail pages ==="
+( cd "$SCRIPT_DIR" && node build.js )
+DETAIL_COUNT=$(ls -1 "$LOCAL_DIR/p/" 2>/dev/null | grep -c '\.html$' || true)
+if [ "$DETAIL_COUNT" -eq 0 ]; then
+    echo "Error: no detail pages built. Check site/data/projects/ and build.js."
+    exit 1
+fi
+echo "→ $DETAIL_COUNT detail pages ready in $LOCAL_DIR/p/"
+echo
+
 echo "=== Syncing $LOCAL_DIR/ → $SSH_HOST:$REMOTE_DIR ==="
 rsync -avz --delete \
   --exclude '.gitkeep' \
