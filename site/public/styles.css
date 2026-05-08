@@ -445,6 +445,35 @@ body::after {
   line-height: 1.6;
 }
 
+/* 多列对比表（stats 组件支持 markdown 表格） */
+.kv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.kv-table th, .kv-table td {
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.kv-table th {
+  color: var(--dim);
+  font-weight: normal;
+  border-bottom: 1px solid var(--rule);
+  letter-spacing: 0.5px;
+}
+.kv-table tbody td:first-child {
+  color: var(--dim);
+}
+.kv-table tbody tr:last-child td { border-bottom: none; }
+.kv-table tbody td strong { color: var(--fg-bright); font-weight: 500; }
+.kv-table tbody td code {
+  font-size: 11px;
+  padding: 1px 4px;
+}
+
 /* tag 行（stack 等） */
 .tag-row {
   display: flex;

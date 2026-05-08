@@ -71,7 +71,7 @@ function parseYaml(yaml) {
     const line = raw.trimStart();
 
     if (indent === 0) {
-      const m = line.match(/^([a-zA-Z_][\w-]*):\s*(.*)$/);
+      const m = line.match(/^([^:]+?):\s*(.*)$/);
       if (!m) continue;
       const [, key, val] = m;
       curKey = key;
@@ -86,7 +86,7 @@ function parseYaml(yaml) {
         if (!Array.isArray(obj[curKey])) obj[curKey] = [];
         obj[curKey].push(parseScalar(line.slice(2).trim()));
       } else {
-        const m = line.match(/^([a-zA-Z_][\w-]*):\s*(.*)$/);
+        const m = line.match(/^([^:]+?):\s*(.*)$/);
         if (!m) continue;
         const [, key, val] = m;
         if (typeof obj[curKey] !== 'object' || Array.isArray(obj[curKey]) || obj[curKey] === null) {
@@ -135,11 +135,24 @@ function readWiki(wikiSlug) {
   return fs.readFileSync(fp, 'utf8');
 }
 
-// 解析 wiki 中的 markdown 表格
+// 解析 wiki 中的 markdown 表格（仅 body rows）
 function parseTable(md) {
   const lines = md.split('\n').map((l) => l.trim()).filter((l) => l.startsWith('|'));
   if (lines.length < 2) return [];
   return lines.slice(2).map((l) => l.split('|').slice(1, -1).map((c) => c.trim()));
+}
+
+// 渲染完整 markdown 表格为 <table>（含 header）
+function renderTable(md) {
+  const lines = md.split('\n').map((l) => l.trim()).filter((l) => l.startsWith('|'));
+  if (lines.length < 2) return null;
+  const sepIdx = lines.findIndex((l) => /^\|[\s|:-]+\|$/.test(l));
+  if (sepIdx < 1) return null;
+  const header = lines[0].split('|').slice(1, -1).map((c) => c.trim());
+  const body = lines.slice(sepIdx + 1).map((l) => l.split('|').slice(1, -1).map((c) => c.trim()));
+  const headHtml = header.map((c) => `<th>${esc(c)}</th>`).join('');
+  const bodyHtml = body.map((r) => `<tr>${r.map((c) => `<td>${inline(esc(c))}</td>`).join('')}</tr>`).join('');
+  return `<table class="kv-table"><thead><tr>${headHtml}</tr></thead><tbody>${bodyHtml}</tbody></table>`;
 }
 
 // 提取 wiki 中指定 ## 标题下的内容
@@ -171,18 +184,14 @@ const components = {
 
   links(data) {
     const links = data.meta.links || {};
+    // label 直接采用 frontmatter 的 key（保留 url / source / docs 等英文小标题；自定义 key 也原样显示）
     const rows = [];
-    if (links.url) {
-      rows.push(`<div class="kv"><span class="k">url</span><span class="v"><a href="${esc(links.url)}" target="_blank">${esc(links.url)}</a></span></div>`);
-    }
-    if (links.source) {
-      const v = links.source === 'private'
+    for (const [key, val] of Object.entries(links)) {
+      if (!val) continue;
+      const v = val === 'private'
         ? '<em class="dim">private</em>'
-        : `<a href="${esc(links.source)}" target="_blank">${esc(links.source)}</a>`;
-      rows.push(`<div class="kv"><span class="k">source</span><span class="v">${v}</span></div>`);
-    }
-    if (links.docs) {
-      rows.push(`<div class="kv"><span class="k">docs</span><span class="v"><a href="${esc(links.docs)}" target="_blank">${esc(links.docs)}</a></span></div>`);
+        : `<a href="${esc(val)}" target="_blank">${esc(val)}</a>`;
+      rows.push(`<div class="kv"><span class="k">${esc(key)}</span><span class="v">${v}</span></div>`);
     }
     const out = rows.length ? rows.join('\n') : '<p class="dim"><em>无公开链接</em></p>';
     return block('<span class="cmd">links</span>', '快速跳转', out);
@@ -235,6 +244,15 @@ const components = {
   },
 
   stats(data) {
+    // body 段优先（手写 STATS 表）→ 否则 fallback wiki
+    const override = data.sections.STATS;
+    if (override && override.trim()) {
+      const tableHtml = renderTable(override);
+      if (tableHtml) {
+        return block('<span class="cmd">make</span> <span class="arg">stats</span>', '关键指标', tableHtml);
+      }
+      return block('<span class="cmd">make</span> <span class="arg">stats</span>', '关键指标', mdToHtml(override));
+    }
     const wiki = data.wiki;
     const section = extractSection(wiki, '当前进度') || extractSection(wiki, '基本信息');
     if (!section) {
