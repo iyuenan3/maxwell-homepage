@@ -1,7 +1,7 @@
 ---
 slug: claude-financial-research
 title: claude-financial-research
-status: ext
+status: active
 since: 2026-05-06
 links:
   url: ""

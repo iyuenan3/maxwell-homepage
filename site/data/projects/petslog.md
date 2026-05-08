@@ -1,7 +1,7 @@
 ---
 slug: petslog
 title: PetsLog
-status: wip
+status: active
 since: 2025-09
 links:
   v1 codebase: https://github.com/iyuenan3/Cursor-PetsLog

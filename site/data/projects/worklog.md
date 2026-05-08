@@ -1,7 +1,7 @@
 ---
 slug: worklog
 title: worklog
-status: wip
+status: active
 since: 2026-05-03
 links:
   url: ""

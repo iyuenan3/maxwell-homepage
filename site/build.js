@@ -313,12 +313,11 @@ const components = {
 // ============================================================
 
 const STATUS_LABELS = {
-  live: '▲ live · 已上线',
-  wip: '∗ wip · 进行中',
-  daemon: '∗ daemon · 后台运行',
-  ext: '∗ ext · 外部顾问',
-  released: '★ released · 已发布',
-  archived: '∗ archived · 归档',
+  planned: '◯ planned · 待启动',
+  active: '◐ active · 进行中',
+  live: '● live · 在线',
+  paused: '◌ paused · 暂停',
+  archived: '✕ archived · 归档',
 };
 
 function buildOne(slug) {

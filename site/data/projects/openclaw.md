@@ -1,7 +1,7 @@
 ---
 slug: openclaw
 title: openclaw
-status: daemon
+status: active
 since: 2026-04-26
 links:
   url: ""

@@ -1,7 +1,7 @@
 ---
 slug: k8s-om
 title: k8s-om
-status: released
+status: archived
 since: 2024-04-15
 links:
   url: ""

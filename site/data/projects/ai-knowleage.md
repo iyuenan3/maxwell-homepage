@@ -1,7 +1,7 @@
 ---
 slug: ai-knowleage
 title: AI-Knowleage
-status: wip
+status: active
 since: 2026-05-06
 links:
   url: ""

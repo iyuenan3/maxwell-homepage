@@ -1,7 +1,7 @@
 ---
 slug: openclaw-customize-skills
 title: OpenClaw-Customize-Skills
-status: released
+status: paused
 since: 2025-09-20
 links:
   url: ""
