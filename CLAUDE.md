@@ -13,7 +13,7 @@
 ├── assets/avatar.jpg                           # 头像（README 与 site/public/ 各持一份）
 ├── site/                                        # maxwellii.com 个人主页源码（已上线 2026-05-08）
 │   ├── public/      # 静态文件根（index.html / styles.css / avatar.jpg / p/）
-│   │   └── p/       # ← build 输出，详情页 9 项（gitignore，部署时现 build）
+│   │   └── p/       # ← build 输出，详情页 10 项（gitignore，部署时现 build）
 │   ├── data/projects/<slug>.md  # ← 二级页面数据源（11 个，git tracked）
 │   ├── templates/   # _base.html 终端壳模板
 │   ├── build.js     # ← Node 纯实现，零依赖，详情页构建器
@@ -77,30 +77,33 @@
 
 ### 5.1 二级详情页（site/p/<slug>.html）
 
-主页 `ls projects/` 9 行各对应一个详情页。**纯静态、零运行时依赖、无 npm 包**：
+主页 `ls projects/` 10 行各对应一个详情页。**纯静态、零运行时依赖、无 npm 包**：
 
 - **数据**：`site/data/projects/<slug>.md`（YAML frontmatter + body markdown 段）
 - **模板**：`site/templates/_base.html`（终端壳骨架）+ build.js 内置 9 个组件
 - **构建**：`node site/build.js` → 输出 `site/public/p/<slug>.html`（gitignore）
 - **部署**：`bash site/deploy.sh` 已串好 build → rsync 流程
 
-**9 项 slug ↔ name_zh ↔ wiki mapping**（frontmatter 必含 `slug` / `name_en` / `name_zh`；带 `wiki_slug` 的 build 时主动读 `worklog/wiki/projects/<wiki_slug>.md` 抽 fact）：
+**10 项 slug ↔ name_zh ↔ wiki mapping**（frontmatter 必含 `slug` / `name_en` / `name_zh`；带 `wiki_slug` 的 build 时主动读 `worklog/wiki/projects/<wiki_slug>.md` 抽 fact）：
 
 | URL slug | name_zh | wiki_slug | status |
 |----------|---------|-----------|--------|
 | eastern-wisdom | 东方智慧 · 海外华人取名 SaaS | eastern-wisdom | live |
 | multiplayer-xiaoshuo | 多人小说 · 多人互动小说 H5 | multiplayer-xiaoshuo | live |
+| maxwell-homepage | maxwellii.com · 终端体个人主页 | maxwell-homepage | live |
 | worklog | 工作日志 · AI 自动日记 + LLM Wiki 知识库 | worklog | active |
-| ai-knowledge | AI 知识库 · 开源项目研究图谱 | AI-Knowledge | active |
+| ai-knowledge | AI 知识库 · 开源项目研究图谱 | ai-knowledge | active |
 | openclaw | OpenClaw · AI 助理平台 | openclaw | active |
-| claude-financial-research | 智投研 · A 股权益研究系统 | yuan-MBP-a股200亿投研（对外化名，不出现内部代号） | active |
+| claude-financial-research | 智投研 · A 股权益研究系统 | claude-financial-research | active |
 | petslog | PetsLog · 宠物健康伴侣 | _（无 wiki）_ | active |
 | k8s-om | k8s-om · K8s 多租户运维工具集 | _（无 wiki）_ | archived |
-| xhs-5agent-pipeline | 小红书 Agency · 多 Agent 全自动账号运营 | _（无 wiki，前司商敏感）_ | archived |
+| xhs-agency | 小红书 Agency · 多 Agent 全自动账号运营 | _（无 wiki，前司商敏感）_ | archived |
 
 **已合并的 2 项**：
 - `openclaw-customize-skills` → `openclaw` 内 README 段（A 完全吸收）
 - `ifind-agent` → `claude-financial-research` 内 `## HISTORY` 段（B 折叠为历史段）
+
+**已改名的 1 项**：`xhs-5agent-pipeline` → `xhs-agency`（5/9 完成 + nginx 加 301 redirect 兜底 + README 完全重写描述 Multi-Agent Roundtable 架构）
 
 **9 个命令组件**（每项目挑 4-6 个，readme 必选 / links 必选）：
 `readme` / `links` / `git_log` / `decisions` / `stats` / `notes` / `stack` / `ps` / `history` / `timeline`（截图接口预留，先不渲染）

@@ -10,7 +10,7 @@
 
 ## 个人主页 — maxwellii.com
 
-终端体设计的个人静态站点（**已上线 https://maxwellii.com**）。bash 隐喻 + CRT 扫描线 + 朱砂方印 + JetBrains Mono / Noto Serif SC。
+终端体设计的个人静态站点（**已上线** https://maxwellii.com）。bash 隐喻 + CRT 扫描线 + 朱砂方印 + JetBrains Mono / Noto Serif SC。
 
 主页 `ls -lah projects/` 列出 10 项（含本仓库自身），每行点进对应详情页（终端 `cat README.md` 风格 + 中英双 H1）。
 
@@ -53,7 +53,7 @@ wiki_slug: <slug or empty>   # 关联 worklog wiki/projects/<wiki_slug>.md
 | claude-financial-research | 智投研 · A 股权益研究系统 | ◐ active |
 | petslog | PetsLog · 宠物健康伴侣 | ◐ active |
 | k8s-om | k8s-om · K8s 多租户运维工具集 | ✕ archived |
-| xhs-5agent-pipeline | 小红书 Agency · 多 Agent 全自动账号运营 | ✕ archived |
+| xhs-agency | 小红书 Agency · 多 Agent 全自动账号运营 | ✕ archived |
 
 ### 本地预览
 
