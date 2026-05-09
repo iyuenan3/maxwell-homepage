@@ -127,6 +127,33 @@ Cloudflare 实际服务的 CSS 是 `max-age=14400, must-revalidate` — `max-age
 
 详细部署 SOP / Cloudflare 缓存 / nginx push 流程见 memory `reference_cdn_cache_deploy.md`。
 
+### 5.3 详情页 markdown 渲染能力（5/9 升级）
+
+`site/build.js` 的 `mdToHtml()` 现支持的 markdown 语法：
+
+- **段落 / 列表 / 行内元素**（粗体 / 斜体 / 行内 code / 链接）— v1 起
+- **H3-H6 标题**（H2 已被 parseSections 切走，不进 mdToHtml）— 5/9 加
+- **表格**（`|...|` GFM 表格语法）— 5/9 加，复用 `renderTable()` 函数
+- **fenced 代码块**（三反引号包裹）— 5/9 加，用占位符避免内部空行被 `\n\n+` 切碎
+
+styles.css 配套加 `.output h3 / h4 / table / pre` 终端体样式：amber H3 + 左侧 3px 实线边框 / cyan H4 / 朴素表格（amber 表头 + 行 hover 高亮）/ cyan 代码块边框 + 微透白背景。
+
+**编辑详情页**时可放心用 H3 / 表格 / fenced 代码块（之前 9 个详情页只用段落 + 列表，5/9 起 xhs-agency 详情页用了 H3 + 表格 + ASCII 流程图）。
+
+### 5.4 主页 ls 三层结构 v3（5/9 简化）
+
+主页 `ls projects/` 10 行 name 列内部 stack 3 层：
+
+| 层 | 内容 | 颜色 |
+|---|---|---|
+| 第 1 行 | slug | cyan |
+| 第 2 行 | name_zh（**仅中文名**，5/9 v3 由 `name_en \| name_zh` 简化） | amber |
+| 第 3 行 | 一句话 desc（聚焦"做什么 + 1 个亮点"，~50 字） | fg-bright |
+
+CSS class: `.ls-name` / `.ls-name-zh`（5/9 v3，原 `.ls-bilingual`）/ `.ls-desc`。详细规范见 memory `feedback_naming_convention.md`。
+
+**项目排序**：live 段按上线时间倒序（maxwell-homepage meta 自指放最后），active 段按"求职亮点驱动"手动排序（cfr → worklog/ai-knowledge → openclaw → petslog），archived 段按 since 倒序。
+
 ### 6. BOSS 直聘打招呼语（独立场景）
 
 - 每段上限 200 字（不是 150）；BOSS 字数算法约 = Python `len()` × 0.770
