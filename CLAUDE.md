@@ -107,6 +107,23 @@
 
 **编辑详情页内容**：改 `site/data/projects/<slug>.md` 的 body 即可。`## README` / `## NOTES` / `## DECISIONS` / `## TIMELINE` 等 H2 段对应组件 output（`## DECISIONS` 留空时 build 自动从 wiki 决策日志拉）。改完 `bash site/deploy.sh` 一键发版。
 
+### 5.2 CSS / 静态资源缓存策略（5/9 改造）
+
+nginx (`site/nginx.conf`) 拆分缓存规则：
+- 图片 / 字体：`expires 30d` + `immutable`（极少变）
+- CSS / JS：`max-age=0, must-revalidate`（必校验 ETag，改了立即生效）
+
+Cloudflare 实际服务的 CSS 是 `max-age=14400, must-revalidate` — `max-age=14400` 是 CF Browser Cache TTL 默认值（4h），覆盖了 origin 的 0。要让 origin max-age=0 真正生效：CF 后台 → Caching → Configuration → Browser Cache TTL 设 "Respect Existing Headers"。
+
+**CSS 改动后不再需要 manual `?v=` cache bust** — 直接 `bash site/deploy.sh`，4h 后 + ETag 校验自动拿新版。
+
+历史 URL redirect（项目改名 / 合并兜底）已写入 `site/nginx.conf`：
+- `/p/ai-knowleage.html` → `/p/ai-knowledge.html`（typo 修正）
+- `/p/openclaw-customize-skills.html` → `/p/openclaw.html`（合并）
+- `/p/ifind-agent.html` → `/p/claude-financial-research.html`（合并）
+
+详细部署 SOP / Cloudflare 缓存 / nginx push 流程见 memory `reference_cdn_cache_deploy.md`。
+
 ### 6. BOSS 直聘打招呼语（独立场景）
 
 - 每段上限 200 字（不是 150）；BOSS 字数算法约 = Python `len()` × 0.770
