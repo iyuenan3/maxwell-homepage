@@ -1,6 +1,6 @@
-# Maxwell-Resume — 简历仓库工作指引
+# Maxwell-Homepage — 简历 + maxwellii.com 个人主页工作指引
 
-> 个人简历仓库 [github.com/iyuenan3/Maxwell-Resume](https://github.com/iyuenan3/Maxwell-Resume)（公开）。维护 Maxwell（李越男）不同时期的简历版本。
+> 个人主页仓库 [github.com/iyuenan3/maxwell-homepage](https://github.com/iyuenan3/maxwell-homepage)（公开）。维护 Maxwell（李越男）的简历（多版本归档）+ maxwellii.com 个人主页源码（已上线 2026-05-08）。简历是其中一部分，未来定位演进以个人主页整体为主。
 
 ## 仓库结构
 

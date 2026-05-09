@@ -14,7 +14,7 @@ commands:
   - decisions
   - stats
   - notes
-wiki_slug: AI-Knowledge
+wiki_slug: ai-knowledge
 stack:
   - obsidian
   - claude code

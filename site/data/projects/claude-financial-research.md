@@ -15,7 +15,7 @@ commands:
   - history
   - stats
   - notes
-wiki_slug: yuan-MBP-a股200亿投研
+wiki_slug: claude-financial-research
 stack:
   - claude code
   - csv
