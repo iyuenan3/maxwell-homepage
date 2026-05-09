@@ -22,7 +22,7 @@ stack:
 
 ## README
 
-本机（Maxwell-MBP）AI 助理平台。火山方舟 `ark-code-latest` 作为基座，通过 Gateway loopback `:18789` + Token 认证暴露给本机各 Skill 调用。每天凌晨 4 点 cron 自动构建知识库（与 [[AI-Knowleage]] / [[worklog]] 联动）。
+本机（Maxwell-MBP）AI 助理平台。火山方舟 `ark-code-latest` 作为基座，通过 Gateway loopback `:18789` + Token 认证暴露给本机各 Skill 调用。每天凌晨 4 点 cron 自动构建知识库（与 [[AI-Knowledge]] / [[worklog]] 联动）。
 
 7 个内置 Skill：minimax-pdf / minimax-docx / minimax-xlsx / pptx-generator / agent-browser / pua / skill-vetting。后台 daemon 模式运行，IDE 不显式启动也持续工作。
 

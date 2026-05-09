@@ -1,6 +1,6 @@
 ---
-slug: ai-knowleage
-title: AI-Knowleage
+slug: ai-knowledge
+title: AI-Knowledge
 status: active
 since: 2026-05-06
 links:
@@ -13,7 +13,7 @@ commands:
   - decisions
   - stats
   - notes
-wiki_slug: AI-Knowleage
+wiki_slug: AI-Knowledge
 stack:
   - obsidian
   - claude code

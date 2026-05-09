@@ -46,10 +46,10 @@ LinkedIn: linkedin.com/in/iyuenan3 | GitHub: github.com/iyuenan3 | Blog: limaxwe
   - **8 步流水线开发**：5 个并行 Agent 同时写后端模块；上下文分层摘要（近 5 轮全文 + 每 5 轮压缩 200 字 + 全局大纲）
   - **生产部署**：PM2 + Nginx 共享新加坡服务器 SNI 多域名
 
-### 3. worklog + AI-Knowleage · 知识工程化双子项目
+### 3. worklog + AI-Knowledge · 知识工程化双子项目
 
   - **worklog**：基于 Karpathy LLM Wiki 三层架构（Schema/Wiki/Raw）的工作日记 & 知识库系统，自创"摄入时编译 vs 查询时编译"的编译器范式，3 天迭代到 v2.2
-  - **AI-Knowleage**：AI 开源项目研究知识库，A+B+C 三级递进研究方法（README 精读 → 横向对比 → 源码 Clone 分析），**55 Wiki 页 / 78 raw 资料 / 0 死链 / 0 矛盾 / 0 孤儿页面**，自带 Lint 健康检查流程
+  - **AI-Knowledge**：AI 开源项目研究知识库，A+B+C 三级递进研究方法（README 精读 → 横向对比 → 源码 Clone 分析），**55 Wiki 页 / 78 raw 资料 / 0 死链 / 0 矛盾 / 0 孤儿页面**，自带 Lint 健康检查流程
   - **价值**：验证"LLM 维护 Wiki"的工程可行性 — 一次 Ingest 触及 10+ 页面，维护成本趋近于零
 
 ### 4. claude-financial-research · A 股 200 亿+ 权益研究系统（外部顾问）

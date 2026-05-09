@@ -47,7 +47,7 @@
 - 历史版本（`versions/`）保留原样不动
 
 ### 2. 内容边界
-- **可写入简历的当前公开项目**：eastern-wisdom、multiplayer-xiaoshuo、worklog、AI-Knowleage、claude-financial-research（外部顾问，原名 yuan-MBP-a股200亿投研 / equity-200b）、PetsLog（GitHub 双仓库 Cursor + OpenClaw）、OpenClaw-Customize-Skills、k8s-om
+- **可写入简历的当前公开项目**：eastern-wisdom、multiplayer-xiaoshuo、worklog、AI-Knowledge、claude-financial-research（外部顾问，原名 yuan-MBP-a股200亿投研 / equity-200b）、PetsLog（GitHub 双仓库 Cursor + OpenClaw）、OpenClaw-Customize-Skills、k8s-om
 - **不写入简历**：short-story（番茄小说短篇创作） — 副业感不利于 AI 求职定位
 - **历史已删除的负面/失效内容**：IoT 软硬一体化（无对应经历）、OpenClaw 实战专家标签（已不符合 v4 定位）、PetsLog 56.7% 通过率（负面数据已删，但 PetsLog 项目本身已恢复展示"双工具对比"亮点）
 
@@ -91,7 +91,7 @@
 | eastern-wisdom | eastern-wisdom | live |
 | multiplayer-xiaoshuo | multiplayer-xiaoshuo | live |
 | worklog | worklog | wip |
-| ai-knowleage | AI-Knowleage | wip |
+| ai-knowledge | AI-Knowledge | wip |
 | openclaw | openclaw | daemon |
 | claude-financial-research | yuan-MBP-a股200亿投研 | ext（对外化名，不出现内部代号） |
 | ifind-agent | yuan-MBP-ifind-agent | archived |
