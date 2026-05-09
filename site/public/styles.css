@@ -462,6 +462,69 @@ body::after {
 .output a:hover { color: var(--fg-bright); }
 .output .dim { color: var(--dim); }
 
+/* output 内 H3 / H4 — 终端体小节标题 */
+.output h3 {
+  color: var(--amber);
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 600;
+  margin: 22px 0 10px;
+  padding-left: 8px;
+  border-left: 3px solid var(--amber);
+  letter-spacing: 0.3px;
+}
+.output h3:first-child { margin-top: 4px; }
+.output h4 {
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  margin: 16px 0 6px;
+}
+
+/* output 内通用表格（与 stats 组件 .kv-table 区分，更朴素） */
+.output table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0 14px;
+  font-size: 12px;
+}
+.output table th,
+.output table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--rule-soft);
+  text-align: left;
+  vertical-align: top;
+}
+.output table th {
+  color: var(--amber);
+  font-weight: 600;
+  border-bottom: 1px dashed var(--rule);
+}
+.output table td { color: var(--fg); }
+.output table tr:hover { background: rgba(212, 160, 76, 0.04); }
+
+/* output 内代码块 — ASCII 流程图、命令示例 */
+.output pre {
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid var(--cyan);
+  padding: 10px 14px;
+  margin: 10px 0 14px;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg);
+  white-space: pre;
+}
+.output pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
 /* git log 简化版 */
 .gitlog-mini {
   font-family: var(--mono);

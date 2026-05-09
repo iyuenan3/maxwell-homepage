@@ -26,18 +26,49 @@ function esc(s) {
     .replace(/>/g, '&gt;');
 }
 
-// 简易 markdown → HTML（段落、粗体、斜体、行内代码、链接、列表）
+// 简易 markdown → HTML（段落、粗体、斜体、行内代码、链接、列表、H3-H6、表格、代码块）
 // 调用约定：mdToHtml 自己处理 esc；inline 假设输入已 esc。
 function mdToHtml(md) {
   if (!md || !md.trim()) return '';
-  const blocks = md.trim().split(/\n\n+/);
+
+  // Pass 1: 提取代码块（避免内部空行被 \n\n+ 切碎）
+  const codeBlocks = [];
+  const withPlaceholders = md.replace(/```[^\n]*\n([\s\S]*?)\n```/g, (_, code) => {
+    codeBlocks.push(code);
+    return `\x00CB${codeBlocks.length - 1}\x00`;
+  });
+
+  const blocks = withPlaceholders.trim().split(/\n\n+/);
   return blocks
     .map((block) => {
       const lines = block.split('\n');
+
+      // 代码块占位符还原
+      const cbMatch = block.match(/^\x00CB(\d+)\x00$/);
+      if (cbMatch) {
+        return `<pre><code>${esc(codeBlocks[parseInt(cbMatch[1], 10)])}</code></pre>`;
+      }
+
+      // H3-H6 标题（H2 已被 parseSections 切走，不会到这里）
+      const hMatch = lines.length === 1 && block.match(/^(#{3,6})\s+(.+)$/);
+      if (hMatch) {
+        const level = hMatch[1].length;
+        return `<h${level}>${inline(esc(hMatch[2]))}</h${level}>`;
+      }
+
+      // 表格（全 | 开头多行）
+      if (lines.length >= 2 && lines.every((l) => l.trim().startsWith('|'))) {
+        const tableHtml = renderTable(block);
+        if (tableHtml) return tableHtml;
+      }
+
+      // 列表
       if (lines.every((l) => /^[\s]*[-*]\s+/.test(l))) {
         const items = lines.map((l) => `<li>${inline(esc(l.replace(/^[\s]*[-*]\s+/, '')))}</li>`).join('');
         return `<ul>${items}</ul>`;
       }
+
+      // 默认段落
       return `<p>${inline(esc(block.replace(/\n/g, ' ')))}</p>`;
     })
     .join('\n');
