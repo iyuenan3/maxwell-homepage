@@ -1,6 +1,7 @@
 ---
 slug: petslog
-title: PetsLog
+name_en: "PetsLog · Pet Health Companion"
+name_zh: "PetsLog · 宠物健康伴侣"
 status: active
 since: 2025-09
 links:

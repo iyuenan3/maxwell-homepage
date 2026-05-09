@@ -1,6 +1,7 @@
 ---
 slug: worklog
-title: worklog
+name_en: "Worklog · AI Daily Journal & LLM Wiki"
+name_zh: "工作日志 · AI 自动日记 + LLM Wiki 知识库"
 status: active
 since: 2026-05-03
 links:

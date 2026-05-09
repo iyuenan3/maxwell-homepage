@@ -338,7 +338,8 @@ function buildOne(slug) {
   const baseTpl = fs.readFileSync(path.join(TEMPLATES_DIR, '_base.html'), 'utf8');
   const html = baseTpl
     .replace(/{{slug}}/g, esc(slug))
-    .replace(/{{title}}/g, esc(meta.title || slug))
+    .replace(/{{name_en}}/g, esc(meta.name_en || slug))
+    .replace(/{{name_zh}}/g, esc(meta.name_zh || slug))
     .replace(/{{status}}/g, esc(meta.status || '—'))
     .replace(/{{status_label}}/g, esc(STATUS_LABELS[meta.status] || meta.status || '—'))
     .replace(/{{since}}/g, esc(meta.since || ''))

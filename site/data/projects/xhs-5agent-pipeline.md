@@ -1,6 +1,7 @@
 ---
 slug: xhs-5agent-pipeline
-title: xhs-5agent-pipeline
+name_en: "XHS Agency · Multi-Agent Xiaohongshu Auto-Ops"
+name_zh: "小红书 Agency · 多 Agent 全自动账号运营"
 status: archived
 since: 2025-07-15
 links:

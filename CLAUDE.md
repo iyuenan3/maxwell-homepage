@@ -13,7 +13,7 @@
 ├── assets/avatar.jpg                           # 头像（README 与 site/public/ 各持一份）
 ├── site/                                        # maxwellii.com 个人主页源码（已上线 2026-05-08）
 │   ├── public/      # 静态文件根（index.html / styles.css / avatar.jpg / p/）
-│   │   └── p/       # ← build 输出，详情页 11 项（gitignore，部署时现 build）
+│   │   └── p/       # ← build 输出，详情页 9 项（gitignore，部署时现 build）
 │   ├── data/projects/<slug>.md  # ← 二级页面数据源（11 个，git tracked）
 │   ├── templates/   # _base.html 终端壳模板
 │   ├── build.js     # ← Node 纯实现，零依赖，详情页构建器
@@ -47,7 +47,7 @@
 - 历史版本（`versions/`）保留原样不动
 
 ### 2. 内容边界
-- **可写入简历的当前公开项目**：eastern-wisdom、multiplayer-xiaoshuo、worklog、AI-Knowledge、claude-financial-research（外部顾问，原名 yuan-MBP-a股200亿投研 / equity-200b）、PetsLog（GitHub 双仓库 Cursor + OpenClaw）、OpenClaw-Customize-Skills、k8s-om
+- **可写入简历的当前公开项目**（v2 双名）：东方智慧 (eastern-wisdom)、多人小说 (multiplayer-xiaoshuo)、工作日志 (worklog)、AI 知识库 (ai-knowledge)、智投研 (claude-financial-research，外部顾问，原名 yuan-MBP-a股200亿投研)、PetsLog (双仓库 Cursor + OpenClaw)、OpenClaw (AI 助理平台，含 OpenClaw-Customize-Skills 库)、k8s-om
 - **不写入简历**：short-story（番茄小说短篇创作） — 副业感不利于 AI 求职定位
 - **历史已删除的负面/失效内容**：IoT 软硬一体化（无对应经历）、OpenClaw 实战专家标签（已不符合 v4 定位）、PetsLog 56.7% 通过率（负面数据已删，但 PetsLog 项目本身已恢复展示"双工具对比"亮点）
 
@@ -77,25 +77,30 @@
 
 ### 5.1 二级详情页（site/p/<slug>.html）
 
-主页 `ls projects/` 11 行各对应一个详情页。**纯静态、零运行时依赖、无 npm 包**：
+主页 `ls projects/` 9 行各对应一个详情页。**纯静态、零运行时依赖、无 npm 包**：
 
 - **数据**：`site/data/projects/<slug>.md`（YAML frontmatter + body markdown 段）
 - **模板**：`site/templates/_base.html`（终端壳骨架）+ build.js 内置 9 个组件
 - **构建**：`node site/build.js` → 输出 `site/public/p/<slug>.html`（gitignore）
 - **部署**：`bash site/deploy.sh` 已串好 build → rsync 流程
 
-**11 项 slug 与 wiki mapping**（带 wiki_slug 的 build 时主动读 `worklog/wiki/projects/<wiki_slug>.md` 抽 fact）：
+**9 项 slug ↔ name_zh ↔ wiki mapping**（frontmatter 必含 `slug` / `name_en` / `name_zh`；带 `wiki_slug` 的 build 时主动读 `worklog/wiki/projects/<wiki_slug>.md` 抽 fact）：
 
-| URL slug | wiki_slug | status |
-|----------|----------|--------|
-| eastern-wisdom | eastern-wisdom | live |
-| multiplayer-xiaoshuo | multiplayer-xiaoshuo | live |
-| worklog | worklog | wip |
-| ai-knowledge | AI-Knowledge | wip |
-| openclaw | openclaw | daemon |
-| claude-financial-research | yuan-MBP-a股200亿投研 | ext（对外化名，不出现内部代号） |
-| ifind-agent | yuan-MBP-ifind-agent | archived |
-| petslog / openclaw-customize-skills / k8s-om / xhs-5agent-pipeline | _（无 wiki）_ | released / archived |
+| URL slug | name_zh | wiki_slug | status |
+|----------|---------|-----------|--------|
+| eastern-wisdom | 东方智慧 · 海外华人取名 SaaS | eastern-wisdom | live |
+| multiplayer-xiaoshuo | 多人小说 · 多人互动小说 H5 | multiplayer-xiaoshuo | live |
+| worklog | 工作日志 · AI 自动日记 + LLM Wiki 知识库 | worklog | active |
+| ai-knowledge | AI 知识库 · 开源项目研究图谱 | AI-Knowledge | active |
+| openclaw | OpenClaw · AI 助理平台 | openclaw | active |
+| claude-financial-research | 智投研 · A 股权益研究系统 | yuan-MBP-a股200亿投研（对外化名，不出现内部代号） | active |
+| petslog | PetsLog · 宠物健康伴侣 | _（无 wiki）_ | active |
+| k8s-om | k8s-om · K8s 多租户运维工具集 | _（无 wiki）_ | archived |
+| xhs-5agent-pipeline | 小红书 Agency · 多 Agent 全自动账号运营 | _（无 wiki，前司商敏感）_ | archived |
+
+**已合并的 2 项**：
+- `openclaw-customize-skills` → `openclaw` 内 README 段（A 完全吸收）
+- `ifind-agent` → `claude-financial-research` 内 `## HISTORY` 段（B 折叠为历史段）
 
 **9 个命令组件**（每项目挑 4-6 个，readme 必选 / links 必选）：
 `readme` / `links` / `git_log` / `decisions` / `stats` / `notes` / `stack` / `ps` / `history` / `timeline`（截图接口预留，先不渲染）

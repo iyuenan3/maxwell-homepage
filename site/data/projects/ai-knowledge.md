@@ -1,6 +1,7 @@
 ---
 slug: ai-knowledge
-title: AI-Knowledge
+name_en: "AI-Knowledge · Open-Source Project Atlas"
+name_zh: "AI 知识库 · 开源项目研究图谱"
 status: active
 since: 2026-05-06
 links:

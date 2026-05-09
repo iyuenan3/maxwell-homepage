@@ -1,6 +1,7 @@
 ---
 slug: multiplayer-xiaoshuo
-title: multiplayer-xiaoshuo
+name_en: "Multiplayer Xiaoshuo · Interactive Multiplayer Fiction"
+name_zh: "多人小说 · 多人互动小说 H5"
 status: live
 since: 2026-04-30
 links:

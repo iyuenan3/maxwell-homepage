@@ -1,6 +1,7 @@
 ---
 slug: k8s-om
-title: k8s-om
+name_en: "k8s-om · Multi-Tenant K8s Toolkit"
+name_zh: "k8s-om · K8s 多租户运维工具集"
 status: archived
 since: 2024-04-15
 links:

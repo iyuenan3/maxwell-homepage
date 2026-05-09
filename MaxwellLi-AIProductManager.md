@@ -27,7 +27,7 @@ LinkedIn: linkedin.com/in/iyuenan3 | GitHub: github.com/iyuenan3 | Blog: limaxwe
 
 ## 独立项目与顾问实战 (2026.04 至今)
 
-### 1. eastern-wisdom · 海外华人取名 SaaS（已上线生产）
+### 1. 东方智慧 · 海外华人取名 SaaS（已上线生产）
 
 > [naming.maxwellii.com](https://naming.maxwellii.com) · Next.js 16 + TypeScript + Python 3.9 + 火山引擎 doubao-seed-2.0-lite + 阿里云新加坡
 
@@ -37,7 +37,7 @@ LinkedIn: linkedin.com/in/iyuenan3 | GitHub: github.com/iyuenan3 | Blog: limaxwe
   - **零数据库架构**：JWT 预览令牌（HMAC-SHA256，30 分钟 TTL）+ 文件存储 + TTL 自动清理
   - **monorepo 工程化**：npm workspaces + PM2 双实例 + Nginx + Method A 双语全站铺设
 
-### 2. multiplayer-xiaoshuo · 多人实时共创叙事 H5（已上线生产）
+### 2. 多人小说 · 多人互动小说 H5（已上线生产）
 
 > [tale.maxwellii.com](https://tale.maxwellii.com) · Vue 3 + Vant + Socket.IO + Node.js + Redis + DeepSeek V4 Flash
 
@@ -46,13 +46,13 @@ LinkedIn: linkedin.com/in/iyuenan3 | GitHub: github.com/iyuenan3 | Blog: limaxwe
   - **8 步流水线开发**：5 个并行 Agent 同时写后端模块；上下文分层摘要（近 5 轮全文 + 每 5 轮压缩 200 字 + 全局大纲）
   - **生产部署**：PM2 + Nginx 共享新加坡服务器 SNI 多域名
 
-### 3. worklog + AI-Knowledge · 知识工程化双子项目
+### 3. 工作日志 + AI 知识库 · 知识工程化双子项目
 
   - **worklog**：基于 Karpathy LLM Wiki 三层架构（Schema/Wiki/Raw）的工作日记 & 知识库系统，自创"摄入时编译 vs 查询时编译"的编译器范式，3 天迭代到 v2.2
   - **AI-Knowledge**：AI 开源项目研究知识库，A+B+C 三级递进研究方法（README 精读 → 横向对比 → 源码 Clone 分析），**55 Wiki 页 / 78 raw 资料 / 0 死链 / 0 矛盾 / 0 孤儿页面**，自带 Lint 健康检查流程
   - **价值**：验证"LLM 维护 Wiki"的工程可行性 — 一次 Ingest 触及 10+ 页面，维护成本趋近于零
 
-### 4. claude-financial-research · A 股 200 亿+ 权益研究系统（外部顾问）
+### 4. 智投研 · A 股 200 亿+ 权益研究系统（外部顾问）
 
 > 基于 [Anthropic 官方 financial-services](https://github.com/anthropics/financial-services)（6 Skill + 10 Template）+ Claude Code CLI 单人协作 + 扁平 CSV + 财报/公告 PDF + 七模块固定结构 Markdown 报告
 
@@ -121,7 +121,7 @@ LinkedIn: linkedin.com/in/iyuenan3 | GitHub: github.com/iyuenan3 | Blog: limaxwe
 ## 个人开源项目
 
   - **PetsLog**（[Cursor-PetsLog](https://github.com/iyuenan3/Cursor-PetsLog) + [OpenClaw-PetsLog](https://github.com/iyuenan3/OpenClaw-PetsLog)）：宠物健康管理系统 · uni-app 双端（微信小程序 + H5）+ Vue3 + uniCloud + ECharts + Notion API · 用药记录 / 健康报告 / 提醒推送 / 离线模式 / 语音输入 · 同需求双工具实现对比
-  - **[OpenClaw-Customize-Skills](https://github.com/iyuenan3/OpenClaw-Customize-Skills)**：自定义 Skill 库，含 moltbook-daily（日报生成）/ wordpress-blog-writer（博客全链路）/ story-writer（故事创作）等
+  - **OpenClaw**：AI 助理平台，火山方舟 ark-code-latest 基座 + Gateway loopback + 7 内置 Skill + 3 自定义 Skill（[OpenClaw-Customize-Skills](https://github.com/iyuenan3/OpenClaw-Customize-Skills)：moltbook-daily / wordpress-blog-writer / story-writer），本机 / 云端均可部署
   - **[k8s-om](https://github.com/iyuenan3/k8s-om)**：K8s 运维自动化工具集（Ansible Playbooks），批量租户管理 + 权限/用量配置 + Helm3 环境
 
 ---

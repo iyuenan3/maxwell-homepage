@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{title}} — ~/iyuenan3/p</title>
+<title>{{name_zh}} — ~/iyuenan3/p</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../styles.css?v=20260509b">
 </head>
 <body>
 
@@ -26,7 +26,11 @@
     </div>
 
     <div class="page-header" data-reveal>
-      <div class="page-title">{{title}}</div>
+      <div class="page-prompt">
+        <span class="sigil">$</span> <span class="cmd">cat</span> <span class="arg">{{slug}}/README.md</span>
+      </div>
+      <h1 class="page-title-zh">{{name_zh}}</h1>
+      <h1 class="page-title-en">{{name_en}}</h1>
       <div class="page-meta">
         <span class="page-status status-{{status}}">{{status_label}}</span>
         <span class="dim">since {{since}}</span>

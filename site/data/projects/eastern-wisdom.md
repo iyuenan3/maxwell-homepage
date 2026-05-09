@@ -1,6 +1,7 @@
 ---
 slug: eastern-wisdom
-title: eastern-wisdom
+name_en: "Eastern Wisdom · Diaspora Naming SaaS"
+name_zh: "东方智慧 · 海外华人取名 SaaS"
 status: live
 since: 2026-04-22
 links:
