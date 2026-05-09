@@ -1,13 +1,17 @@
 const store = new Map<string, { count: number; resetAt: number }>();
 
-const WINDOW_MS = 60 * 1000; // 1 minute
+const DEFAULT_WINDOW_MS = 60 * 1000; // 1 minute
 
-export function checkRateLimit(key: string, maxRequests: number): boolean {
+export function checkRateLimit(
+  key: string,
+  maxRequests: number,
+  windowMs: number = DEFAULT_WINDOW_MS,
+): boolean {
   const now = Date.now();
   const entry = store.get(key);
 
   if (!entry || now > entry.resetAt) {
-    store.set(key, { count: 1, resetAt: now + WINDOW_MS });
+    store.set(key, { count: 1, resetAt: now + windowMs });
     return true;
   }
 

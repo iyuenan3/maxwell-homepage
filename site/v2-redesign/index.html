@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=20260510a">
 </head>
 <body>
 
@@ -31,7 +31,7 @@
 </pre>
 
     <div class="tagline" data-reveal>
-      <span class="ver">v2.0.0</span> · last sync 2026-05-10
+      <span class="ver">v2.1.0</span> · last sync 2026-05-10
     </div>
 
     <!-- ── Hero 区：眼镜头像 + 3 行 ROLE/LIVE/HISTORY/PREVIOUSLY ── -->
@@ -73,7 +73,7 @@
 
           <!-- 右上角 [返回 v1 版本] 按钮 -->
           <div class="hero-actions">
-            <a href="../public/index.html" title="回到 v1 主页">[返回 v1 版本]</a>
+            <a href="/v1/" title="回到 v1 主页">[返回 v1 版本]</a>
           </div>
 
         </div>
@@ -120,6 +120,9 @@
           />
         </div>
 
+        <!-- Token HUD — 输入框下方，由 token-hud.js 渲染 -->
+        <div class="token-hud"></div>
+
       </div>
     </div>
 
@@ -130,7 +133,9 @@
 <script src="../data/home-data.js"></script>
 <!-- 眼镜表情系统 -->
 <script src="emotes.js"></script>
-<!-- LLM 对话（接 maxwellii-chat /api/chat SSE） -->
+<!-- Token HUD（接 chat.js meta event） -->
+<script src="token-hud.js"></script>
+<!-- LLM 对话（接 maxwellii-chat /api/chat SSE，meta → tokenHud） -->
 <script src="chat.js"></script>
 <!-- /cmd 路由器（依赖 home-data.js + chat.js） -->
 <script src="commands.js"></script>

@@ -38,12 +38,15 @@ fi
 echo "=== Syncing $SCRIPT_DIR/ → $SSH_HOST:$REMOTE_DIR ==="
 rsync -avz \
   --exclude '.git' \
-  --exclude '.env*' \
+  --exclude '.env.example' \
   --exclude 'node_modules' \
   --exclude '.next/cache' \
   --exclude '.next/dev' \
   --exclude '.DS_Store' \
   "$SCRIPT_DIR/" "$SSH_HOST:$REMOTE_DIR/"
+
+# 把 .env.local 的权限收紧到 600（只 admin 可读，含 KEY）
+ssh "$SSH_HOST" "chmod 600 $REMOTE_DIR/.env.local 2>/dev/null || true"
 
 echo "=== Installing prod deps on remote ==="
 ssh "$SSH_HOST" "cd $REMOTE_DIR && npm install --omit=dev"

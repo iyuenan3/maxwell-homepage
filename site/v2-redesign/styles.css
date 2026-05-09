@@ -1013,3 +1013,52 @@ body::after {
   .chat-msg.assistant { grid-template-columns: 1fr; gap: 4px; }
   .bubble-prefix { font-size: 11px; }
 }
+
+/* ============================================================
+   token-hud.js — fixed 底部 IDE-like 状态栏（claude-hud 风）
+   ============================================================ */
+
+.token-hud {
+  margin: 12px 0 0 18px;     /* 与 chat-input-wrap 的 padding-left:18px 对齐 */
+  padding: 6px 0;
+  border-top: 1px dashed var(--rule);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--dim);
+  user-select: none;
+}
+
+.token-hud .hud-label {
+  color: var(--dim-2);
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+.token-hud .hud-bar {
+  font-family: var(--mono);
+  letter-spacing: -1px;
+  font-size: 10px;
+}
+.token-hud .hud-bar.hud-low  { color: var(--green); }
+.token-hud .hud-bar.hud-mid  { color: var(--amber); }
+.token-hud .hud-bar.hud-high { color: var(--red); }
+
+.token-hud .hud-pct  { color: var(--fg); font-weight: 500; }
+.token-hud .hud-num  { color: var(--fg); }
+.token-hud .hud-num.hud-dim { color: var(--dim); }
+.token-hud .hud-sep  { color: var(--dim-2); }
+.token-hud .hud-spacer { flex: 1; }
+.token-hud .hud-model {
+  color: var(--cyan);
+  font-size: 10px;
+  letter-spacing: 0.3px;
+}
+
+@media (max-width: 640px) {
+  .token-hud { font-size: 10px; gap: 5px; padding: 6px 0; margin-left: 12px; }
+  .token-hud .hud-spacer { display: none; }
+  .token-hud .hud-model { display: none; }
+  .token-hud .hud-num.hud-dim { display: none; }
+}

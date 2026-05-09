@@ -455,7 +455,7 @@ function renderHomeProjectsRows(projects) {
   return projects.map(p => {
     const permClass = p.priv ? 'perm private' : 'perm';
     const dirClass = p.dir ? 'ls-name dir' : 'ls-name';
-    return `        <a class="ls-row" href="p/${esc(p.slug)}.html">
+    return `        <a class="ls-row" href="/p/${esc(p.slug)}.html">
           <span class="${permClass}">${esc(p.perm)}</span>
           <span class="stars state-${esc(p.state)}">${STATE_SYM[p.state] || esc(p.state)}</span>
           <span class="date">${esc(p.date)}</span>

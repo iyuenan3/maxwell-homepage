@@ -54,7 +54,7 @@
     let html = `<div class="ls-head"><span>perm</span><span>state</span><span>updated</span><span>name · description</span><span>stack</span></div>`;
     const stateSym = { live:'● live', active:'◐ active', archived:'✕ archived', planned:'◯ planned', paused:'◌ paused' };
     for (const p of PROJECTS) {
-      html += `<a class="ls-row" href="../public/p/${p.slug}.html" target="_blank">
+      html += `<a class="ls-row" href="/p/${p.slug}.html" target="_blank">
         <span class="perm${p.priv ? ' private' : ''}">${p.perm}</span>
         <span class="stars state-${p.state}">${stateSym[p.state]}</span>
         <span class="date">${p.date}</span>
