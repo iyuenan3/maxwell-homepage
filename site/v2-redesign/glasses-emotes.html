@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Glasses Emote System — 眼镜表情系统 v1</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e120e;
+    --bg-card: #131813;
+    --fg: #cfd8c8;
+    --fg-bright: #e8efe0;
+    --fg-dim: #7a8a7a;
+    --amber: #d4a04c;
+    --cyan: #6fb3b8;
+    --border: rgba(122,138,122,0.2);
+  }
+  * { box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "JetBrains Mono", monospace;
+    padding: 32px;
+    margin: 0;
+    min-height: 100vh;
+  }
+  .head { max-width: 920px; margin: 0 auto 28px; }
+  h1 { color: var(--fg-bright); font-weight:500; font-size:18px; margin:0 0 6px; }
+  .sub { color: var(--fg-dim); font-size:12px; line-height:1.7; }
+  .sub b { color: var(--amber); font-weight:500; }
+
+  /* ── HERO ── */
+  .hero {
+    max-width: 920px;
+    margin: 0 auto 32px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 64px 32px 32px;
+    text-align: center;
+    position: relative;
+  }
+  .hero-label {
+    position:absolute; top:14px; left:18px;
+    color: var(--fg-dim); font-size:11px; letter-spacing:1px;
+  }
+  .face {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 96px;
+    line-height: 1;
+    color: var(--amber);
+    font-weight: 500;
+    letter-spacing: -2px;
+    user-select: none;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mouth {
+    font-size: 56px;
+    color: var(--amber);
+    margin-top: 16px;
+    height: 56px;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: 2px;
+  }
+  .caption {
+    color: var(--fg-dim);
+    font-size: 12px;
+    margin-top: 22px;
+    height: 16px;
+  }
+  .caption b { color: var(--amber); font-weight:500; }
+
+  /* ── REPLAY ── */
+  .actions {
+    max-width: 920px;
+    margin: 0 auto 28px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 12px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  button:hover { border-color: var(--amber); color: var(--amber); }
+  button.primary { border-color: var(--amber); color: var(--amber); }
+
+  /* ── EMOTE GRID ── */
+  .grid-wrap { max-width: 920px; margin: 0 auto; }
+  h2 {
+    color: var(--amber);
+    font-size: 12px; letter-spacing:1px; font-weight:500;
+    margin: 24px 0 14px;
+    border-left: 3px solid var(--amber);
+    padding-left: 10px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+  }
+  .emote {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 18px 12px 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .emote:hover { border-color: var(--amber); }
+  .emote.active { border-color: var(--amber); background: rgba(212,160,76,0.08); }
+  .emote-face {
+    font-size: 28px;
+    color: var(--amber);
+    line-height: 1;
+    margin-bottom: 8px;
+    letter-spacing: -1px;
+  }
+  .emote-name { color: var(--fg); font-size: 11px; }
+  .emote-key  { color: var(--fg-dim); font-size: 10px; margin-top:2px; }
+
+  /* ── OPENING ANIMATION ── */
+  /* The hero face content is JS-driven; states swapped by class. */
+</style>
+</head>
+<body>
+
+<div class="head">
+  <h1>Glasses Emote System <span style="color:var(--fg-dim);font-weight:400">— v1</span></h1>
+  <div class="sub">
+    用一对方框眼镜做"虚拟头像",通过镜片内字符切换表情。<br>
+    主页开场播放<b>睁眼动画</b>(闭→框→开),之后停留在 <b>[●][●]</b> 待机态。每次交互可以触发一个表情。
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">~ 头像开场动画 ~</div>
+  <div id="face" class="face">&nbsp;</div>
+  <div id="mouth" class="mouth">&nbsp;</div>
+  <div id="caption" class="caption">&nbsp;</div>
+</div>
+
+<!-- ACTIONS -->
+<div class="actions">
+  <button class="primary" onclick="playOpening()">▶ 重播开场动画</button>
+  <button onclick="setIdle()">⤺ 回到待机 [●][●]</button>
+</div>
+
+<!-- GRID -->
+<div class="grid-wrap">
+
+  <h2>BASIC · 基础表情</h2>
+  <div id="grid-basic" class="grid"></div>
+
+  <h2>ACTIONS · 交互表情 (随机/循环)</h2>
+  <div id="grid-action" class="grid"></div>
+
+  <h2>MOOD · 情绪表情 (彩蛋)</h2>
+  <div id="grid-mood" class="grid"></div>
+
+</div>
+
+<script>
+  // ────────────────────────────────────────────
+  // EMOTE LIBRARY
+  // 每个表情一对镜片 + 可选嘴形
+  // ────────────────────────────────────────────
+  const EMOTES = {
+    idle:     { face: '[●][●]', mouth: '',     name: '待机',     desc: '默认睁眼' },
+    blink:    { face: '[─][─]', mouth: '',     name: '眨眼',     desc: '快速闭一下' },
+    wink:     { face: '[●][─]', mouth: 'ᴗ',    name: '俏皮眨眼', desc: '单眼' },
+    happy:    { face: '[◠][◠]', mouth: 'ᴗ',    name: '开心',     desc: '弯月眼' },
+    smile:    { face: '[●][●]', mouth: '◡',    name: '微笑',     desc: '默认 + 嘴笑' },
+    sleep:    { face: '[z][z]', mouth: '___',  name: '休眠',     desc: '空闲超时' },
+    sleepy:   { face: '[─][─]', mouth: '~zZ',  name: '困倦',     desc: '半闭' },
+    surprise: { face: '[○][○]', mouth: 'o',    name: '惊讶',     desc: '瞳孔放大' },
+    shock:    { face: '[◎][◎]', mouth: 'O',    name: '震惊',     desc: '彻底懵' },
+    focus:    { face: '[━][━]', mouth: '—',    name: '专注',     desc: '眯眼' },
+    squint:   { face: '[›][‹]', mouth: '⌒',    name: '审视',     desc: '挑剔脸' },
+    look_l:   { face: '[●·][●·]', mouth: '',   name: '左看',     desc: '思考' },
+    look_r:   { face: '[·●][·●]', mouth: '',   name: '右看',     desc: '走神' },
+    look_up:  { face: '[˙][˙]', mouth: '',     name: '抬头',     desc: '想问题' },
+    curious:  { face: '[●·][·●]', mouth: '?',  name: '好奇',     desc: '左右各一' },
+    loading:  { face: '[◐][◑]', mouth: '···',  name: '加载',     desc: '等待中(动)' },
+    typing:   { face: '[●][●]', mouth: '___',  name: '打字',     desc: '思考输出(动)' },
+    cool:     { face: '[■][■]', mouth: '—',    name: '酷',       desc: '墨镜模式' },
+    love:     { face: '[♥][♥]', mouth: 'ᴗ',    name: '喜欢',     desc: 'Ta 看到了喜欢的' },
+    error:    { face: '[✕][✕]', mouth: '×',    name: '出错',     desc: 'something broke' },
+    success:  { face: '[✓][✓]', mouth: 'ᴗ',    name: '成功',     desc: 'all good' },
+    glitch:   { face: '[#][@]', mouth: '!?',   name: '故障',     desc: '罕见彩蛋' },
+  };
+
+  // ────────────────────────────────────────────
+  // STATE & RENDER
+  // ────────────────────────────────────────────
+  const $face = document.getElementById('face');
+  const $mouth = document.getElementById('mouth');
+  const $caption = document.getElementById('caption');
+
+  function setEmote(key, captionOverride) {
+    const e = EMOTES[key];
+    if (!e) return;
+    $face.textContent = e.face;
+    $mouth.textContent = e.mouth || '\u00A0';
+    $caption.innerHTML = captionOverride
+      ? captionOverride
+      : `<b>${e.name}</b> &nbsp; · &nbsp; ${e.desc}`;
+    document.querySelectorAll('.emote').forEach(el => {
+      el.classList.toggle('active', el.dataset.key === key);
+    });
+  }
+
+  function setIdle() {
+    setEmote('idle', '<b>idle</b> &nbsp; · &nbsp; 默认待机');
+  }
+
+  // ────────────────────────────────────────────
+  // OPENING ANIMATION (闭→框→睁)
+  // ────────────────────────────────────────────
+  const OPENING_FRAMES = [
+    { face: '\u00A0',     mouth: '',     ms: 200 },
+    { face: ' .   . ',    mouth: '',     ms: 220 },  // 微亮
+    { face: '──   ──',    mouth: '',     ms: 260 },  // 闭眼
+    { face: '──   ──',    mouth: '',     ms: 180 },
+    { face: '[─] [─]',    mouth: '',     ms: 280 },  // 镜框出现
+    { face: '[─] [─]',    mouth: '',     ms: 150 },
+    { face: '[●] [●]',    mouth: '',     ms: 120 },  // 第一次睁
+    { face: '[─] [─]',    mouth: '',     ms: 90  },  // 眨一下
+    { face: '[●] [●]',    mouth: '',     ms: 200 },
+    { face: '[●][●]',     mouth: '',     ms: 200 },  // 收紧
+    { face: '[●][●]',     mouth: 'ᴗ',    ms: 600 },  // 微笑收尾
+  ];
+
+  let openingTimer = null;
+  function playOpening() {
+    if (openingTimer) { clearTimeout(openingTimer); openingTimer = null; }
+    let i = 0;
+    const step = () => {
+      if (i >= OPENING_FRAMES.length) {
+        setIdle();
+        return;
+      }
+      const f = OPENING_FRAMES[i];
+      $face.textContent = f.face;
+      $mouth.textContent = f.mouth || '\u00A0';
+      $caption.innerHTML = i === 0
+        ? '<b>booting…</b>'
+        : i < 4 ? '<b>booting…</b> &nbsp; · &nbsp; eyes_closed'
+        : i < 8 ? '<b>booting…</b> &nbsp; · &nbsp; lens_drawn'
+        :        '<b>ready.</b> &nbsp; · &nbsp; hello, maxwell.';
+      i++;
+      openingTimer = setTimeout(step, f.ms);
+    };
+    step();
+  }
+
+  // ────────────────────────────────────────────
+  // ANIMATED EMOTES (loading / typing 持续动)
+  // ────────────────────────────────────────────
+  let animTimer = null;
+  function stopAnim() { if (animTimer) { clearInterval(animTimer); animTimer = null; } }
+
+  function playLoading() {
+    stopAnim();
+    const frames = ['[◐][◑]', '[◓][◒]', '[◑][◐]', '[◒][◓]'];
+    const dots   = ['.  ', '.. ', '...', '   '];
+    let i = 0;
+    $caption.innerHTML = '<b>loading</b> &nbsp; · &nbsp; 加载动画(循环)';
+    animTimer = setInterval(() => {
+      $face.textContent = frames[i % frames.length];
+      $mouth.textContent = dots[i % dots.length];
+      i++;
+    }, 220);
+  }
+
+  function playTyping() {
+    stopAnim();
+    const mouths = ['_     ', ' _    ', '  _   ', '   _  ', '    _ ', '     _'];
+    let i = 0;
+    $face.textContent = '[●][●]';
+    $caption.innerHTML = '<b>typing</b> &nbsp; · &nbsp; 输出中(循环)';
+    animTimer = setInterval(() => {
+      $mouth.textContent = mouths[i % mouths.length];
+      i++;
+    }, 140);
+  }
+
+  // override pickEmote for animated ones
+  function pickEmote(key) {
+    stopAnim();
+    if (key === 'loading') return playLoading();
+    if (key === 'typing')  return playTyping();
+    setEmote(key);
+  }
+
+  // ────────────────────────────────────────────
+  // GRID RENDER
+  // ────────────────────────────────────────────
+  const GROUPS = {
+    'grid-basic':  ['idle','blink','smile','happy','focus','sleep'],
+    'grid-action': ['typing','loading','look_l','look_r','look_up','curious','wink'],
+    'grid-mood':   ['surprise','shock','squint','sleepy','cool','love','success','error','glitch'],
+  };
+
+  for (const [gridId, keys] of Object.entries(GROUPS)) {
+    const $g = document.getElementById(gridId);
+    keys.forEach(k => {
+      const e = EMOTES[k];
+      const el = document.createElement('div');
+      el.className = 'emote';
+      el.dataset.key = k;
+      el.innerHTML = `
+        <div class="emote-face">${e.face}</div>
+        <div class="emote-name">${e.name}</div>
+        <div class="emote-key">${k}</div>
+      `;
+      el.onclick = () => pickEmote(k);
+      $g.appendChild(el);
+    });
+  }
+
+  // ────────────────────────────────────────────
+  // ON LOAD
+  // ────────────────────────────────────────────
+  playOpening();
+</script>
+
+</body>
+</html>

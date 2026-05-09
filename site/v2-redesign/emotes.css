@@ -1,0 +1,55 @@
+/* ── Glasses Avatar Emote · 主页集成样式 ── */
+
+.avatar-emote {
+  width: 96px;
+  height: 96px;
+  border: none !important;
+  background: transparent !important;
+  filter: none !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: "JetBrains Mono", monospace;
+  color: #d4a04c;
+  user-select: none;
+  flex-shrink: 0;
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.avatar-emote .ae-face {
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -1px;
+  transition: opacity 0.08s;
+}
+
+.avatar-emote .ae-mouth {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+  margin-top: 8px;
+  height: 22px;
+  letter-spacing: 1px;
+  color: #d4a04c;
+}
+
+/* 加载循环时的轻微脉动(用 filter 发光,不再用阴影圆) */
+.avatar-emote.is-loading {
+  animation: ae-pulse 1.4s ease-in-out infinite;
+}
+@keyframes ae-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(212, 160, 76, 0)); }
+  50%      { filter: drop-shadow(0 0 8px rgba(212, 160, 76, 0.6)); }
+}
+
+/* 入场动画时眼镜先暗 */
+.avatar-emote.is-booting .ae-face { opacity: 0.65; }
+
+/* hover 项目时 avatar 微亮 + 轻微放大 */
+.avatar-emote.is-hot {
+  filter: drop-shadow(0 0 6px rgba(212, 160, 76, 0.45));
+  transform: scale(1.04);
+}

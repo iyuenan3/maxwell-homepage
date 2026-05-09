@@ -132,27 +132,9 @@ body::after {
 
 .whoami-grid {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   gap: 22px;
   align-items: start;
-}
-
-.whoami-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.whoami-actions a {
-  color: var(--dim);
-  font-size: 11px;
-  padding: 3px 8px;
-  border: 1px solid var(--rule);
-  letter-spacing: 0.5px;
-  transition: all 0.15s;
-}
-.whoami-actions a:hover {
-  color: var(--amber);
-  border-color: var(--amber);
 }
 
 .avatar {
@@ -627,7 +609,6 @@ body::after {
   .ascii { font-size: 8px; }
   .kv { grid-template-columns: 90px 1fr; gap: 8px; }
   .whoami-grid { grid-template-columns: 1fr; gap: 12px; }
-  .whoami-actions { justify-content: flex-end; }
   .avatar { width: 80px; height: 80px; }
   .ls-head, .ls-row { grid-template-columns: 1fr 60px; }
   .ls-head .perm, .ls-row .perm,
@@ -635,4 +616,298 @@ body::after {
   .ls-head .stack, .ls-row .stack { display: none; }
   .ls-row .name-block { grid-column: 1 / -1; }
   .ls-row .desc { grid-column: 1 / -1; padding-left: 0; padding-top: 4px; color: var(--dim); font-size: 12px; }
+}
+
+/* ============================================================
+   v2 — Hero (whoami) · chat 区 · /cmd chip · 眼镜集成
+   ============================================================ */
+
+/* ── Hero 区：眼镜头像 + 3 行 ROLE/LIVE/HISTORY ───────── */
+.hero-grid {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 22px;
+  align-items: start;
+}
+
+/* 眼镜头像容器（替代 .avatar 旧 img） */
+.avatar-emote {
+  width: 96px;
+  height: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  color: var(--amber);
+  user-select: none;
+  flex-shrink: 0;
+  position: relative;
+  transition: transform 0.2s, filter 0.2s;
+}
+.avatar-emote .ae-face {
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -1px;
+  transition: opacity 0.08s;
+  white-space: pre;
+}
+.avatar-emote .ae-mouth {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+  margin-top: 8px;
+  height: 22px;
+  letter-spacing: 1px;
+  white-space: pre;
+}
+.avatar-emote.is-loading {
+  animation: ae-pulse 1.4s ease-in-out infinite;
+}
+@keyframes ae-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(212,160,76,0)); }
+  50%      { filter: drop-shadow(0 0 8px rgba(212,160,76,0.6)); }
+}
+.avatar-emote.is-booting .ae-face { opacity: 0.65; }
+.avatar-emote.is-hot {
+  filter: drop-shadow(0 0 6px rgba(212,160,76,0.45));
+  transform: scale(1.04);
+}
+
+/* hero 主体三行 */
+.hero-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.hero-name-line {
+  color: var(--fg-bright);
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+.hero-name-line .dim { color: var(--dim); }
+.hero-name-line a {
+  color: var(--cyan);
+  margin-left: 8px;
+}
+.hero-name-line a:hover { color: var(--fg-bright); }
+
+.hero-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.hero-row .label {
+  color: var(--amber);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.hero-row .value { color: var(--fg); }
+.hero-row .value .online {
+  color: var(--green);
+  font-weight: 500;
+}
+.hero-row .value .last-push { color: var(--dim); }
+
+/* hero 右上角 [exit] / [v1] 按钮 */
+.hero-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.hero-actions a {
+  color: var(--dim);
+  font-size: 11px;
+  padding: 3px 8px;
+  border: 1px solid var(--rule);
+  letter-spacing: 0.5px;
+  transition: all 0.15s;
+}
+.hero-actions a:hover {
+  color: var(--amber);
+  border-color: var(--amber);
+}
+
+/* ── chat 区 ──────────────────────────────────────────── */
+.chat-block { margin: 26px 0; }
+
+.chat-intro {
+  color: var(--fg);
+  font-size: 13px;
+  margin-bottom: 14px;
+  padding-left: 18px;
+  border-left: 1px solid var(--rule);
+}
+.chat-intro .speaker {
+  color: var(--amber);
+  font-weight: 500;
+}
+
+.chat-history {
+  margin: 12px 0;
+  padding-left: 18px;
+  border-left: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.chat-history:empty { display: none; }
+
+.chat-msg {
+  font-size: 13px;
+  line-height: 1.6;
+}
+.chat-msg.user {
+  color: var(--fg-bright);
+}
+.chat-msg.user .prompt-arrow {
+  color: var(--green);
+  margin-right: 6px;
+}
+.chat-msg.user .user-cmd {
+  color: var(--amber);
+}
+.chat-msg.system {
+  color: var(--fg);
+  padding: 4px 0 8px;
+  border-bottom: 1px dashed var(--rule-soft);
+}
+.chat-msg.system:last-child { border-bottom: none; }
+.chat-msg .err-line {
+  color: var(--red);
+  font-size: 13px;
+}
+.chat-msg .err-line code { color: var(--amber); }
+.chat-msg .construct-line {
+  color: var(--dim);
+  font-size: 13px;
+}
+.chat-msg .construct-line code {
+  color: var(--cyan);
+  background: var(--bg-2);
+  padding: 1px 5px;
+  border: 1px solid var(--rule-soft);
+}
+
+/* /help 输出 */
+.help-block .help-line {
+  font-size: 13px;
+  padding: 3px 0;
+  color: var(--fg);
+}
+.help-block .help-line code {
+  color: var(--amber);
+  background: var(--bg-2);
+  padding: 1px 6px;
+  border: 1px solid var(--rule-soft);
+  margin-right: 8px;
+  display: inline-block;
+  min-width: 90px;
+}
+
+/* 对话输入框 */
+.chat-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 18px;
+  margin-top: 12px;
+}
+.chat-input-wrap .prompt-arrow {
+  color: var(--green);
+  font-family: var(--mono);
+  font-size: 14px;
+  user-select: none;
+}
+.chat-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--fg-bright);
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--rule);
+  caret-color: var(--amber);
+  transition: border-color 0.15s;
+}
+.chat-input:focus {
+  border-bottom-color: var(--amber);
+}
+.chat-input::placeholder {
+  color: var(--dim-2);
+  font-style: italic;
+}
+
+/* 装修中提示条 */
+.chat-banner {
+  font-size: 11px;
+  color: var(--dim);
+  padding: 4px 18px 0;
+  letter-spacing: 0.3px;
+}
+.chat-banner code {
+  color: var(--cyan);
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+/* /cmd 快捷栏 chip */
+.cmd-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  padding-left: 18px;
+}
+.cmd-chips .chips-label {
+  color: var(--dim);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  align-self: center;
+  margin-right: 6px;
+}
+.cmd-chip {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--cyan);
+  padding: 4px 10px;
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  transition: all 0.15s;
+  background: transparent;
+}
+.cmd-chip:hover {
+  color: var(--amber);
+  border-color: var(--amber);
+  background: rgba(212, 160, 76, 0.05);
+}
+.cmd-chip:active {
+  transform: scale(0.97);
+}
+
+/* 响应式 — Hero 小屏堆叠 */
+@media (max-width: 760px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 14px; }
+  .hero-actions { justify-content: flex-end; }
+  .hero-row { grid-template-columns: 70px 1fr; gap: 10px; font-size: 12px; }
+}
+
+/* v2.1: hero 板块 sticky 在最上方（whoami 始终可见） */
+.hero-block {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg);
+  padding-top: 6px;
+  padding-bottom: 14px;
+  margin-bottom: 20px;
+  border-bottom: 1px dashed var(--rule);
 }

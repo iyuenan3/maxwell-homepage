@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>~/iyuenan3 — Maxwellii (bash)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=20260509e">
+</head>
+<body>
+
+<div class="window">
+
+  <div class="titlebar">
+    <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    <div class="path">~/iyuenan3 — bash — 100×40</div>
+    <div class="meta">tmux 0:home*</div>
+  </div>
+
+  <div class="body">
+
+    <!-- ASCII title -->
+<pre class="ascii" data-reveal>
+  __  __                          _ _ _ _
+ |  \/  | __ ___  ____      _____| | (_|_)
+ | |\/| |/ _` \ \/ /\ \ /\ / / _ \ | | | |
+ | |  | | (_| |>  <  \ V  V /  __/ | | | |
+ |_|  |_|\__,_/_/\_\  \_/\_/ \___|_|_|_|_|
+</pre>
+
+    <div class="tagline" data-reveal>
+      <!-- @data:tagline -->
+    </div>
+
+    <!-- whoami -->
+    <div class="block" data-reveal>
+      <div class="prompt">
+        <span class="sigil">$</span> <span class="cmd">whoami</span>
+        <span class="comment"># 我是谁</span>
+      </div>
+      <div class="output">
+        <div class="whoami-grid">
+          <img src="avatar.jpg" alt="Maxwell Li · 李越男" class="avatar" loading="lazy" width="96" height="96" />
+          <div class="whoami-fields">
+            <!-- @data:whoami_fields -->
+          </div>
+          <div class="whoami-actions">
+            <a href="../v2-redesign/" title="升级到 V2 版本（对话式终端）">[升级 V2 版本]</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 十年职业生涯 — git log style -->
+    <div class="block" data-reveal>
+      <div class="prompt">
+        <span class="sigil">$</span> <span class="cmd">git</span> <span class="arg">log</span> <span class="flag">--all --decorate</span>
+        <span class="comment"># 十年职业生涯</span>
+      </div>
+      <div class="output">
+        <div class="gitlog">
+          <!-- @data:gitlog_commits -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 有趣的项目 — ls -lah -->
+    <div class="block" data-reveal>
+      <div class="prompt">
+        <span class="sigil">$</span> <span class="cmd">ls</span> <span class="flag">-lah</span> <span class="arg">projects/</span>
+        <span class="comment"># 有趣的项目</span>
+      </div>
+      <div class="output">
+        <div class="ls-head">
+          <span>perm</span><span>state</span><span>updated</span><span>name · description</span><span>stack</span>
+        </div>
+        <!-- @data:projects_rows -->
+      </div>
+    </div>
+
+    <!-- pets -->
+    <div class="block" data-reveal>
+      <div class="prompt">
+        <span class="sigil">$</span> <span class="cmd">pet</span> <span class="arg">status</span> <span class="flag">--all</span>
+        <span class="comment"># 我的毛孩子们</span>
+      </div>
+      <div class="output">
+        <div class="ls-head">
+          <span>perm</span><span>★</span><span>since</span><span>name · breed · note</span><span>status</span>
+        </div>
+        <!-- @data:pets_rows -->
+      </div>
+    </div>
+
+    <!-- skills -->
+    <div class="block" data-reveal>
+      <div class="prompt">
+        <span class="sigil">$</span> <span class="cmd">stack</span> <span class="flag">--top</span>
+        <span class="comment"># 技术栈</span>
+      </div>
+      <div class="output stack-flow">
+        <!-- @data:stack_lines -->
+      </div>
+    </div>
+
+    <!-- history -->
+    <div class="block" data-reveal>
+      <div class="prompt">
+        <span class="sigil">$</span> <span class="cmd">history</span>
+        <span class="comment"># 学历</span>
+      </div>
+      <div class="output">
+        <!-- @data:history_kvs -->
+      </div>
+    </div>
+
+    <!-- signoff -->
+    <div class="signoff" data-reveal>
+      <div class="seal" title="李越男印">
+        <div class="seal-grid">
+          <span>李</span><span>越</span>
+          <span>男</span><span>印</span>
+        </div>
+      </div>
+      <div class="lines">
+        <div class="echo">$ <span class="amber">echo</span> "<!-- @data:signoff_echo -->"<span class="cursor"></span></div>
+        <div class="end"># <!-- @data:signoff_end --></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    }
+  }, { threshold: 0.05 });
+  document.querySelectorAll('[data-reveal]').forEach((el, i) => {
+    el.style.transitionDelay = (i * 0.06) + 's';
+    io.observe(el);
+  });
+</script>
+
+</body>
+</html>

@@ -380,24 +380,165 @@ function buildOne(slug) {
   fs.writeFileSync(path.join(OUTPUT_DIR, `${slug}.html`), html, 'utf8');
 }
 
+// ============================================================
+// V1 主页（site/public/index.html）build —— 数据从 data/home-data.js 取
+// ============================================================
+
+const HOME_DATA_FILE = path.join(ROOT, 'data', 'home-data.js');
+const HOME_TPL_FILE = path.join(TEMPLATES_DIR, 'home.html');
+const HOME_OUT_FILE = path.join(ROOT, 'public', 'index.html');
+
+// HOME render 函数（注意：home-data.js 的字段值有时已含 HTML，不再 esc）
+
+function renderHomeTagline(t) {
+  return `<span class="ver">${esc(t.ver)}</span> · ${esc(t.role)} · ${esc(t.city)} · last sync ${esc(t.sync)}`;
+}
+
+function renderHomeWhoamiFields(w) {
+  const linkHtml = w.links.map(l => `<a href="${esc(l.url)}" target="_blank">${esc(l.label)}</a>`).join(' · ');
+  const contactHtml = `<a href="mailto:${esc(w.contact.email)}">${esc(w.contact.email)}</a> · wechat: ${esc(w.contact.wechat)}`;
+  const rows = [
+    ['name',       esc(w.name)],
+    ['location',   esc(w.location)],
+    ['role',       esc(w.role)],
+    ['previously', esc(w.previously)],
+    ['household',  w.household],   // 含 <em>
+    ['tags',       esc(w.tags)],
+    ['contact',    contactHtml],
+    ['links',      linkHtml],
+  ];
+  return rows.map(([k, v]) =>
+    `            <div class="kv"><span class="k">${k}</span><span class="v">${v}</span></div>`
+  ).join('\n');
+}
+
+function renderHomeGitLogCommits(commits) {
+  return commits.map((c, i) => {
+    const isLast = c.last || i === commits.length - 1;
+    const hasGraph = !isLast;
+    const graphHtml = hasGraph
+      ? `<div class="graph">\n              <div class="node"></div>\n              <div class="line"></div>\n            </div>`
+      : `<div class="graph"><div class="node"></div></div>`;
+
+    let metaLine1;
+    if (c.branches && c.branches.length) {
+      const brs = c.branches.map(b => `<span class="branch">${esc(b.name)}</span>`).join(', ');
+      metaLine1 = c.branches.length > 1
+        ? `<div class="meta">\n                commit <span class="hash">${esc(c.hash)}</span>\n                (${brs})\n              </div>`
+        : `<div class="meta">commit <span class="hash">${esc(c.hash)}</span> (${brs})</div>`;
+    } else {
+      metaLine1 = `<div class="meta">commit <span class="hash">${esc(c.hash)}</span></div>`;
+    }
+
+    const tagsHtml = c.tags && c.tags.length
+      ? `<div class="tags">\n                ${c.tags.map(t => `<span>${esc(t)}</span>`).join('')}\n              </div>`
+      : '';
+
+    return `          <div class="commit">
+            ${graphHtml}
+            <div class="body-c">
+              ${metaLine1}
+              <div class="meta">Date:   ${esc(c.date)}</div>
+              <div class="subject">${esc(c.subject)}</div>
+              <div class="body-text">
+                ${c.body}
+              </div>
+              ${tagsHtml}
+            </div>
+          </div>`;
+  }).join('\n\n');
+}
+
+const STATE_SYM = { live: '● live', active: '◐ active', archived: '✕ archived', planned: '◯ planned', paused: '◌ paused' };
+
+function renderHomeProjectsRows(projects) {
+  return projects.map(p => {
+    const permClass = p.priv ? 'perm private' : 'perm';
+    const dirClass = p.dir ? 'ls-name dir' : 'ls-name';
+    return `        <a class="ls-row" href="p/${esc(p.slug)}.html">
+          <span class="${permClass}">${esc(p.perm)}</span>
+          <span class="stars state-${esc(p.state)}">${STATE_SYM[p.state] || esc(p.state)}</span>
+          <span class="date">${esc(p.date)}</span>
+          <div class="name-block">
+            <div class="${dirClass}">${esc(p.slug)}</div>
+            <div class="ls-name-zh">${esc(p.zh)}</div>
+            <div class="ls-desc">— ${esc(p.desc)}</div>
+          </div>
+          <span class="stack">${esc(p.stack)}</span>
+        </a>`;
+  }).join('\n\n');
+}
+
+function renderHomePetsRows(pets) {
+  return pets.map(p =>
+    `        <div class="ls-row" style="cursor: default;">
+          <span class="perm">${esc(p.perm)}</span><span class="stars">${esc(p.star)}</span><span class="date">${esc(p.date)}</span>
+          <span><span class="name">${esc(p.name)}</span> <span class="desc">— ${esc(p.desc)}</span></span>
+          <span class="stack">${esc(p.status)}</span>
+        </div>`
+  ).join('\n');
+}
+
+function renderHomeStackLines(s) {
+  return `        <div class="top">█ daily &nbsp;&nbsp; ${esc(s.daily)}</div>
+        <div class="mid">▓ often &nbsp;&nbsp; ${esc(s.often)}</div>
+        <div class="low">░ done&nbsp;&nbsp;&nbsp;  ${esc(s.done)}</div>`;
+}
+
+function renderHomeHistoryKVs(h) {
+  // edu / patents 的 v 字段含 <br><span class="dim">…</span>，不 esc
+  return `        <div class="kv"><span class="k">edu</span><span class="v">${h.edu}</span></div>
+        <div class="kv"><span class="k">patents</span><span class="v">${h.patents}</span></div>`;
+}
+
+function buildHome() {
+  // 清缓存确保每次重读最新 data
+  delete require.cache[require.resolve(HOME_DATA_FILE)];
+  const data = require(HOME_DATA_FILE);
+  let html = fs.readFileSync(HOME_TPL_FILE, 'utf8');
+
+  const replacements = {
+    'tagline':         renderHomeTagline(data.tagline),
+    'whoami_fields':   renderHomeWhoamiFields(data.whoami),
+    'gitlog_commits':  renderHomeGitLogCommits(data.gitLog),
+    'projects_rows':   renderHomeProjectsRows(data.projects),
+    'pets_rows':       renderHomePetsRows(data.pets),
+    'stack_lines':     renderHomeStackLines(data.stack),
+    'history_kvs':     renderHomeHistoryKVs(data.history),
+    'signoff_echo':    esc(data.signoff.echo),
+    'signoff_end':     esc(data.signoff.end),
+  };
+
+  for (const [k, v] of Object.entries(replacements)) {
+    const token = `<!-- @data:${k} -->`;
+    if (!html.includes(token)) {
+      console.warn(`  ⚠ home.html 缺少 token: ${token}`);
+    }
+    html = html.replace(token, v);
+  }
+
+  fs.writeFileSync(HOME_OUT_FILE, html, 'utf8');
+}
+
+// ============================================================
+// 主流程
+// ============================================================
+
 function main() {
   if (!fs.existsSync(DATA_DIR)) {
     console.error(`✗ 数据目录不存在: ${DATA_DIR}`);
     process.exit(1);
   }
+
+  // 1. 详情页
   const files = fs.readdirSync(DATA_DIR).filter((f) => f.endsWith('.md'));
-  if (!files.length) {
-    console.warn(`⚠ 未发现项目数据文件，data/projects/ 为空`);
-    return;
-  }
-  let ok = 0;
-  let fail = 0;
+  let ok = 0, fail = 0;
   const errors = [];
   for (const f of files) {
     const slug = f.replace(/\.md$/, '');
     try {
       buildOne(slug);
-      console.log(`  ✓ ${slug}`);
+      console.log(`  ✓ p/${slug}.html`);
       ok++;
     } catch (e) {
       console.error(`  ✗ ${slug}: ${e.message}`);
@@ -405,7 +546,19 @@ function main() {
       fail++;
     }
   }
-  console.log(`\n构建完成: ${ok} ok · ${fail} fail (共 ${files.length})`);
+
+  // 2. V1 主页
+  try {
+    buildHome();
+    console.log(`  ✓ index.html (V1 主页)`);
+    ok++;
+  } catch (e) {
+    console.error(`  ✗ index.html: ${e.message}`);
+    errors.push({ slug: 'index', err: e });
+    fail++;
+  }
+
+  console.log(`\n构建完成: ${ok} ok · ${fail} fail`);
   if (fail) process.exit(1);
 }
 

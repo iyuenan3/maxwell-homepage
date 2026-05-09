@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>~/iyuenan3 — chat (v2 preview)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="window">
+
+  <div class="titlebar">
+    <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    <div class="path">~/iyuenan3 — chat — 100×40 [v2 preview]</div>
+    <div class="meta">tmux 0:chat*</div>
+  </div>
+
+  <div class="body">
+
+    <!-- ASCII title -->
+<pre class="ascii" data-reveal>
+  __  __                          _ _ _ _
+ |  \/  | __ ___  ____      _____| | (_|_)
+ | |\/| |/ _` \ \/ /\ \ /\ / / _ \ | | | |
+ | |  | | (_| |>  <  \ V  V /  __/ | | | |
+ |_|  |_|\__,_/_/\_\  \_/\_/ \___|_|_|_|_|
+</pre>
+
+    <div class="tagline" data-reveal>
+      <span class="ver">v2.0.0</span> · AI 产品经理 / AI 落地顾问 / Vibe Coding 全栈工程师 · 杭州 · last sync 2026-05-09
+    </div>
+
+    <!-- ── Hero 区：眼镜头像 + 3 行 ROLE/LIVE/HISTORY/PREVIOUSLY ── -->
+    <div class="block hero-block" data-reveal>
+      <div class="prompt">
+        <span class="sigil">$</span> <span class="cmd">whoami</span>
+        <span class="comment"># 我是谁</span>
+      </div>
+      <div class="output">
+        <div class="hero-grid">
+
+          <!-- 眼镜头像（emotes.js 控制） -->
+          <div class="avatar-emote">
+            <div class="ae-face">[●][●]</div>
+            <div class="ae-mouth">&nbsp;</div>
+          </div>
+
+          <!-- 3 行摘要 -->
+          <div class="hero-fields">
+            <div class="hero-name-line">
+              <span class="dim">Maxwell · </span>李越男<span class="dim"> · 杭州</span>
+              <a href="https://github.com/iyuenan3" target="_blank">[github]</a>
+              <a href="https://linkedin.com/in/iyuenan3" target="_blank">[in]</a>
+              <a href="https://limaxwell93.wordpress.com" target="_blank">[blog]</a>
+            </div>
+            <div class="hero-row">
+              <span class="label">ROLE</span>
+              <span class="value">AI 产品经理 · AI 落地顾问 · Vibe Coding 全栈</span>
+            </div>
+            <div class="hero-row">
+              <span class="label">LIVE</span>
+              <span class="value">杭州 · <span class="last-push">last push 5h ago</span> · <span class="online">● online</span></span>
+            </div>
+            <div class="hero-row">
+              <span class="label">HISTORY</span>
+              <span class="value">华为 2yr · Nokia 6yr · 全境 1yr</span>
+            </div>
+          </div>
+
+          <!-- 右上角 [返回 v1 版本] 按钮 -->
+          <div class="hero-actions">
+            <a href="../public/index.html" title="回到 v1 主页">[返回 v1 版本]</a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Chat 区 ── -->
+    <div class="block chat-block" data-reveal>
+      <div class="prompt">
+        <span class="sigil">$</span> <span class="cmd">chat</span>
+        <span class="comment"># 想聊点什么？</span>
+      </div>
+      <div class="output">
+
+        <!-- 开场 message -->
+        <div class="chat-intro">
+          <span class="speaker">maxwell:</span> 嘿，我是李越男，今天想聊点什么？
+        </div>
+
+        <!-- 对话历史（动态 push） -->
+        <div class="chat-history"></div>
+
+        <!-- 输入框 -->
+        <div class="chat-input-wrap">
+          <span class="prompt-arrow">&gt;</span>
+          <input
+            type="text"
+            class="chat-input"
+            placeholder="输入 /help 查看可用命令，或直接打字（AI 对话装修中）"
+            autocomplete="off"
+            autofocus
+          />
+        </div>
+
+        <!-- 装修中提示 -->
+        <div class="chat-banner">
+          🚧 AI 自由对话功能装修中。当前可用：<code>/projects</code> · <code>/git log</code> · <code>/stack</code> · <code>/pets</code> · <code>/history</code> · <code>/help</code>
+        </div>
+
+        <!-- /cmd 快捷栏 chip -->
+        <div class="cmd-chips">
+          <span class="chips-label">快捷指令</span>
+          <button class="cmd-chip" data-cmd="/projects">/projects</button>
+          <button class="cmd-chip" data-cmd="/git log">/git log</button>
+          <button class="cmd-chip" data-cmd="/stack">/stack</button>
+          <button class="cmd-chip" data-cmd="/pets">/pets</button>
+          <button class="cmd-chip" data-cmd="/history">/history</button>
+          <button class="cmd-chip" data-cmd="/help">/help</button>
+          <button class="cmd-chip" data-cmd="/clear">/clear</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 共用数据源（V1 + V2 真相源） -->
+<script src="../data/home-data.js"></script>
+<!-- 眼镜表情系统 -->
+<script src="emotes.js"></script>
+<!-- /cmd 路由器（依赖 home-data.js） -->
+<script src="commands.js"></script>
+
+<!-- reveal 动画（沿用 v1） -->
+<script>
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    }
+  }, { threshold: 0.05 });
+  document.querySelectorAll('[data-reveal]').forEach((el, i) => {
+    el.style.transitionDelay = (i * 0.06) + 's';
+    io.observe(el);
+  });
+</script>
+
+</body>
+</html>
