@@ -287,7 +287,7 @@ body::after {
   transition: color 0.15s;
 }
 .ls-row .ls-name.dir::after { content: '/'; color: var(--cyan); }
-.ls-row .ls-bilingual {
+.ls-row .ls-name-zh {
   color: var(--amber);
   font-size: 12px;
   letter-spacing: 0.2px;
