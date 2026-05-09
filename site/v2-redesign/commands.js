@@ -138,7 +138,13 @@
   }
 
   function cmdClear() {
-    $history().innerHTML = '';
+    // 保留首条 .intro,清掉后续所有消息
+    const hist = $history();
+    Array.from(hist.children).forEach(el => {
+      if (!el.classList.contains('intro')) el.remove();
+    });
+    // 同时清 LLM 对话历史(messages 数组 + sessionStorage)
+    if (window.maxwellChat) window.maxwellChat.clear();
     return null;  // 不 push system msg
   }
 
@@ -160,23 +166,26 @@
     const cmd = raw.trim();
     if (!cmd) return;
 
-    pushUserMsg(cmd);
-
-    // 表情：执行中 typing → 完成 success → idle
-    if (window.glassesEmote) window.glassesEmote.flash('typing', 300);
-
     if (cmd in ROUTES) {
+      // 静态命令：终端式回显 + 渲染输出
+      pushUserMsg(cmd);
+      if (window.glassesEmote) window.glassesEmote.flash('typing', 300);
       const out = ROUTES[cmd]();
       if (out !== null) pushSystemMsg(out);
       if (window.glassesEmote) setTimeout(() => window.glassesEmote.flash('success', 700), 350);
     } else if (cmd.startsWith('/')) {
       // 未知命令
+      pushUserMsg(cmd);
       pushSystemMsg(`<span class="err-line">command not found: <code>${escapeHtml(cmd)}</code> — 试试 <code>/help</code></span>`);
       if (window.glassesEmote) window.glassesEmote.flash('error', 1000);
     } else {
-      // 不是 / 开头 — 自由对话(LLM 装修中)
-      pushSystemMsg(`<span class="construct-line">🚧 AI 自由对话功能装修中，目前可用命令：<code>/projects</code> · <code>/git log</code> · <code>/stack</code> · <code>/pets</code> · <code>/history</code> · <code>/help</code></span>`);
-      if (window.glassesEmote) window.glassesEmote.flash('surprise', 800);
+      // 自由对话 → LLM (chat.js 自己 push 用户气泡 + 流式 assistant 气泡 + 表情联动)
+      if (window.maxwellChat) {
+        window.maxwellChat.send(cmd);
+      } else {
+        pushUserMsg(cmd);
+        pushSystemMsg(`<span class="err-line">chat 模块未加载（检查 chat.js 引入顺序）</span>`);
+      }
     }
   }
 

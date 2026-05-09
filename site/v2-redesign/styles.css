@@ -911,3 +911,105 @@ body::after {
   margin-bottom: 20px;
   border-bottom: 1px dashed var(--rule);
 }
+
+/* ============================================================
+   v2 chat 气泡（A 终端前缀 + B 头像跟随 + C 缩进背景）
+   ============================================================ */
+
+.chat-msg.user,
+.chat-msg.assistant {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-bottom: 1px dashed var(--rule-soft);
+  align-items: start;
+}
+.chat-msg.user {
+  background: rgba(110, 166, 155, 0.04);  /* cyan tint */
+}
+.chat-msg.assistant {
+  background: rgba(212, 160, 76, 0.04);   /* amber tint */
+}
+
+.bubble-prefix {
+  color: var(--dim);
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+  user-select: none;
+}
+.chat-msg.user .bubble-prefix    { color: var(--green); }
+.chat-msg.assistant .bubble-prefix { color: var(--amber); }
+
+.bubble-body {
+  color: var(--fg-bright);
+  font-size: 13px;
+  line-height: 1.7;
+  min-width: 0;
+  word-wrap: break-word;
+}
+.bubble-body p:not(:last-child) { margin-bottom: 8px; }
+.bubble-body ul {
+  padding-left: 18px;
+  margin: 4px 0 8px;
+}
+.bubble-body ul li { padding: 2px 0; }
+.bubble-body code {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 1px 5px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule-soft);
+  color: var(--cyan);
+}
+.bubble-body pre {
+  background: rgba(255,255,255,0.03);
+  border-left: 3px solid var(--cyan);
+  padding: 10px 14px;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg);
+  white-space: pre;
+}
+.bubble-body pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+.bubble-body a {
+  color: var(--amber);
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+}
+.bubble-body a:hover { color: var(--fg-bright); text-decoration-color: var(--amber); }
+.bubble-body strong { color: var(--fg-bright); font-weight: 500; }
+.bubble-body em { color: var(--cyan); font-style: italic; }
+
+.bubble-cursor {
+  display: inline-block;
+  color: var(--amber);
+  font-weight: 600;
+  margin-left: 1px;
+  animation: bub-blink 1.05s steps(1) infinite;
+}
+@keyframes bub-blink { 50% { opacity: 0; } }
+
+/* error / system bubbles 简化（沿用 chat-msg.system 但单 grid） */
+.chat-msg.assistant.chat-error {
+  background: rgba(200, 80, 62, 0.05);
+  border-color: rgba(200, 80, 62, 0.2);
+}
+.chat-msg.assistant.chat-error .bubble-prefix { color: var(--red); }
+
+/* 移动端 */
+@media (max-width: 760px) {
+  .chat-msg.user,
+  .chat-msg.assistant { grid-template-columns: 1fr; gap: 4px; }
+  .bubble-prefix { font-size: 11px; }
+}

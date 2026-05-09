@@ -391,7 +391,7 @@ const HOME_OUT_FILE = path.join(ROOT, 'public', 'index.html');
 // HOME render 函数（注意：home-data.js 的字段值有时已含 HTML，不再 esc）
 
 function renderHomeTagline(t) {
-  return `<span class="ver">${esc(t.ver)}</span> · ${esc(t.role)} · ${esc(t.city)} · last sync ${esc(t.sync)}`;
+  return `<span class="ver">${esc(t.ver)}</span> · last sync ${esc(t.sync)}`;
 }
 
 function renderHomeWhoamiFields(w) {

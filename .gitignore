@@ -3,3 +3,10 @@
 # maxwellii.com static site — 本地配置（含 SSH 别名 / 远端路径覆盖）
 site/.env
 site/.env.local
+
+# chat-api (Next.js LLM 后端) — node 工程产物 + 含 secret 的 env
+**/node_modules/
+**/.next/
+**/.env
+**/.env.local
+**/.env.*.local
