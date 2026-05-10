@@ -13,6 +13,11 @@
   );
 
   // 入场动画
+  const reveals = document.querySelectorAll('[data-reveal]');
+  reveals.forEach((el, i) => {
+    el.style.transitionDelay = i * 0.06 + 's';
+  });
+
   const io = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
@@ -24,8 +29,11 @@
     },
     { threshold: 0.05 },
   );
-  document.querySelectorAll('[data-reveal]').forEach((el, i) => {
-    el.style.transitionDelay = i * 0.06 + 's';
-    io.observe(el);
-  });
+  reveals.forEach((el) => io.observe(el));
+
+  // Fallback：100ms 后强制把仍未 .in 的元素显示出来
+  // （防 IO 在某些场景未 fire，例如元素已在 viewport 但 layout 未稳）
+  setTimeout(() => {
+    reveals.forEach((el) => el.classList.add('in'));
+  }, 100);
 })();

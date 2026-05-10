@@ -80,6 +80,7 @@ rsync -avz \
   "$LOCAL_PUBLIC/index.html" \
   "$LOCAL_PUBLIC/styles.css" \
   "$LOCAL_PUBLIC/avatar.jpg" \
+  "$LOCAL_PUBLIC/detail-init.js" \
   "$SSH_HOST:$REMOTE_DIR/v1/"
 echo
 

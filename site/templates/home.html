@@ -133,20 +133,8 @@
   </div>
 </div>
 
-<script>
-  const io = new IntersectionObserver((entries) => {
-    for (const e of entries) {
-      if (e.isIntersecting) {
-        e.target.classList.add('in');
-        io.unobserve(e.target);
-      }
-    }
-  }, { threshold: 0.05 });
-  document.querySelectorAll('[data-reveal]').forEach((el, i) => {
-    el.style.transitionDelay = (i * 0.06) + 's';
-    io.observe(el);
-  });
-</script>
+<!-- reveal 动画（CSP 兼容：从 inline 提取到 detail-init.js 共用） -->
+<script src="detail-init.js?v=20260510d"></script>
 
 </body>
 </html>
