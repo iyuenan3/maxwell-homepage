@@ -22,3 +22,6 @@ chat-api/scripts/migration-report.md
 
 # Claude Code 本地状态（cron lock 等）
 .claude/
+
+# Claude Code 本地工作指引（含具体路径 / 内部约定，本地用，不入 git）
+CLAUDE.md
