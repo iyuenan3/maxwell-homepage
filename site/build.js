@@ -141,10 +141,10 @@ function parseScalar(v) {
   return v;
 }
 
-// 拆解 body 为 sections（按 `## TITLE`）
+// 拆解 body 为 sections（按 `## TITLE`，支持英文大写 + 中文标题）
 function parseSections(body) {
   const sections = {};
-  const re = /^##\s+([A-Z][A-Z_]*)\s*$/gm;
+  const re = /^##\s+(.+?)\s*$/gm;
   const headings = [];
   let m;
   while ((m = re.exec(body)) !== null) {
@@ -301,6 +301,12 @@ const components = {
     const text = data.sections.NOTES;
     const html = text ? mdToHtml(text) : '<p class="dim"><em>NOTES 待补</em></p>';
     return block('<span class="cmd">cat</span> <span class="arg">NOTES.md</span>', '复盘 & 感悟', html);
+  },
+
+  next(data) {
+    const text = data.sections['下一步'] || data.sections.NEXT || data.sections.next;
+    const html = text ? mdToHtml(text) : '<p class="dim"><em>下一步待补</em></p>';
+    return block('<span class="cmd">cat</span> <span class="arg">NEXT.md</span>', '下一步', html);
   },
 
   stack(data) {

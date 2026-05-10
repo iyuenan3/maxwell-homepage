@@ -3,7 +3,7 @@ slug: eastern-wisdom
 name_en: "Eastern Wisdom · Diaspora Naming SaaS"
 name_zh: "东方智慧 · 海外华人取名 SaaS"
 status: live
-since: 2026-04-22
+since: 2026-05-08
 links:
   url: https://naming.maxwellii.com
   source: private
@@ -14,6 +14,7 @@ commands:
   - git_log
   - decisions
   - stats
+  - stack
   - notes
 wiki_slug: eastern-wisdom
 stack:
@@ -22,6 +23,7 @@ stack:
   - tailwind 4
   - python 3.9
   - 火山方舟 doubao
+  - monorepo
 ---
 
 ## README
@@ -34,6 +36,8 @@ stack:
 
 5/7 凌晨上了 v1.2 渐进式名字生成（SSE 流式），首个名字 3 秒内出现并持续追加，把 Premium 等待感从"几十秒一次性出"改成"打字机式落屏"。
 
+5/8 完成 v1.2.1 部署 + **monorepo 三层文档体系**重构：根 SPEC.md（项目愿景 + 产品矩阵 + 共享架构 + 多 app 部署模式）+ apps/<name>/SPEC.md（各 app 自己的 spec）+ CLAUDE.md（与 Claude 协作工作纪律）。第 2 个 app 候选方向（bazi-fortune / marriage / iching / feng-shui / ze-ri）等触发条件再启动，共享 payment / auth 模块走 lazy 触发原则（≥2 app 用时再抽象）。
+
 ## NOTES
 
 这是我离职后的第一个上生产 SaaS 产品。从 v0.1 到 v1.2 走了大半个月，每一次大版本都是一次审美博弈：
@@ -43,3 +47,5 @@ stack:
 **v1.1 双语方案选 Method A** — 英文为主、中文斜体小字置于下方。Method B（中英对半）会让英文母语者读起来吃力，Method C（纯英文）又丢了文化感。Method A 是付费意愿和文化氛围的平衡点。
 
 **移除笔画数显示** — 上游 API 不可靠，宁可不显示也不显示错的。这条踩过坑：早期版本笔画数与权威字典对不上，被用户截图发邮件追问，后续客服成本高。
+
+**5/8 三层文档体系 + monorepo 多 app 架构** — 把单 app 升级为多 app 平台：根 SPEC（愿景 + 矩阵 + 共享架构）+ apps/<name>/SPEC（各 app 自身）+ CLAUDE.md（Claude 协作纪律）。**共享模块 lazy 触发**：payment / auth 等到真有第 2 个 app 用时才抽象，不预先抽象，避免"过度工程化先抽象、后改回去"的陷阱。第 2 个 app 候选 bazi-fortune / marriage / iching / feng-shui / ze-ri，等触发条件再启动。
