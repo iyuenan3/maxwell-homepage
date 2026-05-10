@@ -4,9 +4,13 @@
 
 # Maxwell-Homepage
 
-李越男 (Maxwell Li) 的个人主页仓库 — **maxwellii.com 终端体网站源码 + 简历多版本归档**。
+李越男 (Maxwell Li) 的个人主页仓库 — **maxwellii.com 终端体网站源码 + 简历多版本归档 + AI 化身对话后端 (chat-api)**。
 
-> 5/9 由 `Maxwell-Resume` 改名为 `maxwell-homepage`：项目职责从「简历仓库」扩展为「个人主页 + 简历归档」，简历是其中一个子模块。GitHub 自动 redirect 旧 URL，外链不会 404。
+[![version](https://img.shields.io/badge/version-2.2.0-1a5276)](./CHANGELOG.md) [![site](https://img.shields.io/badge/site-maxwellii.com-c0392b)](https://maxwellii.com) 
+
+> 5/9 由 `Maxwell-Resume` 改名为 `maxwell-homepage`：从「简历仓库」扩展到「个人主页 + 简历归档」。5/10 加入 `chat-api` 子模块，主页右下对话框接入 RAG 化身。GitHub 自动 redirect 旧 URL，外链不会 404。
+>
+> 详细变更日志：[CHANGELOG.md](./CHANGELOG.md)
 
 ## 个人主页 — maxwellii.com
 
@@ -85,6 +89,45 @@ cat site/nginx.conf | ssh alicloud-sg "sudo tee /etc/nginx/sites-available/maxwe
 > SSL/TLS 模式必须为 **Full** 或 **Full (strict)**，否则 nginx 80 → https 重定向 + Cloudflare Flexible 会触发无限循环。
 >
 > Browser Cache TTL 默认 4h（覆盖 origin `max-age=0`）。要让 origin 真正生效：Caching → Configuration → Browser Cache TTL 设 "Respect Existing Headers"。
+
+## AI 化身对话 — chat-api
+
+maxwellii.com 主页右下角对话框背后运行的 LLM 化身后端。访客直接问关于 Maxwell 的任何事（背景 / 项目 / 技术栈 / 经历 / 宠物），AI 基于 RAG 检索本地知识库回答。**架构层面只读本地文件**，不抓博客 / 不收用户输入入库。
+
+| 属性 | 值 |
+|------|------|
+| 入口 | maxwellii.com 主页右下 chat 框 |
+| 模型 | 火山方舟 `doubao-seed-2.0-pro`（256k context, max_tokens 2000）|
+| 后端 | Next.js 16 + PM2，监听 127.0.0.1:3002，nginx 反代 `/api/chat`（SSE 流式）|
+| RAG 索引 | `chat-api/data/embeddings.json`（2506 chunks · 2048 dim · ~84 MB，**不入 git**）|
+| 知识源 | 独立 Obsidian Vault `~/Desktop/Claude-Project/maxwell-rag-sources/`（407 .md，**不在本仓库内**）+ 仓库内 `worklog/ai-knowledge` |
+| 文件级脱敏 | LLM 自动脱敏（人名 / 公司名 / 金额）+ KEEP 白名单（本人 / 宠物 / 公开公司）|
+| 安全防护 | nginx CSP/XFO/XCTO/RP + 防伪造对话历史 + rate limit (20/min/IP) + 常识题 fallback |
+| 完整方案 | [`chat-api/docs/RAG-VAULT-MIGRATION.md`](./chat-api/docs/RAG-VAULT-MIGRATION.md) |
+
+### 日常更新流程
+
+知识源（vault / worklog / ai-knowledge）有变动后：
+
+```bash
+cd chat-api
+npm run update    # = scan + reindex + deploy（约 30-40 min）
+```
+
+### 单步操作
+
+```bash
+cd chat-api
+npm run scan              # 增量扫描 + LLM judge（mtime 比对，跳过未变文件）
+npm run scan:force        # 全量重 judge（如改了 judge prompt 时用）
+npm run reindex           # 重建 embeddings.json（不重 sanitize）
+npm run rag -- "<query>"  # 本地 RAG 检索调试
+bash deploy.sh            # build + rsync + pm2 reload
+```
+
+### nginx 配置（chat-api 已含 `/api/chat` 反代，跟主站共用同一 nginx 配置）
+
+详细 nginx 模板见 `site/nginx.conf`。
 
 ## 简历归档（子模块）
 
