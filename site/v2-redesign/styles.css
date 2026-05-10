@@ -224,6 +224,32 @@ body::after {
   line-height: 1.7;
 }
 .commit .body-text .b { color: var(--amber); }
+.commit .body-text ul.commit-items {
+  list-style: none;
+  padding-left: 0;
+  margin: 6px 0;
+}
+.commit .body-text ul.commit-items li {
+  padding-left: 14px;
+  position: relative;
+  margin-bottom: 4px;
+}
+.commit .body-text ul.commit-items li::before {
+  content: "·";
+  position: absolute;
+  left: 4px;
+  color: var(--cyan);
+}
+.commit .body-text ul.commit-items ul {
+  list-style: none;
+  margin: 4px 0 6px 14px;
+  padding-left: 0;
+}
+.commit .body-text ul.commit-items ul li::before {
+  content: "▸";
+  font-size: 10px;
+  top: 2px;
+}
 .commit .tags {
   display: flex; gap: 6px; flex-wrap: wrap;
   margin-top: 8px;
