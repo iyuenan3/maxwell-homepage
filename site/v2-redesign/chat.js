@@ -155,7 +155,7 @@
     wrap.className = 'chat-msg assistant';
     wrap.innerHTML = `
       <span class="bubble-prefix">maxwell:</span>
-      <div class="bubble-body"><span class="bubble-cursor">▍</span></div>
+      <div class="bubble-body"><span class="bubble-thinking">[thinking]</span> <span class="bubble-cursor">▍</span></div>
     `;
     $history().appendChild(wrap);
     scheduleScrollToBottom(true);  // assistant 气泡刚创建 → 强制滚

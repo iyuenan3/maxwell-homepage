@@ -84,6 +84,11 @@ rsync -avz \
   "$SSH_HOST:$REMOTE_DIR/v1/"
 echo
 
+# ── Stage 5: detail-init.js → 根（详情页 ../detail-init.js 引用）─
+echo "=== Stage 5: detail-init.js → $SSH_HOST:$REMOTE_DIR/ (for /p/*.html) ==="
+rsync -avz "$LOCAL_PUBLIC/detail-init.js" "$SSH_HOST:$REMOTE_DIR/"
+echo
+
 # ── 健全性检查 ─────────────────────────────────────────
 echo "=== Remote root listing ==="
 ssh "$SSH_HOST" "ls -la $REMOTE_DIR/ | head -25"

@@ -1000,6 +1000,19 @@ body::after {
 }
 @keyframes bub-blink { 50% { opacity: 0; } }
 
+.bubble-thinking {
+  display: inline-block;
+  color: var(--dim);
+  font-style: italic;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  animation: bub-thinking-pulse 1.6s ease-in-out infinite;
+}
+@keyframes bub-thinking-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 0.95; }
+}
+
 /* error / system bubbles 简化（沿用 chat-msg.system 但单 grid） */
 .chat-msg.assistant.chat-error {
   background: rgba(200, 80, 62, 0.05);
