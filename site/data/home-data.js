@@ -130,7 +130,7 @@
       { perm: '-rwxr-xr-x', state: 'live',     date: '2026-05-08', slug: 'multiplayer-xiaoshuo',     dir: true,  zh: '多人与 AI 互动共创小说',                       desc: '3-8 人多人 AI 共创互动叙事 H5 · 多题材 AI 实时生成 + 隐藏属性驱动剧情 + 危急投票 + 服务端 PDF 章节导出',                                                                       stack: 'vue3 · socket.io · deepseek · puppeteer' },
       { perm: '-rwxr-xr-x', state: 'live',     date: '2026-05-10', slug: 'maxwell-homepage',         dir: true,  zh: 'maxwellii.com · 终端体个人主页',               desc: 'bash 终端体个人主页 · 内置 V2 LLM 化身对话（doubao-pro 256K + RAG vault 407 .md 多源平衡）· 多项目二级详情页 · 5 状态系统',                                              stack: 'node.js · next.js · doubao · nginx' },
       { perm: '-rw-------', state: 'active',   date: '2026-05-09', slug: 'claude-financial-research', dir: false, zh: '智投研 · A 股权益研究系统',                    desc: 'A 股 1,095 只 200 亿+ 标的池基本面研究 · v3.4 评级体系 + Daily Wave 盘后日更自动化 + Next.js 选股器 · 严守"不输出投资建议"合规边界',                                          stack: 'claude-code · csv · pdf · next.js · fastapi', priv: true },
-      { perm: 'drwxr-xr-x', state: 'active',   date: '2026-05-09', slug: 'worklog',                  dir: true,  zh: '工作日志 · AI 自动日记 + LLM Wiki 知识库',     desc: '基于 Karpathy LLM Wiki 三层架构（Schema / Wiki / Raw）的 AI 工作日记 + 知识沉淀系统 · schema v2.7.2 + TODO 系统 + 摄入时编译范式',                                          stack: 'llm-wiki · markdown · obsidian · claude-code' },
+      { perm: '-rw-------', state: 'active',   date: '2026-05-09', slug: 'worklog',                  dir: false, zh: '工作日志 · AI 自动日记 + LLM Wiki 知识库',     desc: '基于 Karpathy LLM Wiki 三层架构（Schema / Wiki / Raw）的 AI 工作日记 + 知识沉淀系统 · schema v2.7.2 + TODO 系统 + 摄入时编译范式',                                          stack: 'llm-wiki · markdown · obsidian · claude-code', priv: true },
       { perm: 'drwxr-xr-x', state: 'active',   date: '2026-05-09', slug: 'ai-knowledge',             dir: true,  zh: 'AI 知识库 · 开源项目研究图谱',                 desc: 'A+B+C 三级递进研究 AI 工具链开源项目（README → 横向对比 → 源码 Clone）· 4 轮深度 / 55 wiki / 78 raw / 0 死链 / 自带 Lint',                                                  stack: 'obsidian · markdown · lint · wikilink' },
       { perm: 'drwxr-xr-x', state: 'active',   date: '2026-05-06', slug: 'short-story',              dir: true,  zh: '短篇小说 · 番茄平台商业短篇',                  desc: '短篇小说创作工作流 · 9 品类商业短篇（如何写）+ 段落多样化（避免重复）+ 扩写策略库（避免字数不够）+ Playwright 自动发布番茄 · 累计 106 篇 / 89.2 万字',                       stack: 'claude-code · markdown · txt · playwright' },
       { perm: 'drwxr-xr-x', state: 'active',   date: '2026-05-03', slug: 'openclaw',                 dir: true,  zh: 'OpenClaw · AI 助理平台',                       desc: 'OpenClaw 平台 ·「Max」个人软件项目主管 AI（火山方舟 ark-code-latest 基座）+ 15 核心能力模块（全栈研发 + 产品 + DevOps）+ 多 cron 自动化（每日备份 / 知识库 / 日报）',          stack: 'openclaw · ark-code · agent-main · cron' },
@@ -141,12 +141,12 @@
 
     /* ── pets / 我的毛孩子们 ────────────────────────── */
     pets: [
+      { perm: '-rwxr-xr-x', star: '★ 7.11', date: '2018-06-02', name: '花轮', desc: '布偶猫 · 腹黑长老，干坏事找弟弟背锅，听得懂"出去玩"',         status: 'chilling' },
+      { perm: '-rwxr-xr-x', star: '★ 6.11', date: '2019-06-02', name: '五百', desc: '美短 · 温柔老好猫，肚子随便 rua，给个枕头睡到天荒地老',      status: 'stable' },
       { perm: '-rwxr-xr-x', star: '★ 7.00', date: '2019-04-21', name: '小葵', desc: '西伯利亚森林猫 · 全家武力天花板，情绪价值给满，日均 6k 步', status: 'caring' },
       { perm: '-rwxr-xr-x', star: '★ 5.06', date: '2020-10-23', name: '飞流', desc: '缅因猫 · 脸帅体肥描大胆小厌妹，厨房守护者',                  status: 'idle' },
       { perm: '-rwxr-xr-x', star: '★ 3.10', date: '2022-07-09', name: '乔治', desc: '塞尔凯克卷毛猫 · 粘人，8 字绕腿走，出去玩会叼礼物回家',      status: 'on meds' },
       { perm: '-rwxr-xr-x', star: '★ 3.05', date: '2022-11-11', name: '吉吉', desc: '英短 · 没有边界感，话痨，兄控，爱尿床',                       status: 'healing' },
-      { perm: '-rwxr-xr-x', star: '★ 6.11', date: '2019-06-02', name: '五百', desc: '美短 · 温柔老好猫，肚子随便 rua，给个枕头睡到天荒地老',      status: 'stable' },
-      { perm: '-rwxr-xr-x', star: '★ 7.11', date: '2018-06-02', name: '花轮', desc: '布偶猫 · 腹黑长老，干坏事找弟弟背锅，听得懂"出去玩"',         status: 'chilling' },
       { perm: '-rwxr-xr-x', star: '★ 1.00', date: '2025-04-23', name: '红豆', desc: '彩狸 · 原以为是三花，没想到是彩狸，喜欢上树',                 status: 'climbing' },
       { perm: 'drwxr-xr-x', star: '★ 1.10', date: '2024-07-01', name: '小七', desc: '中华田园犬 · 飞盘选手，会牧羊，徒步登山小向导',               status: 'running', dir: true },
       { perm: 'drwxr-xr-x', star: '★ 5.00', date: '2021-05-01', name: '多多', desc: '柯基 · 25.11 云南捡的小可怜，TVT 化疗康复，跟小七学会飞盘',    status: 'recovered', dir: true },
