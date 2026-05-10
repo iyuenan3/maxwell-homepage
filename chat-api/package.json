@@ -6,7 +6,13 @@
     "dev": "next dev -p 3002",
     "build": "next build --webpack",
     "start": "next start -p 3002",
-    "lint": "eslint"
+    "lint": "eslint",
+    "reindex": "node scripts/build-embeddings.mjs",
+    "reindex:dry": "node scripts/build-embeddings.mjs --dry-run",
+    "scan": "node scripts/scan-sources.mjs",
+    "scan:force": "node scripts/scan-sources.mjs --force",
+    "rag": "node scripts/rag-search.mjs",
+    "update": "npm run scan && npm run reindex && bash deploy.sh"
   },
   "dependencies": {
     "next": "16.2.4",
@@ -19,6 +25,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
+    "pdf-parse": "^2.4.5",
     "typescript": "^5"
   }
 }

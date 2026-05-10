@@ -49,27 +49,8 @@
   </div>
 </div>
 
-<script>
-  // 回主页链接：根据 referrer 判断访客来自 V1 (/v1/) 还是 V2 (/)
-  (function () {
-    const fromV1 = document.referrer.includes('/v1/');
-    const homeUrl = fromV1 ? '/v1/' : '/';
-    document.querySelectorAll('.back-link a, .signoff .end a').forEach(a => a.setAttribute('href', homeUrl));
-  })();
-
-  const io = new IntersectionObserver((entries) => {
-    for (const e of entries) {
-      if (e.isIntersecting) {
-        e.target.classList.add('in');
-        io.unobserve(e.target);
-      }
-    }
-  }, { threshold: 0.05 });
-  document.querySelectorAll('[data-reveal]').forEach((el, i) => {
-    el.style.transitionDelay = (i * 0.06) + 's';
-    io.observe(el);
-  });
-</script>
+<!-- 详情页初始化（CSP 兼容：从 inline 提取） -->
+<script src="../detail-init.js?v=20260510c"></script>
 
 </body>
 </html>

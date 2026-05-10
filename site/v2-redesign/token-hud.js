@@ -8,24 +8,26 @@
 (function () {
   'use strict';
 
-  // doubao-seed-2.0-lite 上下文窗口 ~32k token
-  const CTX_LIMIT = 32000;
+  // doubao-seed-2.0-pro 上下文窗口 256k token
+  const CTX_LIMIT = 256000;
   const STORE_KEY = 'maxwell-tokens-v1';
+  const DEFAULT_MODEL = 'doubao-seed-2.0-pro';
 
   // ── 累计存储 ────────────────────────────────────────────
   function load() {
     try {
       const raw = sessionStorage.getItem(STORE_KEY);
-      if (!raw) return { cumIn: 0, cumOut: 0, lastInput: 0, calls: 0 };
+      if (!raw) return { cumIn: 0, cumOut: 0, lastInput: 0, calls: 0, model: DEFAULT_MODEL };
       const obj = JSON.parse(raw);
       return {
         cumIn: obj.cumIn || 0,
         cumOut: obj.cumOut || 0,
         lastInput: obj.lastInput || 0,
         calls: obj.calls || 0,
+        model: obj.model || DEFAULT_MODEL,
       };
     } catch {
-      return { cumIn: 0, cumOut: 0, lastInput: 0, calls: 0 };
+      return { cumIn: 0, cumOut: 0, lastInput: 0, calls: 0, model: DEFAULT_MODEL };
     }
   }
 
@@ -54,27 +56,35 @@
     return 'low';
   }
 
-  // ── render ──────────────────────────────────────────────
+  // ── render（用 DOM API + textContent，不用 innerHTML，防 XSS） ──
+  function makeSpan(cls, text, title) {
+    const el = document.createElement('span');
+    el.className = cls;
+    el.textContent = text;
+    if (title) el.title = title;
+    return el;
+  }
+
   function render() {
     const root = document.querySelector('.token-hud');
     if (!root) return;
 
     const pct = Math.round((state.lastInput / CTX_LIMIT) * 100);
 
-    root.innerHTML = `
-      <span class="hud-label">ctx</span>
-      <span class="hud-bar hud-${classByPct(pct)}" title="last input ${state.lastInput} / ${CTX_LIMIT} tokens">${bar(pct)}</span>
-      <span class="hud-pct">${pct}%</span>
-      <span class="hud-sep">·</span>
-      <span class="hud-label">tokens</span>
-      <span class="hud-num" title="累计 input 自 session 开始">in ${fmt(state.cumIn)}</span>
-      <span class="hud-sep">·</span>
-      <span class="hud-num" title="累计 output">out ${fmt(state.cumOut)}</span>
-      <span class="hud-sep">·</span>
-      <span class="hud-num hud-dim" title="本会话调用次数">${state.calls} calls</span>
-      <span class="hud-spacer"></span>
-      <span class="hud-model" title="LLM 模型">doubao-seed-2.0-lite</span>
-    `;
+    root.replaceChildren(
+      makeSpan('hud-label', 'ctx'),
+      makeSpan(`hud-bar hud-${classByPct(pct)}`, bar(pct), `last input ${state.lastInput} / ${CTX_LIMIT} tokens`),
+      makeSpan('hud-pct', `${pct}%`),
+      makeSpan('hud-sep', '·'),
+      makeSpan('hud-label', 'tokens'),
+      makeSpan('hud-num', `in ${fmt(state.cumIn)}`, '累计 input 自 session 开始'),
+      makeSpan('hud-sep', '·'),
+      makeSpan('hud-num', `out ${fmt(state.cumOut)}`, '累计 output'),
+      makeSpan('hud-sep', '·'),
+      makeSpan('hud-num hud-dim', `${state.calls} calls`, '本会话调用次数'),
+      makeSpan('hud-spacer', ''),
+      makeSpan('hud-model', state.model, 'LLM 模型'),
+    );
   }
 
   // ── public API ──────────────────────────────────────────
@@ -89,12 +99,13 @@
       state.lastInput = meta.input_tokens || state.lastInput;
       state.calls += 1;
     }
+    if (meta.model) state.model = meta.model; // 后端动态告知
     save(state);
     render();
   }
 
   function reset() {
-    state = { cumIn: 0, cumOut: 0, lastInput: 0, calls: 0 };
+    state = { cumIn: 0, cumOut: 0, lastInput: 0, calls: 0, model: DEFAULT_MODEL };
     save(state);
     render();
   }

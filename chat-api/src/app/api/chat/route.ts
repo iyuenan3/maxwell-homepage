@@ -1,8 +1,22 @@
 import { checkRateLimit } from "@/lib/rate-limit";
-import { SYSTEM_PROMPT } from "./system-prompt";
+import { buildSystemPrompt } from "./system-prompt";
+import { createEmbedClient } from "@/lib/embed-client";
+import { retrieve, formatContext } from "@/lib/rag";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// ── embed client 单例（避免每次请求 new） ───────────────
+let _embedClient: ReturnType<typeof createEmbedClient> | null = null;
+function getEmbedClient() {
+  if (_embedClient) return _embedClient;
+  _embedClient = createEmbedClient({
+    baseUrl: process.env.VOLCANO_API_BASE!,
+    apiKey: process.env.VOLCANO_API_KEY!,
+    model: "doubao-embedding-vision",
+  });
+  return _embedClient;
+}
 
 // ── CORS ────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
@@ -48,7 +62,7 @@ function sanitizeMessages(raw: unknown): ChatMsg[] | null {
     const role = (m as { role?: string }).role;
     const content = (m as { content?: string }).content;
     if ((role !== "user" && role !== "assistant") || typeof content !== "string") return null;
-    if (content.length > 2000) return null;  // 单条上限 2000 字符（更严，防灌注）
+    if (content.length > 8000) return null;  // 单条上限 8000 字符（体验优先，仍防超长 DoS）
     out.push({ role, content });
   }
   if (out.length === 0 || out.length > 20) return null;
@@ -108,8 +122,8 @@ export async function POST(req: Request) {
   const ip = getClientIP(req);
 
   // ── 三层限流 ─────────────────────────────────────────
-  // 1. per-IP 10 req / minute
-  if (!checkRateLimit(`chat:1m:${ip}`, 10, 60 * 1000)) {
+  // 1. per-IP 20 req / minute
+  if (!checkRateLimit(`chat:1m:${ip}`, 20, 60 * 1000)) {
     return new Response(JSON.stringify({ error: "rate_limited", retry_after: 60 }), {
       status: 429,
       headers: { ...cors, "Content-Type": "application/json" },
@@ -148,9 +162,9 @@ export async function POST(req: Request) {
     });
   }
 
-  // ── 截断历史：只留最后 12 条（约 6 轮 user+assistant） ─
+  // ── 截断历史：只留最后 20 条（约 10 轮 user+assistant） ─
   // 防 client 灌假 history
-  let messages = messagesRaw.slice(-12);
+  let messages = messagesRaw.slice(-20);
   // 截断后保证最后一条是 user
   while (messages.length > 0 && messages[messages.length - 1].role !== "user") {
     messages.pop();
@@ -181,6 +195,26 @@ export async function POST(req: Request) {
     });
   }
 
+  // ── RAG 检索（失败时降级为空 context，不中断 chat） ──
+  let contextBlock = "";
+  try {
+    const embedClient = getEmbedClient();
+    const queryText = lastUserMsg; // 体验优先：完整 query embed
+    const t0 = Date.now();
+    const results = await retrieve(embedClient, queryText, {
+      topK: 20,           // 体验优先：宽召回
+      perCategoryMax: 8,  // 4 大类（personal/work-history/current-projects/knowledge-base）每类最多 8
+    });
+    contextBlock = formatContext(results);
+    console.log(
+      `[chat] RAG ${results.length} chunks in ${Date.now() - t0}ms (top=${results[0]?.score.toFixed(3) ?? "?"}, cats=${results.map((r) => r.chunk.category || "?").join("/")})`,
+    );
+  } catch (e) {
+    console.error("[chat] RAG failed, fallback to empty context:", e);
+  }
+
+  const systemPrompt = buildSystemPrompt(contextBlock);
+
   // Volcano Ark stream call
   const upstream = await fetch(`${apiBase}/chat/completions`, {
     method: "POST",
@@ -193,9 +227,9 @@ export async function POST(req: Request) {
       stream: true,
       stream_options: { include_usage: true },  // 让最后一个 chunk 带 usage（OpenAI 兼容）
       temperature: 0.7,
-      max_tokens: 300,
+      max_tokens: 2000,  // 体验优先：放宽（pro 版套餐 token 充足）
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         ...messages,
       ],
     }),
@@ -218,7 +252,7 @@ export async function POST(req: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       let buffer = "";
-      let lastUsage: { input_tokens: number; output_tokens: number; total_tokens: number } | null = null;
+      let lastUsage: { input_tokens: number; output_tokens: number; total_tokens: number; model?: string } | null = null;
 
       try {
         while (true) {
@@ -256,6 +290,7 @@ export async function POST(req: Request) {
                   input_tokens: json.usage.prompt_tokens,
                   output_tokens: json.usage.completion_tokens || 0,
                   total_tokens: json.usage.total_tokens || 0,
+                  model,
                 };
               }
             } catch {

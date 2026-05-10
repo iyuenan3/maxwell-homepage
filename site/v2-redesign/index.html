@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260510a">
+<link rel="stylesheet" href="styles.css?v=20260510c">
 </head>
 <body>
 
@@ -31,7 +31,7 @@
 </pre>
 
     <div class="tagline" data-reveal>
-      <span class="ver">v2.1.0</span> · last sync 2026-05-10
+      <span class="ver">v2.2.0</span> · last sync 2026-05-10
     </div>
 
     <!-- ── Hero 区：眼镜头像 + 3 行 ROLE/LIVE/HISTORY/PREVIOUSLY ── -->
@@ -92,7 +92,7 @@
         <div class="chat-history">
           <div class="chat-msg assistant intro">
             <span class="bubble-prefix">maxwell:</span>
-            <div class="bubble-body">嘿，我是李越男，今天想聊点什么？</div>
+            <div class="bubble-body">嘿，我是 AI 版 Maxwell，今天想聊点什么？</div>
           </div>
         </div>
 
@@ -134,27 +134,14 @@
 <!-- 眼镜表情系统 -->
 <script src="emotes.js"></script>
 <!-- Token HUD（接 chat.js meta event） -->
-<script src="token-hud.js"></script>
+<script src="token-hud.js?v=20260510c"></script>
 <!-- LLM 对话（接 maxwellii-chat /api/chat SSE，meta → tokenHud） -->
-<script src="chat.js"></script>
+<script src="chat.js?v=20260510c"></script>
 <!-- /cmd 路由器（依赖 home-data.js + chat.js） -->
-<script src="commands.js"></script>
+<script src="commands.js?v=20260510c"></script>
 
-<!-- reveal 动画（沿用 v1） -->
-<script>
-  const io = new IntersectionObserver((entries) => {
-    for (const e of entries) {
-      if (e.isIntersecting) {
-        e.target.classList.add('in');
-        io.unobserve(e.target);
-      }
-    }
-  }, { threshold: 0.05 });
-  document.querySelectorAll('[data-reveal]').forEach((el, i) => {
-    el.style.transitionDelay = (i * 0.06) + 's';
-    io.observe(el);
-  });
-</script>
+<!-- reveal 动画（CSP 兼容：从 inline 提取） -->
+<script src="reveal.js?v=20260510c"></script>
 
 </body>
 </html>

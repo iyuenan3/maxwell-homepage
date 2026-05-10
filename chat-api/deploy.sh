@@ -27,8 +27,27 @@ if ! command -v node >/dev/null 2>&1; then
   exit 1
 fi
 
+echo "=== Checking RAG embeddings ==="
+if [ ! -f "$SCRIPT_DIR/data/embeddings.json" ]; then
+  echo "Error: data/embeddings.json missing. Run \`npm run reindex\` first."
+  exit 1
+fi
+# 如果 manifest.json 比 embeddings.json 新，提醒（但不自动 reindex，因为耗时 ~30min）
+if [ -f "$SCRIPT_DIR/scripts/manifest.json" ] && \
+   [ "$SCRIPT_DIR/scripts/manifest.json" -nt "$SCRIPT_DIR/data/embeddings.json" ]; then
+  echo "⚠️  manifest.json is newer than embeddings.json — consider running \`npm run reindex\`"
+  read -p "Continue with current embeddings? [y/N] " ans
+  [ "$ans" != "y" ] && exit 1
+fi
+EMBED_SIZE=$(du -h "$SCRIPT_DIR/data/embeddings.json" | cut -f1)
+echo "→ embeddings.json ready ($EMBED_SIZE)"
+echo
+
 echo "=== Building maxwellii-chat-api ==="
-( cd "$SCRIPT_DIR" && npm run build )
+if ! ( cd "$SCRIPT_DIR" && npm run build ); then
+  echo "Error: next build FAILED. Aborting deploy (服务器仍跑旧版)."
+  exit 1
+fi
 
 if [ ! -d "$SCRIPT_DIR/.next" ]; then
   echo "Error: build failed (no .next/ output)."

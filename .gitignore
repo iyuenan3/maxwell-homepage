@@ -10,3 +10,15 @@ site/.env.local
 **/.env
 **/.env.local
 **/.env.*.local
+
+# RAG embeddings build artifact（本地 build，rsync 推送，不入 git）
+chat-api/data/embeddings.json
+chat-api/data/embeddings.json.bak.*
+
+# RAG scan/judge artifacts（本地审稿用，绝对不入 git — 路径暴露 + 摘要）
+chat-api/scripts/manifest.json
+chat-api/scripts/manifest-report.md
+chat-api/scripts/migration-report.md
+
+# Claude Code 本地状态（cron lock 等）
+.claude/

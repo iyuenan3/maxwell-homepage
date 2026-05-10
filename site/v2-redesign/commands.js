@@ -194,7 +194,9 @@
     const input = $input();
     if (input) {
       input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
+        // IME composition 中（中文输入法选词时敲 Enter）→ 不发送
+        // e.isComposing 现代浏览器；keyCode 229 兼容老 Safari
+        if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) {
           const v = input.value;
           input.value = '';
           dispatch(v);
