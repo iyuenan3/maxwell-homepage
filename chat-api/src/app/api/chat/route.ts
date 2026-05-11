@@ -2,6 +2,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { buildSystemPrompt } from "./system-prompt";
 import { createEmbedClient } from "@/lib/embed-client";
 import { retrieve, formatContext } from "@/lib/rag";
+import { logChat } from "@/lib/chat-logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -120,6 +121,8 @@ export async function POST(req: Request) {
   const origin = req.headers.get("origin");
   const cors = corsHeaders(origin);
   const ip = getClientIP(req);
+  const userAgent = req.headers.get("user-agent") || "";
+  const startTime = Date.now();
 
   // ── 三层限流 ─────────────────────────────────────────
   // 1. per-IP 20 req / minute
@@ -180,6 +183,22 @@ export async function POST(req: Request) {
   const lastUserMsg = messages[messages.length - 1].content;
   if (detectInjection(lastUserMsg)) {
     console.log(`[chat] blocked injection from ${ip}: ${lastUserMsg.slice(0, 100)}`);
+    // 拦截也记日志
+    logChat({
+      ts: new Date().toISOString(),
+      ip,
+      user_agent: userAgent,
+      msg_count: messages.length,
+      user: lastUserMsg,
+      assistant: REJECT_INJECTION_MSG,
+      model: "blocked",
+      input_tokens: 0,
+      output_tokens: 0,
+      total_tokens: 0,
+      rag_hits: [],
+      duration_ms: Date.now() - startTime,
+      blocked: "injection",
+    });
     return makeStaticReply(REJECT_INJECTION_MSG, cors);
   }
 
@@ -197,6 +216,7 @@ export async function POST(req: Request) {
 
   // ── RAG 检索（失败时降级为空 context，不中断 chat） ──
   let contextBlock = "";
+  let ragHits: string[] = [];
   try {
     const embedClient = getEmbedClient();
     const queryText = lastUserMsg; // 体验优先：完整 query embed
@@ -206,6 +226,7 @@ export async function POST(req: Request) {
       perCategoryMax: 8,  // 4 大类（personal/work-history/current-projects/knowledge-base）每类最多 8
     });
     contextBlock = formatContext(results);
+    ragHits = results.slice(0, 10).map((r) => r.chunk.source || "?");
     console.log(
       `[chat] RAG ${results.length} chunks in ${Date.now() - t0}ms (top=${results[0]?.score.toFixed(3) ?? "?"}, cats=${results.map((r) => r.chunk.category || "?").join("/")})`,
     );
@@ -253,6 +274,25 @@ export async function POST(req: Request) {
     async start(controller) {
       let buffer = "";
       let lastUsage: { input_tokens: number; output_tokens: number; total_tokens: number; model?: string } | null = null;
+      let acc = "";  // 累积完整 assistant 回复供日志记录
+
+      const writeLog = (extra?: { blocked?: string }) => {
+        logChat({
+          ts: new Date().toISOString(),
+          ip,
+          user_agent: userAgent,
+          msg_count: messages.length,
+          user: lastUserMsg,
+          assistant: acc,
+          model: lastUsage?.model || model,
+          input_tokens: lastUsage?.input_tokens || 0,
+          output_tokens: lastUsage?.output_tokens || 0,
+          total_tokens: lastUsage?.total_tokens || 0,
+          rag_hits: ragHits,
+          duration_ms: Date.now() - startTime,
+          ...(extra || {}),
+        });
+      };
 
       try {
         while (true) {
@@ -275,6 +315,7 @@ export async function POST(req: Request) {
               }
               controller.enqueue(encoder.encode("data: [DONE]\n\n"));
               controller.close();
+              writeLog();
               return;
             }
 
@@ -282,6 +323,7 @@ export async function POST(req: Request) {
               const json = JSON.parse(data);
               const delta = json?.choices?.[0]?.delta?.content;
               if (typeof delta === "string" && delta.length > 0) {
+                acc += delta;
                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({ delta })}\n\n`));
               }
               // doubao SSE 末段（include_usage 启用后）有 usage
@@ -303,10 +345,12 @@ export async function POST(req: Request) {
         }
         controller.enqueue(encoder.encode("data: [DONE]\n\n"));
         controller.close();
+        writeLog();
       } catch (err) {
         console.error("[chat] stream error:", err);
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: "stream_error" })}\n\n`));
         controller.close();
+        writeLog({ blocked: "stream_error" });
       }
     },
     cancel() {
