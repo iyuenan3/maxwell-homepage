@@ -1,0 +1,155 @@
+/* chat-api admin — 终端体（与 maxwellii.com V1/V2 视觉对齐） */
+
+:root {
+  --bg: #0e120e;
+  --fg: #cfd8c8;
+  --fg-bright: #fff5d9;
+  --amber: #d4a04c;
+  --cyan: #6ea69b;
+  --red: #d36b5d;
+  --muted: #6b7368;
+  --line: #2a2f2a;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.admin-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 28px 80px;
+}
+
+.prompt {
+  color: var(--cyan);
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+.prompt::before {
+  content: "$ ";
+  color: var(--amber);
+}
+
+.divider {
+  border: 0;
+  border-top: 1px dashed var(--line);
+  margin: 14px 0;
+}
+
+.stats {
+  color: var(--muted);
+  margin: 4px 0 18px;
+}
+.stats b {
+  color: var(--fg-bright);
+  font-weight: 600;
+}
+
+table.logs {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+table.logs th, table.logs td {
+  text-align: left;
+  padding: 6px 12px 6px 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+  vertical-align: top;
+}
+table.logs th {
+  color: var(--amber);
+  font-weight: 600;
+  border-bottom: 1px solid var(--amber);
+}
+table.logs tr:hover td {
+  background: rgba(110, 166, 155, 0.06);
+}
+table.logs td.right { text-align: right; }
+table.logs td a {
+  color: var(--cyan);
+  text-decoration: none;
+}
+table.logs td a:hover { color: var(--fg-bright); text-decoration: underline; }
+table.logs td.blocked { color: var(--red); }
+
+.empty {
+  color: var(--muted);
+  padding: 24px 0;
+  text-align: center;
+}
+
+.entry {
+  border-left: 2px solid var(--line);
+  margin: 12px 0 18px;
+  padding: 4px 0 4px 14px;
+}
+.entry .meta {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.entry .meta b {
+  color: var(--fg);
+}
+.entry .meta .blocked {
+  color: var(--red);
+  font-weight: 600;
+}
+.entry .role {
+  color: var(--amber);
+  font-weight: 600;
+  margin: 8px 0 2px;
+}
+.entry .role.assistant { color: var(--cyan); }
+.entry .body {
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--fg);
+  margin: 0 0 6px;
+}
+.entry .rag {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 6px;
+}
+.entry .rag b { color: var(--fg); }
+
+.back {
+  display: inline-block;
+  margin: 6px 0 16px;
+  color: var(--cyan);
+  text-decoration: none;
+}
+.back:hover { color: var(--fg-bright); }
+
+.unauth {
+  color: var(--red);
+  padding: 60px 0;
+  text-align: center;
+}
+.unauth code {
+  background: rgba(255,255,255,0.05);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: var(--amber);
+}
+
+.summary-block {
+  margin: 6px 0 18px;
+  color: var(--fg);
+}
+.summary-block b { color: var(--fg-bright); }
+.summary-block .ua {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+  word-break: break-all;
+}
