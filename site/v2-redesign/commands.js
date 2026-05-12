@@ -126,14 +126,13 @@
 
   function cmdHelp() {
     return `<div class="help-block">
-      <div class="help-line"><code>/projects</code> — 造过的小东西（10 项）</div>
-      <div class="help-line"><code>/git log</code> — 十年路途（4 段）</div>
-      <div class="help-line"><code>/stack</code> — 手上趁手的家伙</div>
-      <div class="help-line"><code>/pets</code> — 十一口之家（2 人 + 7 猫 + 2 狗）</div>
-      <div class="help-line"><code>/history</code> — 老凭证（学历 / 专利）</div>
+      <div class="help-line"><code>/projects</code> — 有趣的项目</div>
+      <div class="help-line"><code>/git log</code> — 十年职业生涯</div>
+      <div class="help-line"><code>/stack</code> — 技术栈</div>
+      <div class="help-line"><code>/pets</code> — 我的毛孩子们</div>
+      <div class="help-line"><code>/history</code> — 学历</div>
       <div class="help-line"><code>/clear</code> — 清空对话历史</div>
       <div class="help-line"><code>/help</code> — 显示本帮助</div>
-      <div class="help-hint" style="margin-top:10px;color:var(--dim);font-size:12px;">提示：AI 自由对话功能装修中，目前只支持以上命令。</div>
     </div>`;
   }
 
