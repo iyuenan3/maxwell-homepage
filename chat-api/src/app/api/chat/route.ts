@@ -222,8 +222,8 @@ export async function POST(req: Request) {
     const queryText = lastUserMsg; // 体验优先：完整 query embed
     const t0 = Date.now();
     const results = await retrieve(embedClient, queryText, {
-      topK: 20,           // 体验优先：宽召回
-      perCategoryMax: 8,  // 4 大类（personal/work-history/current-projects/knowledge-base）每类最多 8
+      topK: 12,           // 5/12 v2.3：20→12（TTFT 优化，朋友反馈太慢）
+      perCategoryMax: 4,  // 5/12 v2.3：8→4，配合 perSourceMax=2（rag.ts 默认）解决同文件 chunk 刷屏 bug
     });
     contextBlock = formatContext(results);
     ragHits = results.slice(0, 10).map((r) => r.chunk.source || "?");
@@ -273,8 +273,9 @@ export async function POST(req: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       let buffer = "";
-      let lastUsage: { input_tokens: number; output_tokens: number; total_tokens: number; model?: string } | null = null;
+      let lastUsage: { input_tokens: number; output_tokens: number; total_tokens: number; cached_tokens?: number; model?: string } | null = null;
       let acc = "";  // 累积完整 assistant 回复供日志记录
+      let firstChunkTime: number | null = null;  // LLM 第一个 delta 到达时间，用于 TTFT
 
       const writeLog = (extra?: { blocked?: string }) => {
         logChat({
@@ -290,6 +291,8 @@ export async function POST(req: Request) {
           total_tokens: lastUsage?.total_tokens || 0,
           rag_hits: ragHits,
           duration_ms: Date.now() - startTime,
+          ttft_ms: firstChunkTime ? firstChunkTime - startTime : undefined,
+          cached_tokens: lastUsage?.cached_tokens,
           ...(extra || {}),
         });
       };
@@ -323,15 +326,24 @@ export async function POST(req: Request) {
               const json = JSON.parse(data);
               const delta = json?.choices?.[0]?.delta?.content;
               if (typeof delta === "string" && delta.length > 0) {
+                if (firstChunkTime === null) firstChunkTime = Date.now();
                 acc += delta;
                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({ delta })}\n\n`));
               }
               // doubao SSE 末段（include_usage 启用后）有 usage
               if (json?.usage && typeof json.usage.prompt_tokens === "number") {
+                // 兼容多种 cache 字段路径（OpenAI 新版 / 旧版 / 火山自定义）
+                const cached =
+                  json.usage.prompt_tokens_details?.cached_tokens ??
+                  json.usage.cached_tokens ??
+                  json.usage.prompt_cache_hit_tokens ??
+                  undefined;
+                console.log(`[chat] usage:`, JSON.stringify(json.usage));  // debug 一次看真实字段
                 lastUsage = {
                   input_tokens: json.usage.prompt_tokens,
                   output_tokens: json.usage.completion_tokens || 0,
                   total_tokens: json.usage.total_tokens || 0,
+                  cached_tokens: typeof cached === "number" ? cached : undefined,
                   model,
                 };
               }

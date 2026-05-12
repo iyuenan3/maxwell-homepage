@@ -88,6 +88,8 @@ export interface RetrieveOptions {
   topK?: number;
   /** 每个 category 大类（personal/work-history/...）最多保留几条 — 多源平衡 */
   perCategoryMax?: number;
+  /** 同一完整 source（如单个 .md 文件）最多保留几个 chunk — 避免同文件刷屏 */
+  perSourceMax?: number;
 }
 
 /**
@@ -100,7 +102,7 @@ export async function retrieve(
   query: string,
   opts: RetrieveOptions = {},
 ): Promise<RetrieveResult[]> {
-  const { topK = 8, perCategoryMax = 3 } = opts;
+  const { topK = 8, perCategoryMax = 3, perSourceMax = 2 } = opts;
   const idx = loadIndex();
 
   const [queryVec] = await embedClient.embed(query);
@@ -112,14 +114,18 @@ export async function retrieve(
   }));
   scored.sort((a, b) => b.score - a.score);
 
-  // 多源平衡：用 chunk.category（v2）或 SOURCE_CATEGORY 兜底
+  // 多源平衡：(1) category 大类配额 + (2) 同 source 文件级去重 — 避免一个文件的多 chunk 刷屏
   const categoryCounts: Record<string, number> = {};
+  const sourceCounts: Record<string, number> = {};
   const out: RetrieveResult[] = [];
   for (const r of scored) {
     const cat = getCategory(r.chunk);
+    const src = r.chunk.source;
     if ((categoryCounts[cat] ?? 0) >= perCategoryMax) continue;
+    if ((sourceCounts[src] ?? 0) >= perSourceMax) continue;
     out.push(r);
     categoryCounts[cat] = (categoryCounts[cat] ?? 0) + 1;
+    sourceCounts[src] = (sourceCounts[src] ?? 0) + 1;
     if (out.length >= topK) break;
   }
   return out;

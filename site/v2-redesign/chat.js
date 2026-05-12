@@ -166,6 +166,23 @@
     };
   }
 
+  // 阶段性 thinking 文案：12s LLM 首 token 等待期间让用户感觉 AI 在分阶段做事
+  function startThinkingProgress(bubble) {
+    const stages = [
+      { delay: 2500,  text: '[searching memory...]' },
+      { delay: 6000,  text: '[composing reply...]' },
+      { delay: 12000, text: '[still thinking...]' },
+      { delay: 20000, text: '[almost there...]' },
+    ];
+    const timers = stages.map((s) =>
+      setTimeout(() => {
+        const th = bubble.body.querySelector('.bubble-thinking');
+        if (th) th.textContent = s.text;
+      }, s.delay),
+    );
+    return () => timers.forEach(clearTimeout);
+  }
+
   function pushErrorBubble(msg) {
     const div = document.createElement('div');
     div.className = 'chat-msg assistant chat-error';
@@ -189,6 +206,7 @@
     if (window.glassesEmote) window.glassesEmote.set('loading');
 
     const bubble = createAssistantBubble();
+    const stopProgress = startThinkingProgress(bubble);
     let acc = '';
 
     try {
@@ -237,6 +255,7 @@
           try {
             const j = JSON.parse(data);
             if (j.delta) {
+              if (acc === '') stopProgress();  // 首字节到达 → 停掉阶段性文案
               acc += j.delta;
               // 增量 render：保留光标在末尾
               bubble.body.innerHTML = mdToHtml(acc) + '<span class="bubble-cursor">▍</span>';
@@ -273,6 +292,7 @@
       }
     } catch (err) {
       console.error('[chat] error:', err);
+      stopProgress();  // 出错也停 progress 避免 leak
       bubble.wrap.remove();
       pushErrorBubble('网络异常，对话失败');
       if (window.glassesEmote) window.glassesEmote.flash('error', 1500);

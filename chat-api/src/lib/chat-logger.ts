@@ -54,8 +54,12 @@ export interface ChatLogEntry {
   total_tokens: number;
   /** RAG 命中的 source 列表（截前 10 个） */
   rag_hits: string[];
-  /** SSE 总响应耗时 ms */
+  /** SSE 总响应耗时 ms（从请求到 stream 结束） */
   duration_ms: number;
+  /** Time-to-first-token：从请求到 LLM 第一个 delta 的延迟 ms（含 RAG embedding + 检索 + LLM 首 token），未拿到首 token 时缺省 */
+  ttft_ms?: number;
+  /** 火山方舟 prefix cache 命中的 token 数（usage.prompt_tokens_details.cached_tokens）— 验证 prompt cache 是否生效 */
+  cached_tokens?: number;
   /** 拦截原因（injection / rate_limit / upstream_error 等），正常对话不写 */
   blocked?: string;
 }
