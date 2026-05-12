@@ -8,10 +8,10 @@
 (function () {
   'use strict';
 
-  // doubao-seed-2.0-pro 上下文窗口 256k token
-  const CTX_LIMIT = 256000;
-  const STORE_KEY = 'maxwell-tokens-v1';
-  const DEFAULT_MODEL = 'doubao-seed-2.0-pro';
+  // ctx 上限按当前后端模型设；首次对话前显示占位，SSE meta.model 到达后由后端动态填充
+  const CTX_LIMIT = 128000;        // 当前 deepseek-v3.2 (128k)；未来换 256k 模型时调
+  const STORE_KEY = 'maxwell-tokens-v2';
+  const DEFAULT_MODEL = '-';        // 占位 — 不写死模型名，等后端 SSE meta.model 告知
 
   // ── 累计存储 ────────────────────────────────────────────
   function load() {
