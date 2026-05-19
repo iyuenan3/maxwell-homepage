@@ -46,8 +46,8 @@ function loadEnv() {
   }
 }
 loadEnv();
-const VOLCANO_API_KEY = process.env.VOLCANO_API_KEY;
-const VOLCANO_API_BASE = process.env.VOLCANO_API_BASE;
+const CHAT_LLM_API_KEY = process.env.CHAT_LLM_API_KEY;
+const CHAT_LLM_BASE_URL = process.env.CHAT_LLM_BASE_URL;
 const SANITIZE_MODEL = "doubao-seed-2.0-pro";
 
 // ── source label 重映射 (旧 → 新) ────────────────────
@@ -215,11 +215,11 @@ ${text}
 直接给脱敏后的文本，不加任何解释、标注、JSON 包裹、代码块包裹。保持原段落结构与标点。`;
 
 async function sanitizeOnce(text) {
-  const res = await fetch(`${VOLCANO_API_BASE}/chat/completions`, {
+  const res = await fetch(`${CHAT_LLM_BASE_URL}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${VOLCANO_API_KEY}`,
+      Authorization: `Bearer ${CHAT_LLM_API_KEY}`,
     },
     body: JSON.stringify({
       model: SANITIZE_MODEL,

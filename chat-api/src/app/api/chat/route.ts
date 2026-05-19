@@ -12,8 +12,8 @@ let _embedClient: ReturnType<typeof createEmbedClient> | null = null;
 function getEmbedClient() {
   if (_embedClient) return _embedClient;
   _embedClient = createEmbedClient({
-    baseUrl: process.env.VOLCANO_API_BASE!,
-    apiKey: process.env.VOLCANO_API_KEY!,
+    baseUrl: process.env.CHAT_LLM_BASE_URL!,
+    apiKey: process.env.CHAT_LLM_API_KEY!,
     model: "doubao-embedding-vision",
   });
   return _embedClient;
@@ -203,11 +203,11 @@ export async function POST(req: Request) {
   }
 
   // env check
-  const apiBase = process.env.VOLCANO_API_BASE;
-  const apiKey = process.env.VOLCANO_API_KEY;
-  const model = process.env.VOLCANO_MODEL;
+  const apiBase = process.env.CHAT_LLM_BASE_URL;
+  const apiKey = process.env.CHAT_LLM_API_KEY;
+  const model = process.env.CHAT_LLM_MODEL;
   if (!apiBase || !apiKey || !model) {
-    console.error("[chat] missing env: VOLCANO_API_BASE / VOLCANO_API_KEY / VOLCANO_MODEL");
+    console.error("[chat] missing env: CHAT_LLM_BASE_URL / CHAT_LLM_API_KEY / CHAT_LLM_MODEL");
     return new Response(JSON.stringify({ error: "server_misconfigured" }), {
       status: 500,
       headers: { ...cors, "Content-Type": "application/json" },
@@ -236,7 +236,7 @@ export async function POST(req: Request) {
 
   const systemPrompt = buildSystemPrompt(contextBlock);
 
-  // Volcano Ark stream call
+  // newapi stream call (OpenAI-compatible)
   const upstream = await fetch(`${apiBase}/chat/completions`, {
     method: "POST",
     headers: {

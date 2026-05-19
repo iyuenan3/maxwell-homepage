@@ -26,8 +26,8 @@ function loadEnv() {
 }
 loadEnv();
 
-const VOLCANO_API_KEY = process.env.VOLCANO_API_KEY;
-const VOLCANO_API_BASE = process.env.VOLCANO_API_BASE;
+const CHAT_LLM_API_KEY = process.env.CHAT_LLM_API_KEY;
+const CHAT_LLM_BASE_URL = process.env.CHAT_LLM_BASE_URL;
 const EMBED_MODEL = "doubao-embedding-vision";
 
 // ── parse args ─────────────────────────────────────────
@@ -61,11 +61,11 @@ process.stderr.write(`${idx.count} chunks (${idx.dim}d) in ${Date.now() - t0}ms\
 // ── embed query ─────────────────────────────────────────
 process.stderr.write("embedding query... ");
 const t1 = Date.now();
-const res = await fetch(`${VOLCANO_API_BASE}/embeddings`, {
+const res = await fetch(`${CHAT_LLM_BASE_URL}/embeddings`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${VOLCANO_API_KEY}`,
+    Authorization: `Bearer ${CHAT_LLM_API_KEY}`,
   },
   body: JSON.stringify({ model: EMBED_MODEL, input: [query] }),
 });

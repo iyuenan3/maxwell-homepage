@@ -66,13 +66,13 @@ function loadEnv() {
 }
 loadEnv();
 
-const VOLCANO_API_KEY = process.env.VOLCANO_API_KEY;
-const VOLCANO_API_BASE = process.env.VOLCANO_API_BASE;
+const CHAT_LLM_API_KEY = process.env.CHAT_LLM_API_KEY;
+const CHAT_LLM_BASE_URL = process.env.CHAT_LLM_BASE_URL;
 const EMBED_MODEL = "doubao-embedding-vision";
 const SANITIZE_MODEL = "doubao-seed-2.0-pro";
 
-if (!DRY_RUN && (!VOLCANO_API_KEY || !VOLCANO_API_BASE)) {
-  throw new Error("VOLCANO_API_KEY / VOLCANO_API_BASE missing in .env.local");
+if (!DRY_RUN && (!CHAT_LLM_API_KEY || !CHAT_LLM_BASE_URL)) {
+  throw new Error("CHAT_LLM_API_KEY / CHAT_LLM_BASE_URL missing in .env.local");
 }
 
 // ── 4 大类 source category ───────────────────────────────
@@ -422,11 +422,11 @@ ${chunkText}
 直接给脱敏后的文本，不加任何解释、标注、JSON 包裹、代码块包裹。保持原段落结构与标点。`;
 
 async function sanitizeText(text) {
-  const res = await fetch(`${VOLCANO_API_BASE}/chat/completions`, {
+  const res = await fetch(`${CHAT_LLM_BASE_URL}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${VOLCANO_API_KEY}`,
+      Authorization: `Bearer ${CHAT_LLM_API_KEY}`,
     },
     body: JSON.stringify({
       model: SANITIZE_MODEL,
@@ -493,12 +493,12 @@ async function sanitizeChunks(chunks) {
 
 // ── embedding ───────────────────────────────────────────
 async function embedBatch(texts) {
-  const url = `${VOLCANO_API_BASE}/embeddings`;
+  const url = `${CHAT_LLM_BASE_URL}/embeddings`;
   const res = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${VOLCANO_API_KEY}`,
+      Authorization: `Bearer ${CHAT_LLM_API_KEY}`,
     },
     body: JSON.stringify({ model: EMBED_MODEL, input: texts }),
   });

@@ -1,7 +1,7 @@
 /**
  * OpenAI-compatible embedding client.
- * Works with Volcano Ark `doubao-embedding-vision` (1024-dim) over the
- * shared `/api/coding/v3` base URL.
+ * 通过 newapi-proxy 网关调用 `doubao-embedding-vision` (2048-dim)，
+ * 走标准 `/v1/embeddings` 端点（newapi 路由到上游火山方舟）。
  *
  * Batch size is the caller's responsibility — pass in chunks of <= 10
  * to stay within the upstream concurrency window.
@@ -17,7 +17,7 @@ export function createEmbedClient(config: EmbedClientConfig) {
   const url = `${config.baseUrl}/embeddings`;
 
   return {
-    /** Returns one float[1024] per input string, in the same order. */
+    /** Returns one float[2048] per input string, in the same order. */
     async embed(input: string | string[]): Promise<number[][]> {
       const inputs = Array.isArray(input) ? input : [input];
       if (inputs.length === 0) return [];

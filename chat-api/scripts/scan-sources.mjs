@@ -35,16 +35,16 @@ function loadEnv() {
 }
 loadEnv();
 
-const VOLCANO_API_KEY = process.env.VOLCANO_API_KEY;
-const VOLCANO_API_BASE = process.env.VOLCANO_API_BASE;
+const CHAT_LLM_API_KEY = process.env.CHAT_LLM_API_KEY;
+const CHAT_LLM_BASE_URL = process.env.CHAT_LLM_BASE_URL;
 const JUDGE_MODEL = "doubao-seed-2.0-pro";
 const FORCE = process.argv.includes("--force");
 const ONLY_SOURCE = process.argv
   .find((a) => a.startsWith("--source="))
   ?.split("=")[1];
 
-if (!VOLCANO_API_KEY || !VOLCANO_API_BASE) {
-  throw new Error("VOLCANO_API_KEY / VOLCANO_API_BASE missing in .env.local");
+if (!CHAT_LLM_API_KEY || !CHAT_LLM_BASE_URL) {
+  throw new Error("CHAT_LLM_API_KEY / CHAT_LLM_BASE_URL missing in .env.local");
 }
 
 // ── 数据源配置（migration v3 后：vault 内 + 不搬的本地源）───
@@ -221,11 +221,11 @@ async function llmJudge(filepath, parent_dir, content) {
     : head;
   const prompt = buildJudgePrompt(filepath, parent_dir, preview);
 
-  const res = await fetch(`${VOLCANO_API_BASE}/chat/completions`, {
+  const res = await fetch(`${CHAT_LLM_BASE_URL}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${VOLCANO_API_KEY}`,
+      Authorization: `Bearer ${CHAT_LLM_API_KEY}`,
     },
     body: JSON.stringify({
       model: JUDGE_MODEL,
