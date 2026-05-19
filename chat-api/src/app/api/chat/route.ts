@@ -92,6 +92,43 @@ function detectInjection(content: string): boolean {
   return INJECTION_PATTERNS.some((p) => p.test(content));
 }
 
+// ── 求职 / 面试 / 第三方公司情报硬拦截 (P0 隐私边界) ───────
+// 化身访客可能是潜在雇主 / 客户，泄露面试内容代价巨大。LLM prompt 防御 +
+// RAG 路径排除 + server-side prefilter 三层防护，此处是 server-side prefilter。
+const JOB_INTERVIEW_PATTERNS = [
+  /面试/,
+  /面经/,
+  /面试官/,
+  /面试题/,
+  /面试录音/,
+  /求职/,
+  /找工作/,
+  /应聘/,
+  /招聘/,
+  /投简历/,
+  /投了几家/,
+  /在面/,
+  /跳槽/,
+  /HR\s*面/i,
+  /CEO\s*面/i,
+  /终面/,
+  /一面|二面|三面/,
+  /谈薪/,
+  /薪资期望/,
+  /期望薪资/,
+  /当前薪资/,
+  /\bOffer\b/i,
+  /BOSS\s*直聘/i,
+  /招呼语/,
+];
+
+const REJECT_JOB_INTERVIEW_MSG =
+  "求职 / 面试这块不方便公开聊，具体合作或岗位机会可以邮件 limaxwell93@gmail.com 直接联系 Maxwell。";
+
+function detectJobInterview(content: string): boolean {
+  return JOB_INTERVIEW_PATTERNS.some((p) => p.test(content));
+}
+
 // ── 用 SSE 流式返回固定文案（不打 LLM） ────────────────
 function makeStaticReply(text: string, cors: Record<string, string>) {
   const encoder = new TextEncoder();
@@ -200,6 +237,27 @@ export async function POST(req: Request) {
       blocked: "injection",
     });
     return makeStaticReply(REJECT_INJECTION_MSG, cors);
+  }
+
+  // ── 求职 / 面试硬拦截（P0 隐私边界） ────────────────
+  if (detectJobInterview(lastUserMsg)) {
+    console.log(`[chat] blocked job_interview from ${ip}: ${lastUserMsg.slice(0, 100)}`);
+    logChat({
+      ts: new Date().toISOString(),
+      ip,
+      user_agent: userAgent,
+      msg_count: messages.length,
+      user: lastUserMsg,
+      assistant: REJECT_JOB_INTERVIEW_MSG,
+      model: "blocked",
+      input_tokens: 0,
+      output_tokens: 0,
+      total_tokens: 0,
+      rag_hits: [],
+      duration_ms: Date.now() - startTime,
+      blocked: "job_interview",
+    });
+    return makeStaticReply(REJECT_JOB_INTERVIEW_MSG, cors);
   }
 
   // env check

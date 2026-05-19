@@ -51,6 +51,26 @@ const MIN_CHUNK_CHARS = 200;     // 提高最小 → 过滤碎片噪声
 const EMBED_BATCH_SIZE = 10;
 const SANITIZE_CONCURRENCY = 10;
 
+// chunk-level 求职/面试关键词过滤（P0 隐私边界第 4 层防御）
+// 防御漏网：wiki:projects/* / detail / home-data 等 hardcoded 源不走 LLM judge,
+// 可能含求职 mention（如 worklog.md changelog 提到面试活动 / chemai-demo 关联段提及）.
+// 匹配的 chunk 整段丢弃，不入索引。
+const JOB_INTERVIEW_CHUNK_FILTER = /面试|面经|面试官|面试题|面试录音|求职|找工作|应聘|招聘|投简历|投了几家|在面|跳槽|HR\s*面|CEO\s*面|终面|一面|二面|三面|谈薪|薪资期望|期望薪资|当前薪资|\bOffer\b|BOSS\s*直聘|招呼语|offerhelper/i;
+
+// source 整源黑名单：项目本身就是求职/面试辅助工具的，所有 chunks 一律 drop
+// 即使 chunk text 不含明显关键词（如功能模块设计表格），仍然完整排除
+const JOB_INTERVIEW_SOURCE_BLACKLIST = [
+  /^wiki:offerhelper$/,
+];
+
+function hasJobInterviewContent(text) {
+  return JOB_INTERVIEW_CHUNK_FILTER.test(text);
+}
+
+function isJobInterviewSource(source) {
+  return JOB_INTERVIEW_SOURCE_BLACKLIST.some((p) => p.test(source));
+}
+
 const DRY_RUN = process.argv.includes("--dry-run");
 
 // ── env ──────────────────────────────────────────────────
@@ -83,7 +103,6 @@ const SOURCE_CATEGORY = {
   pets: "personal",                         // ← v3: 原 notion-pets 改名
   "notion-pets": "personal",                // 兼容旧 manifest
   "resume-archive": "personal",
-  "worklog-diary": "personal",
   // work-history
   nokia: "work-history",                    // ← v3: 含原 notion-job 内容（合并）
   huawei: "work-history",
@@ -576,13 +595,32 @@ async function main() {
   console.log("=== build-embeddings v2 ===");
   console.log(DRY_RUN ? "(dry-run: skip embedding + sanitize)\n" : "");
 
-  const chunks = [
+  const rawChunks = [
     ...loadResume(),
     ...loadHomeData(),
     ...loadDetailPages(),
     ...loadWiki(),
     ...(await loadFromManifest()),
   ];
+
+  // P0 隐私边界第 4 层防御：chunk-level 求职/面试过滤
+  // 双检查：source 整源黑名单 + chunk text 关键词
+  const filteredBySource = {};
+  const chunks = rawChunks.filter((c) => {
+    if (isJobInterviewSource(c.source) || hasJobInterviewContent(c.text)) {
+      const sk = c.source.split(":")[0];
+      filteredBySource[sk] = (filteredBySource[sk] || 0) + 1;
+      return false;
+    }
+    return true;
+  });
+  const filteredCount = rawChunks.length - chunks.length;
+  if (filteredCount > 0) {
+    console.log(`\n→ chunk-level job/interview filter: dropped ${filteredCount} chunks`);
+    for (const [k, v] of Object.entries(filteredBySource).sort((a, b) => b[1] - a[1])) {
+      console.log(`    ${k.padEnd(18)} -${v}`);
+    }
+  }
 
   // 统计
   const sourceCount = {};

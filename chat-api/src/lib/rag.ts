@@ -24,7 +24,6 @@ const SOURCE_CATEGORY: Record<string, string> = {
   pets: "personal",                       // v3
   "notion-pets": "personal",              // 兼容
   "resume-archive": "personal",
-  "worklog-diary": "personal",
   nokia: "work-history",
   huawei: "work-history",
   quanjing: "work-history",

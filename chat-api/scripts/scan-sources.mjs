@@ -61,16 +61,13 @@ const SOURCES = [
   { label: "projects/openclaw", path: path.join(VAULT_ROOT, "projects/openclaw"), extensions: [".md"] },
 
   // ── 不搬的源（保持原位置，每天可能更新）──
-  {
-    label: "worklog-diary",
-    path: path.join(HOME, "Desktop/Claude-Project/worklog/diaries"),
-    extensions: [".md"],
-  },
+  // P0 隐私边界：diaries 整源排除（每日日记含面试 + 私人反思，访客不该看）
+  // P0 隐私边界：worklog/wiki/job/ 整目录排除（公司情报档案 / 面试录音 / 求职文案 / 谈薪）
   {
     label: "worklog",
     path: path.join(HOME, "Desktop/Claude-Project/worklog"),
     extensions: [".md"],
-    excludeRelpaths: ["diaries"],
+    excludeRelpaths: ["diaries", "wiki/job"],
   },
   {
     label: "ai-knowledge",
@@ -193,7 +190,9 @@ V (value 价值):
 P (privacy 隐私):
   G 公开: 简历对外内容 / 已发博客 / GitHub README / 项目对外口径 / 主页 facts
   Y 工作敏感: 公司内部细节 / 项目代号 / 内部流程 / 同事职位（可入但脱敏）
-  R 强隐私: 手机号 / 身份证 / 密码 / API key / 银行卡 / 私人情绪宣泄 / 第三方未公开评价 / 不该流出的内部 wiki
+  R 强隐私: 手机号 / 身份证 / 密码 / API key / 银行卡 / 私人情绪宣泄 / 第三方未公开评价 / 不该流出的内部 wiki / **面试经历 / 求职活动 / HR 面 / CEO 面 / 面试录音转写 / 第三方公司内部情报分析 / 谈薪策略 / Offer 协商 / BOSS 招呼语 / 面试自我介绍模板**
+
+⚠️ P0 红线：**含任何求职 / 面试 / 第三方公司内部分析内容 → 强制 P=R + value=L（即使方法论价值高，也判 L 让 decideAction → exclude）**。访客是潜在雇主 / 客户，泄露代价巨大。
 
 needs_sanitize (脱敏标志):
   true: 文件含 (a) 实际金额数字（¥/元/万/RMB/工资/报价/合同金额，不含百分比/比率） 或 (b) 第三方人名（除 Maxwell / 李越男 / 公开人物 Karpathy / Andrej / Ilya / Sam Altman / 张俊林） 或 (c) 第三方公司名（除白名单：华为 / Nokia / 全境骑行 / Anthropic / 字节跳动 / OpenAI / Cursor / 火山方舟 / Volcano Engine / Claude / DeepSeek）
