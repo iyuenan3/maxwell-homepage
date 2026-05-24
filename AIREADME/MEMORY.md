@@ -1,0 +1,27 @@
+# MEMORY — maxwell-homepage
+<!-- 踩坑/失败/事故，append-only。别重复踩坑。决策→DECISIONS。 -->
+
+## detail-init.js 多处共用 → 某路径 404 → 整页空白 · 2026-05-10
+- 现象: 加 CSP 提取 inline script 后，V1 主页 / 详情页 间歇性整页空白。
+- 根因: `detail-init.js` 被 V1(`/v1/`) 主页和详情页(`/p/*.html` 通过 `../` 解析到根) 共用；deploy 只复制到部分目录，缺的那层加载 404 → 脚本不执行 → IO observer 没 reveal 内容 → 空白。
+- 结论/避免: deploy.sh Stage 4(V1) + Stage 5(根) 都要 rsync `detail-init.js`；加新外部 .js 时检查根/`/v1/`/`/p/` 三层引用路径，任一 404 都会让该路径页面空白。脚本加 100ms setTimeout fallback 强制 reveal。
+
+## nginx 整 server 块覆盖 → 丢 /api/chat → POST 405 · 2026-05-11
+- 现象: 加 admin 反代后，maxwellii.com 的 chat 对话整体 POST 405。
+- 根因: 从仓库整个 server 块覆盖推送时，把只在服务器上、没回写仓库的 `location /api/chat` 块整段丢了；请求 fallback 到 SPA index.html（只接 GET）。
+- 结论/避免: `site/nginx.conf` 是唯一权威，所有 location 必须完整存在仓库；推 nginx 前 ssh `grep -A 8 'location'` 对比本地确认无遗漏；只加 1 个 location 时可单独 ssh `sudo vi` 加，别整块覆盖。
+
+## env NEWAPI_* 被 shell rc 污染 → embedding 拿到 HTML · 2026-05-19
+- 现象: 本地 `npm run rag` 时 embedding 端返回 HTML（newapi 前端 SPA），`JSON.parse(<!doctype html>)` 报错；但 curl / node fetch 直打端点正常。
+- 根因: 第一版 env 用 `NEWAPI_*`，与用户 shell rc 全局 export 的同名变量撞；`loadEnv()` 的 `!process.env[m]` 保护让 .env.local 的值被跳过 → 用了 shell 的域名版端点（而非 IP 版）→ 命中 newapi 前端。
+- 结论/避免: 内部 LLM 模块 env 用模块级 prefix（`CHAT_LLM_*`），别复用外部工具官方 prefix；排查"fetch 返回错误内容"先 `env | grep <前缀>` 查 shell 污染。见 ADR-005。
+
+## SSH ControlMaster mux socket 挂死 → deploy 卡死 · 2026-05-13
+- 现象: `bash site/deploy.sh` 卡 Stage 1 不动；新发 `ssh alicloud-sg "echo ok"` 也挂着不返回；`ConnectTimeout` 不生效。
+- 根因: `~/.ssh/config` ControlMaster auto 的 mux master 进程偶发挂死（网络抖动/休眠后），socket 还在但不接受新 channel；ssh client 先去复用 mux，没走 TCP 握手 → 无限挂起。
+- 结论/避免: 一行修复 `ssh -O exit alicloud-sg`（socket 立即消失）。预防：久未用先 `ssh alicloud-sg "date"` 烫连接，5s 不通先 `ssh -O exit` 清掉。
+
+## Cloudflare Browser Cache TTL 覆盖 origin max-age=0 · 2026-05-09
+- 现象: nginx CSS 设 `max-age=0, must-revalidate`，但浏览器实际拿到 `max-age=14400`，CSS 改动 4h 后才生效。
+- 根因: Cloudflare Browser Cache TTL 默认 4h，覆盖 origin 的 `max-age=0`。
+- 结论/避免: CF 后台 Caching → Configuration → Browser Cache TTL 设 "Respect Existing Headers" 才让 origin 生效；之后 CSS 改动 `bash site/deploy.sh` + ETag 校验自动生效，不需 `?v=` cache bust。
