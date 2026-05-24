@@ -5,14 +5,13 @@
 
 | 依赖 | 用途 | 权威路径 |
 |---|---|---|
-| **newapi-proxy**（LLM 网关） | chat-api 的 LLM 上游：chat completions（`doubao-seed-2.0-lite`）+ embeddings（`doubao-embedding-vision`），OpenAI 兼容 | `../newapi-proxy/AIREADME/SPEC.md` |
+| **火山方舟 Ark**（LLM 上游，直连）| chat-api 的 chat（`doubao-seed-2.0-lite`）+ embedding（`doubao-embedding-vision`），OpenAI 兼容 `/api/coding/v3` | 火山 console（Ark Coding Plan）|
 | **worklog**（wiki 数据） | `site/build.js` 构建详情页时读 `wiki/projects/<wiki_slug>.md` 抽 fact —— **唯一合法回读 worklog 的例外**（见下） | `../worklog/AIREADME/SPEC.md` |
 
-### newapi-proxy（运行时 LLM 上游）
-- chat-api `route.ts` 调 `${CHAT_LLM_BASE_URL}/chat/completions`（stream）+ `/embeddings`（doubao-embedding-vision 2048 dim）。
-- 端点 / 证书 / 模型清单 / 计费的**当前真相以 `../newapi-proxy/AIREADME/SPEC.md` 为准**（IP 直连自签，IP/证书会变）。
-- ⚠️ **已知 drift（2026-05-24）**：chat-api committed `.env.example`（5/21）的上游端点 + 自签 `NODE_TLS_REJECT_UNAUTHORIZED=0` 写法，与 newapi-proxy **当前** SPEC 已不一致（newapi 侧端点已迁移 + 改为安装 root CA `NODE_EXTRA_CA_CERTS`，其域名入口 5/24 备案拦截暂停）。**当前真相以 `../newapi-proxy/AIREADME/SPEC.md` 为准**（具体 IP/端口不在本公开仓库重复，避免泄露兄弟项目当前端点）；chat-api 服务器 `.env.local` 是否已同步需核实。另：newapi-proxy 当前 SPEC 把 `doubao-embedding-vision` 渠道标「暂不可用」，而 chat-api 代码（`route.ts`）仍配置用它做 embedding —— 可能 chat-api 仍指旧 newapi 端点（那里 embedding 可用），一并待核实。**改 newapi 渠道 / 端点不在本项目做**，走 newapi-proxy session 或跨项目转达流程。
-- 模型选型变更（5/19 deepseek-v4-flash → 5/21 doubao-seed-2.0-lite）理由见 DECISIONS / CHANGELOG。
+### 火山方舟 Ark（运行时 LLM 上游，直连，OpenAI 兼容）
+- chat-api `route.ts` 调 `${CHAT_LLM_BASE_URL}/chat/completions`（stream，`thinking:{type:"disabled"}` 关 doubao 深度思考）+ `/embeddings`（`doubao-embedding-vision` 2048 dim）。chat 模型 `doubao-seed-2.0-lite`（env `CHAT_LLM_MODEL`）；离线脚本 judge/sanitize 用 `doubao-seed-2.0-pro`。
+- 端点 `https://ark.cn-beijing.volces.com/api/coding/v3`（Coding Plan）；鉴权 `Bearer ark-<key>`（火山 console 申请，**仅存服务器 `.env.local` chmod 600，绝不入仓库**）；Ark 公网有效证书 → **无需** `NODE_TLS_REJECT_UNAUTHORIZED`。
+- **2026-05-24 由 newapi-proxy 中转站切回直连 Ark**（DECISIONS ADR-009 取代 ADR-004）：绕过 newapi 侧 embedding 渠道「暂不可用」阻塞 + 恢复 doubao prompt cache 透传 + 去掉自签 TLS hack。`embeddings.json` 零重建（同模型同 2048 维向量空间）。已线上验证 RAG + chat 全链路通。
 
 ### worklog（构建期数据契约 —— 唯一合法回读例外）
 - **方向**：数据流 worklog → maxwell-homepage（build 期读 worklog wiki）；依赖方向上 maxwell-homepage 依赖 worklog，故记于出向。与 worklog 自己 SPEC 把 maxwell-homepage 列为 inbound 消费方一致。
@@ -27,6 +26,6 @@
 
 ## 共享底座 / 复用资产
 - **chat-api 不是共享底座** —— 仅被 maxwellii.com 站点消费（单一消费方 < 2），且是本仓库专属子模块 → **是组件不是独立 AIREADME 节点**（架构见 ARCHITECTURE）。
-- **newapi-proxy 是共享底座**（被 Maxwell 多个工具 + 客户共用）→ 已是独立节点 `../newapi-proxy/AIREADME/`，本项目只是它的客户端使用者之一。
+- **（历史）newapi-proxy** —— chat-api 2026-05-19~05-24 曾以它为 LLM 上游，现已切回直连火山方舟 Ark（ADR-009），**本项目不再依赖**。newapi-proxy 仍是 Maxwell 其他工具的共享底座（独立节点 `../newapi-proxy/AIREADME/`），但与本项目无关。
 - **SSL 证书 `*.maxwellii.com`** 与子站 naming.maxwellii.com / tale.maxwellii.com 共用 SNI（部署细节见 DEPLOYMENT）。
 - **求职活动归 worklog**：面试 / 求职沟通文案 / 谈薪 / 公司情报 等全在 worklog（私密），本仓库不维护其正文；本项目仅维护"文案产品规则"（字数算法 / 平台机制 / 排序原则）—— 边界判断「会随求职阶段变 → worklog；产品规则不变 → homepage」见 CONVENTIONS。

@@ -4,7 +4,7 @@
 #
 # Prereq on server (one-time):
 #   - Node 20+ + pm2 安装好
-#   - vi /home/admin/maxwellii-chat-api/.env.local 写入 CHAT_LLM_API_KEY 等（含 NODE_TLS_REJECT_UNAUTHORIZED=0）
+#   - vi /home/admin/maxwellii-chat-api/.env.local 写入 CHAT_LLM_API_KEY / CHAT_LLM_BASE_URL / CHAT_LLM_MODEL
 #   - nginx 加 location /api/chat → proxy_pass http://127.0.0.1:3002 + proxy_buffering off
 
 set -e

@@ -1,7 +1,7 @@
 /**
  * OpenAI-compatible embedding client.
- * 通过 newapi-proxy 网关调用 `doubao-embedding-vision` (2048-dim)，
- * 走标准 `/v1/embeddings` 端点（newapi 路由到上游火山方舟）。
+ * 直连火山方舟 Ark 调用 `doubao-embedding-vision` (2048-dim)，
+ * 走标准 `/embeddings` 端点（Ark OpenAI 兼容）。
  *
  * Batch size is the caller's responsibility — pass in chunks of <= 10
  * to stay within the upstream concurrency window.

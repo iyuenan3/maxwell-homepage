@@ -56,3 +56,10 @@
 - Decision: 所有初始化脚本提取到外部 .js（`reveal.js` / `detail-init.js`）；nginx 加 4 安全头（CSP/XFO/XCTO/RP）。
 - Alternatives（否决）: CSP 加 `'unsafe-inline'`（破坏防护意义）；用 nonce（静态站无后端注入 nonce 不便）。
 - Tradeoff: `detail-init.js` 多处共用引发部署陷阱（见 MEMORY）；仓库 nginx.conf 当前缺这 4 头（drift，见 MEMORY / DEPLOYMENT 待核实）。
+
+## ADR-009 · chat-api 直连火山方舟 Ark，取代 newapi-proxy 中转站 · 2026-05-24
+- Problem: 经 newapi-proxy 中转后，newapi v2 迁移导致端点 drift + embedding 渠道「暂不可用」阻塞 chat-api RAG；中转层多一跳依赖 + 自签证书 TLS hack。
+- Constraint: 体验优先（TTFT / embedding 必须可用）；不想被 newapi 迁移/渠道状态卡住；env 命名保持 `CHAT_LLM_*`（ADR-005 仍成立）。
+- Decision: chat-api（chat + embedding + 离线 judge/sanitize）改**直连火山方舟 Ark**（`/api/coding/v3`，OpenAI 兼容，`ark-` key）；`doubao-seed-2.0-lite` 加 `thinking:{type:"disabled"}` 关深度思考（实测 reasoning 245→0）。**取代 ADR-004**。
+- Alternatives（否决）: 继续等 newapi v2 接通 embedding 渠道（受制于人 + 仍有 drift）；切 newapi `auto-llm`（化身要稳定行为）。
+- Tradeoff: 放弃 newapi 的多上游聚合 / 统一计费（化身只需单一火山上游，不需要）；逻辑代码零改（早已通用 OpenAI 兼容），仅 .env 值 + 注释变更；`embeddings.json` 零重建（同模型同向量空间）。已线上验证 RAG + chat 全链路通。

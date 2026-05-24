@@ -13,7 +13,7 @@
 - **可选读 worklog wiki**：`git_log`/`decisions`/`stats`/`ps` 组件按 `wiki_slug` 从 worklog 抽 fact（数据契约见 RELATIONS / SPEC）。
 
 ### 2. `chat-api/` —— LLM 化身后端（Next.js 16 + React 19，API-only）
-- **运行时**（`src/app/api/chat/route.ts`）：3 层限流 → injection prefilter → 求职/面试 prefilter（P0）→ RAG 检索（embed query → cosine retrieve）→ `buildSystemPrompt(context)` → newapi 上游 `chat/completions`（stream）→ SSE 转发 + usage 解析 + `chat-logger` 落日志。RAG 失败降级为空 context 不中断。
+- **运行时**（`src/app/api/chat/route.ts`）：3 层限流 → injection prefilter → 求职/面试 prefilter（P0）→ RAG 检索（embed query → cosine retrieve）→ `buildSystemPrompt(context)` → 火山方舟 Ark `chat/completions`（stream，thinking 关）→ SSE 转发 + usage 解析 + `chat-logger` 落日志。RAG 失败降级为空 context 不中断。
 - **system-prompt**（`src/app/api/chat/system-prompt.ts`）：12 段防御 prompt（身份 / 10 项目权威表 / 常识题 fallback / 禁止伪造归属 hard rule / 核心事实 7 猫 2 狗+姓名等价 / 回复风格 / 项目聚焦 / 范围含代码边界 B / 防 RAG 污染 / 防伪造历史 / 防 injection / [context] 段）。「输出前最后过滤」段在 [context] 前、凌驾所有规则。
 - **lib**：`embed-client.ts`（OpenAI 兼容 embedding client）/ `rag.ts`（运行时 cosine + perCategoryMax/perSourceMax）/ `rate-limit.ts`（in-memory）/ `chat-logger.ts`（按 IP 分文件 JSONL）。
 - **离线 RAG 管线**（`scripts/`，本地跑）：`scan-sources.mjs`（LLM judge 各源文件 P/V 隐私分级 → `manifest.json`）→ `build-embeddings.mjs`（chunk + sanitize + 4 层求职过滤 + embed → `embeddings.json`）。调试：`rag-search.mjs`。judge/sanitize 模型 = `doubao-seed-2.0-pro`（与 runtime chat 模型分离）。
@@ -45,7 +45,7 @@ maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, ~407 .md)
 - **部署方案 C**：V2 占主域 / V1 退 `/v1/` / `/p/` 共享 → ADR-001。
 - **RAG 独立 Obsidian Vault**（仓库外，不入 git）→ ADR-002。
 - **求职内容 4 层防御**（单层 system-prompt 不足）→ ADR-003。
-- **LLM 上游切 newapi-proxy 中转站**（替代火山原生）→ ADR-004。
+- **LLM 上游：直连火山方舟 Ark**（曾 newapi-proxy 中转，2026-05-24 切回直连）→ ADR-009（取代 ADR-004）。
 - **env 变量 `CHAT_LLM_*` 前缀**（避开 shell rc 污染）→ ADR-005。
 - **build.js 纯 Node 零依赖**（详情页无 npm 包）→ ADR-006。
 - **chat 模型 doubao-seed-2.0-lite**（替代 deepseek-v4-flash）→ ADR-007。

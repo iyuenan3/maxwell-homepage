@@ -7,12 +7,12 @@
 - **隐私防御稳态**：4 层求职过滤的关键词 4 处同步；化身翻车（泄露 / 伪造归属）随时修。
 
 ## Next
-- **核实并消除 newapi 端点 drift**：chat-api 配置对齐 newapi-proxy 当前端点（具体值见 `../newapi-proxy/AIREADME/SPEC.md`），见 RELATIONS drift flag。
+- **观察直连 Ark 线上表现**：TTFT（首查 ~5.5s，多为 RAG context prefill）/ 成本 / 错误率，跑一段时间确认稳态。
 - **同步 nginx 安全头**：核对服务器实际 4 安全头，把仓库 `site/nginx.conf` 补齐到与服务器一致（消除 drift，见 DEPLOYMENT / MEMORY）。
 - **prompt cache 验证**：切回 doubao 系列后理论上恢复 cache 透传（deepseek 时代预计无命中），实测 TTFT / 命中率确认。
 
 ## Later
-- newapi-proxy 二阶段：上游切到 newapi 内网（`127.0.0.1:3000/v1`），newapi-proxy 侧记为 planned 入向（跨项目，走转达流程）。
+- **（已放弃）newapi-proxy 内网二阶段** —— 2026-05-24 chat-api 改直连火山方舟 Ark，不再经 newapi，此方案作废。
 - 详情页 `timeline` 组件（截图接口已预留，未渲染）按需启用。
 
 ## 已搁置（+原因）

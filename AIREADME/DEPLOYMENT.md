@@ -42,7 +42,7 @@ cat site/nginx.conf | ssh alicloud-sg "sudo tee /etc/nginx/sites-available/maxwe
 - 路由 / 缓存 / 安全头细节见 SPEC ② + 下方运维约束。
 
 ## 共享底座引用
-- **LLM 上游 = newapi-proxy**（独立节点）→ 端点/证书/模型以 `../newapi-proxy/AIREADME/SPEC.md` 为权威。chat-api 经 `CHAT_LLM_BASE_URL` 接入（自签证书 → 当前 `NODE_TLS_REJECT_UNAUTHORIZED=0`；newapi 侧已迁端点 + 改 root CA，见 RELATIONS drift flag）。
+- **LLM 上游 = 火山方舟 Ark（直连）**：`CHAT_LLM_BASE_URL` = `https://ark.cn-beijing.volces.com/api/coding/v3`（Coding Plan），`ark-` key 仅存服务器 `.env.local`（chmod 600）。Ark 公网有效证书 → 无 `NODE_TLS_REJECT_UNAUTHORIZED`。2026-05-24 由 newapi-proxy 切回直连（见 RELATIONS / DECISIONS ADR-009）。
 - **CDN = Cloudflare**（账号级，非本仓库管理）。
 
 ## 缓存策略

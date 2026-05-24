@@ -3,6 +3,11 @@
 
 > 迁自仓库根 `CHANGELOG.md`（Keep a Changelog 风格）+ 补齐 v2.3 / v2.4。理由链 DECISIONS，运行时踩坑见 MEMORY。
 
+## v2.5.0 · 2026-05-24
+- Changed: chat-api LLM 上游由 newapi-proxy 中转**切回直连火山方舟 Ark**（`/api/coding/v3`，OpenAI 兼容，`ark-` key）→ ADR-009（取代 ADR-004）；`doubao-seed-2.0-lite` 加 `thinking:{type:"disabled"}` 关深度思考（reasoning 245→0，TTFT / 成本降）。
+- Fixed: 绕过 newapi v2 embedding 渠道「暂不可用」阻塞（直连 Ark 原生支持 `doubao-embedding-vision`）。
+- Removed: `NODE_TLS_REJECT_UNAUTHORIZED=0`（Ark 公网有效证书，不再需要关 TLS 校验）。
+
 ## v2.4.0 · 2026-05-19
 - Changed: chat-api LLM 上游切到自建 newapi-proxy 中转站（IP 直连自签，OpenAI 兼容）→ ADR-004；env 变量 `VOLCANO_*`/`NEWAPI_*` → `CHAT_LLM_*`（避 shell rc 污染）→ ADR-005；chat 模型 → `deepseek-v4-flash`（2026-05-21 再切 `doubao-seed-2.0-lite` → ADR-007）。
 - Added: P0 隐私 4 层防御阻断求职/面试内容外泄（server prefilter + system-prompt 输出前过滤 + LLM judge 强制 exclude + chunk/整源黑名单）→ ADR-003。
