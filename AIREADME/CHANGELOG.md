@@ -3,6 +3,10 @@
 
 > 迁自仓库根 `CHANGELOG.md`（Keep a Changelog 风格）+ 补齐 v2.3 / v2.4。理由链 DECISIONS，运行时踩坑见 MEMORY。
 
+## v2.6.0 · 2026-05-26
+- Changed: 简历真相源迁至 worklog（`wiki/job/me/resume/`，worklog 成单一真相源）；chat-api `loadResume()` 的 `RESUME_PATH` 改读 worklog 那份（主源通道直读，绕过 `wiki/job` 排除，无需白名单）→ ADR-010。
+- Removed: 仓库根 `MaxwellLi-AIProductManager.{md,html,pdf}` + 整个 `versions/`（git rm；worklog 已存全量副本）。README / AIREADME 中简历引用同步更新。
+
 ## v2.5.0 · 2026-05-24
 - Changed: chat-api LLM 上游由 newapi-proxy 中转**切回直连火山方舟 Ark**（`/api/coding/v3`，OpenAI 兼容，`ark-` key）→ ADR-009（取代 ADR-004）；`doubao-seed-2.0-lite` 加 `thinking:{type:"disabled"}` 关深度思考（reasoning 245→0，TTFT / 成本降）。
 - Fixed: 绕过 newapi v2 embedding 渠道「暂不可用」阻塞（直连 Ark 原生支持 `doubao-embedding-vision`）。
@@ -43,4 +47,4 @@
 - Added: maxwellii.com 个人主页正式上线（终端体设计：bash 隐喻 + CRT 扫描线 + 朱砂方印）；二级详情页系统（零依赖 Node 构建器 `site/build.js`）→ ADR-006；简历定位升级为 AI 产品经理 / AI 落地顾问 / Vibe Coding 全栈工程师。
 
 ## v0.x · 2024-11 ~ 2026-05（简历归档时期）
-- 按定位演进的简历多版本：2018-05 DevOps Engineer（华为转 Nokia）→ 2024-11 DevOps → 2024-12 Product Manager（Nokia 离职转型）→ 2026-03 技术负责人/AI 工程化 → 2026-04 + OpenClaw 实战专家 → 2026-05 AI 产品经理/AI 落地顾问/Vibe Coding。详见 `versions/`。
+- 按定位演进的简历多版本：2018-05 DevOps Engineer（华为转 Nokia）→ 2024-11 DevOps → 2024-12 Product Manager（Nokia 离职转型）→ 2026-03 技术负责人/AI 工程化 → 2026-04 + OpenClaw 实战专家 → 2026-05 AI 产品经理/AI 落地顾问/Vibe Coding。详见 worklog 简历归档（2026-05-26 迁出本仓库）。

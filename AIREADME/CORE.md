@@ -2,10 +2,11 @@
 <!-- 身份+不可违反边界。来访首读+防偏差总纲。不写产品细节(→PRD)/架构(→ARCHITECTURE)/接口(→SPEC)。 -->
 
 ## 身份
-李越男（Maxwell Li，英文名 Maxwell）的**公开个人主页仓库**（github.com/iyuenan3/maxwell-homepage）。三件事合一：
+李越男（Maxwell Li，英文名 Maxwell）的**公开个人主页仓库**（github.com/iyuenan3/maxwell-homepage）。两块：
 1. **maxwellii.com** —— 终端体（bash 隐喻）静态个人站，V1 简介模式 + V2 LLM 化身对话模式。
-2. **简历多版本归档** —— `MaxwellLi-<TargetRole>.{md,html,pdf}` + `versions/`。
-3. **chat-api** —— 主页右下对话框背后的 RAG LLM 化身后端（本仓库专属子模块，非共享底座）。
+2. **chat-api** —— 主页右下对话框背后的 RAG LLM 化身后端（本仓库专属子模块，非共享底座）。
+
+> 简历真相源 2026-05-26 迁至 worklog 私有知识库统一管理；chat-api 化身仍读它入 RAG（见 RELATIONS），但本仓库不再存简历文件。
 
 仓库公开（push 到 GitHub）。本地工作指引 `CLAUDE.md` + RAG 索引产物 + 私密文件均 gitignore（见 ARCHITECTURE / 红线段）。
 
@@ -18,7 +19,7 @@
 ## Non-Goals（明确不做）
 - **不做求职活动主存储**：面试 / 求职沟通文案 / 谈薪 / 公司情报 等求职活动材料 → 全在 worklog（私密仓库），不进本仓库（见 RELATIONS）。
 - **不做通用编程助手**：chat 化身只讨论 Maxwell 自己项目的代码，拒写通用工具脚本（代码边界 B，见 CONVENTIONS）。
-- **不做内容产品文档**：简历 .md/.html/.pdf 是**内容产物**不是项目文档，不迁进 AIREADME，不在此维护其正文。
+- **不做简历存储**：简历正文（.md/.html/.pdf）+ 多版本归档 2026-05-26 起归 worklog 维护，本仓库不存；AIREADME 也不维护简历正文。
 - **不靠 .gitignore 防护私密内容**：开源仓库里靠 gitignore 屏蔽私密文件不可靠（2026-05-10 教训），私密内容直接放 worklog。
 
 ## 绝不 / Hard Constraints（红线）

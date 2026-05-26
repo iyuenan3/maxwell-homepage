@@ -4,11 +4,11 @@
 
 # Maxwell-Homepage
 
-李越男 (Maxwell Li) 的个人主页仓库 — **maxwellii.com 终端体网站源码 + 简历多版本归档 + AI 化身对话后端 (chat-api)**。
+李越男 (Maxwell Li) 的个人主页仓库 — **maxwellii.com 终端体网站源码 + AI 化身对话后端 (chat-api)**。
 
 [![version](https://img.shields.io/badge/version-2.4.0-1a5276)](./AIREADME/CHANGELOG.md) [![site](https://img.shields.io/badge/site-maxwellii.com-c0392b)](https://maxwellii.com)
 
-> 5/9 由 `Maxwell-Resume` 改名为 `maxwell-homepage`：从「简历仓库」扩展到「个人主页 + 简历归档 + AI 化身」。GitHub 自动 redirect 旧 URL，外链不会 404。
+> 5/9 由 `Maxwell-Resume` 改名为 `maxwell-homepage`：从「简历仓库」扩展到「个人主页 + AI 化身」。GitHub 自动 redirect 旧 URL，外链不会 404。简历归档 2026-05-26 迁至 Maxwell 私有知识库统一管理（本仓库不再存简历文件）。
 >
 > **工程文档（架构 / 部署 / 决策 / 接口契约 / 版本史）见 [`AIREADME/`](./AIREADME/)** —— 本仓库的 AI 原生真相源。变更日志见 [`AIREADME/CHANGELOG.md`](./AIREADME/CHANGELOG.md)。
 
@@ -46,40 +46,18 @@ maxwellii.com 主页右下角对话框背后运行的 LLM 化身后端。访客�
 
 > 模型 / RAG 管线 / 隐私防御 / API 契约见 [`AIREADME/ARCHITECTURE.md`](./AIREADME/ARCHITECTURE.md) + [`AIREADME/SPEC.md`](./AIREADME/SPEC.md)。
 
-## 简历归档
+## 简历
 
-当前最新版常驻仓库根目录：
+简历正文与多版本归档 2026-05-26 起统一维护在 Maxwell 的私有知识库（不在本公开仓库）。获取方式：
 
-| 文件 | 说明 |
-|------|------|
-| [MaxwellLi-AIProductManager.md](./MaxwellLi-AIProductManager.md) | 简历正文（Markdown）|
-| [MaxwellLi-AIProductManager.html](./MaxwellLi-AIProductManager.html) | 打印 / PDF 优化版（A4 朱砂红配色）|
+- **直接问 AI 版 Maxwell** —— maxwellii.com 右下角对话框（化身基于简历 + 项目档案回答）
+- LinkedIn / 邮件索取完整简历
 
 **当前定位**：AI 产品经理 | AI 落地顾问 | Vibe Coding 全栈工程师
 
 **已交付的生产级产品**：
 - [naming.maxwellii.com](https://naming.maxwellii.com) — 海外华人取名 SaaS
 - [tale.maxwellii.com](https://tale.maxwellii.com) — 多人实时共创叙事 H5
-
-### 版本历史
-
-按时间倒序排列。标 ⭐ 为当前最新版（仓库根目录，不带日期）；其余归档于 `versions/`。
-
-| 日期 | 文件 | 定位 |
-|------|------|------|
-| 2026-05-08 ⭐ | [.md](./MaxwellLi-AIProductManager.md) · [.html](./MaxwellLi-AIProductManager.html) | AI 产品经理 / AI 落地顾问 / Vibe Coding 全栈工程师 |
-| 2026-04-10 | [.md](./versions/MaxwellLi-AIProductManager-20260410.md) | 技术负责人 / AI 工程化专家 / OpenClaw 实战专家 |
-| 2026-03-11 | [.md](./versions/MaxwellLi-AIProductManager-20260311.md) | 技术负责人 / AI 工程化专家 / 平台产品负责人（v1.0 初版）|
-| 2024-12-10 | [.pdf](./versions/MaxwellLi-ProductManager-20241210.pdf) | 产品经理（DevOps 转型）— Nokia 离职后投递 |
-| 2024-11-15 | [.pdf](./versions/MaxwellLi-DevOpsEngineer-20241115.pdf) | DevOps 工程师 |
-| 2018-05-22 | [.pdf](./versions/MaxwellLi-DevOpsEngineer-20180522.pdf) | DevOps 工程师（华为转 Nokia 之前）|
-
-### 文件命名约定
-
-- **根目录最新版**：`MaxwellLi-<TargetRole>.{md,html}`（不带日期，常驻）
-- **versions/ 归档版**：`MaxwellLi-<TargetRole>-YYYYMMDD.{md,html,pdf}`（带归档日期）
-
-主名格式：姓名（英文名 + 姓拼音驼峰 `MaxwellLi`）+ 目标岗位（驼峰 `AIProductManager`）。当前最新版常驻根目录无日期；某次更新后旧版归档到 `versions/` 时再加上当时的日期戳。
 
 ## 联系方式
 

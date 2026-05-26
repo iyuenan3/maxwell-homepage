@@ -2,7 +2,7 @@
 <!-- 节奏。不放可执行 TODO 颗粒(→项目 TODO / worklog)，只放方向。 -->
 
 ## Now（当前焦点）
-- **内容三处同步**：简历 MD/HTML、主页 `site/public/index.html`(via home-data.js)、README 的定位语 / 项目命名 / 4 大独立项目保持一致。
+- **内容同步**：主页 `site/public/index.html`(via home-data.js) + README 的定位语 / 项目命名 / 4 大独立项目保持一致；简历已迁 worklog，定位变化需跨项目同步。
 - **RAG 索引维护**：知识源（vault / worklog / ai-knowledge）变动后 `npm run update` 重建 + 部署，保持化身答案新鲜。
 - **隐私防御稳态**：4 层求职过滤的关键词 4 处同步；化身翻车（泄露 / 伪造归属）随时修。
 
@@ -18,4 +18,4 @@
 ## 已搁置（+原因）
 - **chat-api server-side session**（防伪造对话历史的方案 B）：工程量大 → 改用 system-prompt 强化（方案 D），已搁置 server-side 实现。
 - **`commands.js pushSystemMsg` 引 dompurify**（千野 P2）：HOME_DATA 是静态受控 JS，数据完全受控 → 数据动态化前不做。
-- **简历 short-story 项目展示**：CLAUDE.md 曾约束"副业不写"，5/11 反转为可作 Vibe Coding 工程亮点，但当前简历未纳入 —— 状态按需，不强推。
+- **简历 short-story 项目展示**：是否纳入简历的决策现归 worklog（简历已迁）；本仓库不再涉及。

@@ -3,7 +3,7 @@
 
 ## 组件 + 数据流
 
-仓库 = 3 个并列组件 + 1 类内容产物：
+仓库 = 2 个组件（简历产物 2026-05-26 已迁 worklog，见本节末尾）：
 
 ### 1. `site/` —— maxwellii.com 静态主页（纯前端，零运行时依赖）
 - **V1 简介模式**：`data/home-data.js`（whoami / git log / ls projects / pets / stack / history 真相源）+ `templates/home.html` → `build.js buildHome()` → `public/index.html`。
@@ -22,7 +22,7 @@
 ```
 maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, ~407 .md)
   + worklog/ (excludeRelpaths: diaries, wiki/job)  + ai-knowledge/
-  + 仓库内 简历 / site/data/home-data / site/data/projects / worklog wiki:projects
+  + 简历(worklog wiki/job/me/resume) / site/data/home-data / site/data/projects / worklog wiki:projects
    ↓ scan-sources.mjs   (LLM file-level judge + P0 禁区规则 → manifest.json)
    ↓ build-embeddings.mjs (chunk 1200-1800 + sanitize KEEP 白名单 + 4 层求职过滤 + embed)
   chat-api/data/embeddings.json   (~78 MB / ~2339 chunks / 2048 dim, gitignore)
@@ -38,8 +38,8 @@ maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, ~407 .md)
 4. chunk filter + 整源黑名单（build-embeddings.mjs）+ worklog diaries/wiki/job 整目录排除
 理由 + 维护点见 DECISIONS。
 
-### 3. 简历产物（内容产物，非项目文档）
-根目录 `MaxwellLi-AIProductManager.{md,html,pdf}`（当前最新，无日期）+ `versions/MaxwellLi-<Role>-YYYYMMDD.*`（历史归档快照）。**不迁进 AIREADME，不在此维护正文**；命名/同步规则见 CONVENTIONS。
+### 简历产物（2026-05-26 已迁出本仓库）
+简历正文 + 多版本归档迁至 worklog `wiki/job/me/resume/`（worklog 成单一真相源）。chat-api 的 `loadResume()`（`build-embeddings.mjs`）改读 worklog 那份入 RAG（见 RELATIONS）；本仓库不再存 `MaxwellLi-*` / `versions/`。命名 / 编辑约定随简历归 worklog。
 
 ## 关键技术选型（结论 + 链 DECISIONS）
 - **部署方案 C**：V2 占主域 / V1 退 `/v1/` / `/p/` 共享 → ADR-001。

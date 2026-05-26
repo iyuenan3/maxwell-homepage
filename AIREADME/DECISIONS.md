@@ -63,3 +63,10 @@
 - Decision: chat-api（chat + embedding + 离线 judge/sanitize）改**直连火山方舟 Ark**（`/api/coding/v3`，OpenAI 兼容，`ark-` key）；`doubao-seed-2.0-lite` 加 `thinking:{type:"disabled"}` 关深度思考（实测 reasoning 245→0）。**取代 ADR-004**。
 - Alternatives（否决）: 继续等 newapi v2 接通 embedding 渠道（受制于人 + 仍有 drift）；切 newapi `auto-llm`（化身要稳定行为）。
 - Tradeoff: 放弃 newapi 的多上游聚合 / 统一计费（化身只需单一火山上游，不需要）；逻辑代码零改（早已通用 OpenAI 兼容），仅 .env 值 + 注释变更；`embeddings.json` 零重建（同模型同向量空间）。已线上验证 RAG + chat 全链路通。
+
+## ADR-010 · 简历真相源迁至 worklog · 2026-05-26
+- Problem: 简历此前由 maxwell-homepage 维护（根目录 + `versions/`），但 Maxwell 的求职 / 简历活动统一在 worklog 知识库管理，两处分散。
+- Constraint: 化身（公开）应能讲简历；但 worklog 把简历放 `wiki/job/me/resume/`，而 chat-api 隐私过滤按 `wiki/job` 前缀排除（P0，ADR-003）。
+- Decision: worklog 成简历单一真相源；chat-api `loadResume()` 的 `RESUME_PATH` 改读 worklog 那份；git rm 本仓库根 `MaxwellLi-*` + `versions/`。**反转**早期「简历=maxwell-homepage 内容产物」立场。
+- Alternatives（否决）: 给 `wiki/job` 开白名单例外（多余且削弱隐私，见 Tradeoff）；简历留 maxwell-homepage（与 worklog 统一管理目标冲突）。
+- Tradeoff: 白名单**不需要**——简历走 `loadResume()` 主源通道，不经 scan-sources 的 worklog walk，`wiki/job` 排除根本不挡它，保持排除不动更安全。公开 GitHub 不再直接 host 简历（访客经化身 / LinkedIn / 邮件获取）。简历内容不变 → `embeddings.json` 零重建。
