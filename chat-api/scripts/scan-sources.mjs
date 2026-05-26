@@ -69,12 +69,8 @@ const SOURCES = [
     extensions: [".md"],
     excludeRelpaths: ["diaries", "wiki/job"],
   },
-  {
-    label: "ai-knowledge",
-    path: path.join(HOME, "Desktop/Claude-Project/ai-knowledge"),
-    extensions: [".md"],
-    excludeRelpaths: ["clippings", "douyin", "raw"],
-  },
+  // ai-knowledge: 2026-05-26 项目已归档，移出 RAG 源（不再索引）。
+  // build-embeddings.mjs / rag.ts 里残留的 "ai-knowledge" category 映射是无害死键，下次重构再清。
 ];
 
 // ── 隐私 regex（a 层兜底） ──────────────────────────────
