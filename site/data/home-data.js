@@ -17,7 +17,7 @@
     whoami: {
       name:       '李越男 · Li Maxwell',
       location:   '杭州',
-      role:       'AI 产品经理 · AI 落地顾问 · Vibe Coding 全栈',
+      role:       'AI 产品经理 · FDE 工程师 · Vibe Coding 全栈',
       previously: '全境骑行 (2025.03 - 2026.04) · Nokia (2018.08 - 2024.04) · 华为 (2016.07 - 2018.07)',
       household:  '<em>7</em> cats · <em>2</em> dogs · 1 wife',
       tags:       'claude-code · openclaw · multi-agent · llm-wiki · full-stack · INTJ',
@@ -43,7 +43,7 @@
           { name: 'origin/main' },
         ],
         date:    '2025-10 → present · 独立战场',
-        subject: '[feat] AI 产品经理 · AI 落地顾问 · Vibe Coding 全栈',
+        subject: '[feat] AI 产品经理 · FDE 工程师 · Vibe Coding 全栈',
         body: `从 2025-10 起转入独立战场，承接外部 AI 落地咨询 + 一线 AI 产品交付。
 <ul class="commit-items">
   <li><span class="b">AI 产品端到端交付</span>：3 个生产 AI 产品已上线 — naming.maxwellii.com（海外华人取名 SaaS）/ tale.maxwellii.com（多人实时叙事 H5）/ maxwellii.com（终端体个人主页 + LLM 化身对话）。</li>
@@ -179,7 +179,7 @@
 
     /* ── V2 hero (仅 V2 用,V1 不引用) ──────────────── */
     hero: {
-      role:    'AI 产品经理 · AI 落地顾问 · Vibe Coding 全栈',
+      role:    'AI 产品经理 · FDE 工程师 · Vibe Coding 全栈',
       live:    '杭州 · last push 5h ago · ● online',
       history: '华为 2yr · Nokia 6yr · 全境 1yr',
       links: [

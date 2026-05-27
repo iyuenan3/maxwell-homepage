@@ -4,7 +4,7 @@
  *
  * 数据源：
  *   主源（手工真相源，永远 include，无 sanitize）:
- *     1. worklog/wiki/job/me/resume/MaxwellLi-AIProductManager.md → resume（2026-05-26 迁自本仓库根，worklog 成简历真相源）
+ *     1. worklog/wiki/job/me/resume/MaxwellLi-AIPM-FDE.md → resume（2026-05-26 迁自本仓库根，worklog 成简历真相源；5-27 改名 + 扩 FDE 定位）
  *     2. ../site/data/home-data.js                → home-data
  *     3. ../site/data/projects/<slug>.md          → detail:<slug>
  *     4. ~/Desktop/Claude-Project/worklog/wiki/projects/<slug>.md → wiki:<slug>
@@ -40,7 +40,7 @@ const WORKLOG_WIKI = path.join(
 
 // 简历真相源 2026-05-26 迁至 worklog（统一知识库管理）；loadResume 主源通道直读，
 // 不经 scan-sources 的 worklog walk，故 wiki/job 排除不影响它（无需白名单）。
-const RESUME_PATH = path.join(HOME, "Desktop/Claude-Project/worklog/wiki/job/me/resume/MaxwellLi-AIProductManager.md");
+const RESUME_PATH = path.join(HOME, "Desktop/Claude-Project/worklog/wiki/job/me/resume/MaxwellLi-AIPM-FDE.md");
 const HOME_DATA_PATH = path.join(REPO_ROOT, "site/data/home-data.js");
 const DETAIL_DIR = path.join(REPO_ROOT, "site/data/projects");
 const MANIFEST_PATH = path.join(__dirname, "manifest.json");
@@ -607,10 +607,15 @@ async function main() {
 
   // P0 隐私边界第 4 层防御：chunk-level 求职/面试过滤
   // 双检查：source 整源黑名单 + chunk text 关键词
+  // 豁免手工 curated 的对外公开主源（resume / home-data / detail）：这些本就是
+  // 发布给公众/招聘看的内容，"面试官"等是正当产品叙事而非隐私泄露；filter 仅
+  // 针对自动 ingest 源（manifest 的 worklog/nokia/… + wiki）里漏网的求职隐私。
+  const FILTER_EXEMPT_SOURCES = new Set(["resume", "home-data", "detail"]);
   const filteredBySource = {};
   const chunks = rawChunks.filter((c) => {
+    const sk = c.source.split(":")[0];
+    if (FILTER_EXEMPT_SOURCES.has(sk)) return true;
     if (isJobInterviewSource(c.source) || hasJobInterviewContent(c.text)) {
-      const sk = c.source.split(":")[0];
       filteredBySource[sk] = (filteredBySource[sk] || 0) + 1;
       return false;
     }

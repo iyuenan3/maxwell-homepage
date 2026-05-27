@@ -53,7 +53,7 @@ maxwellii.com 主页右下角对话框背后运行的 LLM 化身后端。访客�
 - **直接问 AI 版 Maxwell** —— maxwellii.com 右下角对话框（化身基于简历 + 项目档案回答）
 - LinkedIn / 邮件索取完整简历
 
-**当前定位**：AI 产品经理 | AI 落地顾问 | Vibe Coding 全栈工程师
+**当前定位**：AI 产品经理 | FDE 工程师 | Vibe Coding 全栈工程师
 
 **已交付的生产级产品**：
 - [naming.maxwellii.com](https://naming.maxwellii.com) — 海外华人取名 SaaS
