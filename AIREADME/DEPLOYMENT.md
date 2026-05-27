@@ -14,7 +14,7 @@
 ### 静态站点（改 site/* 后）
 ```bash
 bash site/deploy.sh
-# build.js（V1 index + 10 详情页）→ 5 stage rsync：
+# build.js（V1 index + 9 详情页）→ 5 stage rsync：
 #   Stage1 V2→根 / Stage2 data/→data/ / Stage3 p/→p/(--delete) / Stage4 V1→v1/ / Stage5 detail-init.js→根
 ```
 

@@ -70,3 +70,10 @@
 - Decision: worklog 成简历单一真相源；chat-api `loadResume()` 的 `RESUME_PATH` 改读 worklog 那份；git rm 本仓库根 `MaxwellLi-*` + `versions/`。**反转**早期「简历=maxwell-homepage 内容产物」立场。
 - Alternatives（否决）: 给 `wiki/job` 开白名单例外（多余且削弱隐私，见 Tradeoff）；简历留 maxwell-homepage（与 worklog 统一管理目标冲突）。
 - Tradeoff: 白名单**不需要**——简历走 `loadResume()` 主源通道，不经 scan-sources 的 worklog walk，`wiki/job` 排除根本不挡它，保持排除不动更安全。公开 GitHub 不再直接 host 简历（访客经化身 / LinkedIn / 邮件获取）。简历内容不变 → `embeddings.json` 零重建。
+
+## ADR-011 · projects 板块 11→9（两组合并 + 删除项 URL 真 404）· 2026-05-28
+- Problem: projects 板块 11 项与简历 / worklog 最新画像脱节：worklog 与 maxwellii.com 本是一个知识系统的两端却各占一卡；小红书工具（xiaohongshu-tool）与代运营（xhs-agency）是同一业务两阶段；ai-knowledge 已归档。
+- Constraint: 旧详情页 URL 已有外链 + 被 chat-api 索引，不能随意破坏；合并项不想新造 slug 再加 redirect；删除项用户明确要 404 不要 redirect。
+- Decision: 合并两组（maxwell-homepage 收编 worklog 成「个人知识系统」/ xhs-agency 收编 xiaohongshu-tool 成「小红书自运营系统」），合并项保留旧 slug 不改 URL（xhs-agency 仅把 `wiki_slug` 改指 xiaohongshu-tool 抽 worklog fact）；删 ai-knowledge + worklog 两详情页（git rm）；nginx 加 `location ^~ /p/ { try_files $uri =404 }` 让删除项 URL 真 404。
+- Alternatives（否决）: worklog 与 maxwell-homepage 分两卡（用户判断本是一个系统两端，合并更真实）；删除项 301 redirect 到首页（用户要干净 404，不留僵尸跳转）；合并项造新 slug + redirect（多余，旧 slug 仍贴切）。
+- Tradeoff: 合并项卡片承载两段叙事，文案密度升高；`build-embeddings.mjs` / `rag.ts` 残留 ai-knowledge category 死键（无害，下次重构清）；embeddings chunks 2339→2178。详情页数据源 + 板块约定见 CONVENTIONS。

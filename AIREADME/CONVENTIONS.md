@@ -12,6 +12,7 @@
 - **内容同步（跨项目）**：定位语 / 能力定位句 / 4 大独立项目 / 项目命名 任一变化 → 本仓库主页(`site/data/home-data.js` → index.html) + README **都改**，并跨项目同步 worklog 的简历（简历已迁 worklog，见 RELATIONS）。
 - **主页 ls 三层 stacked**：slug(cyan) / name_zh 仅中文(amber) / 一句话 desc 聚焦"做什么+1 亮点"(接近白)。排序按 status 分层 + 段内"求职亮点驱动"手排，非严格 since 倒序。
 - **详情页板块**：最终 8 板块 `readme/links/decisions/stats/stack/notes`(9 项目必有) + `git_log`(仅有 wiki Git 数据的 3 项目) + `history`(仅按需 cfr/petslog)。`next` 已废弃并入 notes「项目方向」。k8s-om/xhs-agency 维持精简现状。
+- **projects 合并 / 删除约定**（5/28 重构落定）：合并两个项目时保留更贴切的旧 slug 不改 URL（如 xhs-agency 收编 xiaohongshu-tool 仍用 `xhs-agency`，仅 `wiki_slug` 改指对方抽 worklog fact），不造新 slug + redirect；删除项 `git rm` 详情页 + ssh 删服务器 `public/p/` + nginx `/p/ 404`（不 redirect）。详情页 frontmatter 保留 `slug`/`name_en`/`name_zh`/`wiki_slug`，只更新 `status`/`since`/`stack`；body 只写 `## README` + `## NOTES`（`## DECISIONS`/`## STATS`/git_log build 时从 worklog wiki 自动拉，手写会冲突）。见 ADR-011。
 - **V2 /help 文案对齐 V1 section 注释**：`v2-redesign/commands.js cmdHelp()` 的命令描述必须跟 V1 `public/index.html` 对应 section 的 `# xxx` 注释一致（V1 注释是唯一真相源）。改 V1 注释要同步改 V2。
 - **化身 prompt 边界**：体验优先 token 不计较（max_tokens 2000 / topK 12 / 召回宁宽勿窄）；前端不 hardcode 模型名（由 SSE `meta.model` 填）；可讨论自身技术架构/实现（这是技术网站，展示能力）。
 - **简历链接纯文本**（打印友好）：简历 .md 里 URL 不写 markdown link 语法、不写 `https://` 前缀（`maxwellii.com` 而非 `[maxwellii.com](https://...)`）。HTML 版可用 `<a href>`。

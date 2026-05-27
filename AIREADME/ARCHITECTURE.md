@@ -8,7 +8,7 @@
 ### 1. `site/` —— maxwellii.com 静态主页（纯前端，零运行时依赖）
 - **V1 简介模式**：`data/home-data.js`（whoami / git log / ls projects / pets / stack / history 真相源）+ `templates/home.html` → `build.js buildHome()` → `public/index.html`。
 - **V2 化身对话模式**：`v2-redesign/`（index.html + styles.css + chat.js + commands.js + token-hud.js + emotes.js + reveal.js），含终端壳 + chat 框 + Token HUD。
-- **详情页**：`data/projects/<slug>.md`（10 个）+ `templates/_base.html` → `build.js buildOne()` → `public/p/<slug>.html`。
+- **详情页**：`data/projects/<slug>.md`（9 个）+ `templates/_base.html` → `build.js buildOne()` → `public/p/<slug>.html`。
 - **构建器 `build.js`**：纯 Node 零依赖。自实现 frontmatter/YAML 子集解析 + markdown→HTML（段落/列表/行内/H3-H6/表格/fenced 代码块）+ `parseSections`（按 H2 切，支持中文 H2）。11 个组件渲染器：`readme` / `links` / `git_log` / `decisions` / `stats` / `notes` / `next`(废弃保留) / `stack` / `ps` / `history` / `timeline`(预留)。详情页板块覆盖约定见 CONVENTIONS。
 - **可选读 worklog wiki**：`git_log`/`decisions`/`stats`/`ps` 组件按 `wiki_slug` 从 worklog 抽 fact（数据契约见 RELATIONS / SPEC）。
 
@@ -21,11 +21,11 @@
 **RAG 数据流**：
 ```
 maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, ~407 .md)
-  + worklog/ (excludeRelpaths: diaries, wiki/job)  + ai-knowledge/
+  + worklog/ (excludeRelpaths: diaries, wiki/job)
   + 简历(worklog wiki/job/me/resume) / site/data/home-data / site/data/projects / worklog wiki:projects
    ↓ scan-sources.mjs   (LLM file-level judge + P0 禁区规则 → manifest.json)
    ↓ build-embeddings.mjs (chunk 1200-1800 + sanitize KEEP 白名单 + 4 层求职过滤 + embed)
-  chat-api/data/embeddings.json   (~78 MB / ~2339 chunks / 2048 dim, gitignore)
+  chat-api/data/embeddings.json   (~77 MB / ~2178 chunks / 2048 dim, gitignore)
    ↓ deploy.sh rsync
   服务器 /home/admin/maxwellii-chat-api/data/embeddings.json
    ↓ PM2 加载 → route.ts 运行时检索

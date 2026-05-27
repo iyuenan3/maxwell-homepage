@@ -1,6 +1,6 @@
 # maxwell-homepage · AIREADME
 > 李越男 (Maxwell) 的个人主页：终端体静态站 maxwellii.com（V1 简介 / V2 LLM 化身对话）+ chat-api RAG 后端 ｜ 生命周期: active
-> last-synced: efa8d05 · 2026-05-24
+> last-synced: 4df5a48 · 2026-05-28
 
 <!-- 路由器：只指路，不放实质内容。INDEX 不列自己。符号：✅已填 / ⚑占位 / —N/A -->
 
@@ -15,9 +15,9 @@
 | PRD | ✅ | 个人品牌 + 可对话化身；求职=隐含价值主张、具体材料明确排除 |
 | ROADMAP | ✅ | Now=内容三处同步 + RAG 索引维护；搁置=server-side session / dompurify |
 | CONVENTIONS | ✅ | kebab-case slug / 双名 frontmatter / 终端隐喻禁改 / CSP 无 inline |
-| DECISIONS | ✅ | 9 条 ADR（方案 C / RAG vault / 4 层隐私 / 直连 Ark / CHAT_LLM_* 等）|
-| MEMORY | ✅ | 5 条事故（CSP 连锁空白 / nginx 整块覆盖 405 / env 污染 / SSH mux / CF 缓存）|
-| CHANGELOG | ✅ | 1.0 → 2.4（迁自根 CHANGELOG.md + 补 2.3/2.4 两版）|
+| DECISIONS | ✅ | 11 条 ADR（方案 C / RAG vault / 4 层隐私 / 直连 Ark / CHAT_LLM_* / projects 11→9 等）|
+| MEMORY | ✅ | 6 条事故（CSP 连锁空白 / nginx 整块覆盖 405 / env 污染 / SSH mux / CF 缓存 / 黑名单随项目改名失效）|
+| CHANGELOG | ✅ | 1.0 → 2.7（迁自根 CHANGELOG.md + chat-api 切火山 / 简历迁 worklog / projects 11→9）|
 
 ## 按任务读
 - 跨项目了解 → CORE + RELATIONS（+ SPEC 若要调 chat-api 或读详情页数据）

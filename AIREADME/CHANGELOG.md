@@ -3,9 +3,17 @@
 
 > 迁自仓库根 `CHANGELOG.md`（Keep a Changelog 风格）+ 补齐 v2.3 / v2.4。理由链 DECISIONS，运行时踩坑见 MEMORY。
 
+## v2.7.0 · 2026-05-28
+- Changed: projects 板块重构 11→9 项 → ADR-011。两组合并并保留旧 slug 不改 URL：`maxwell-homepage` 收编 worklog 成「个人知识系统」（worklog 输入引擎 + maxwellii.com 输出界面）；`xhs-agency` 收编 xiaohongshu-tool 成「小红书自运营系统」（`wiki_slug` 改指 `xiaohongshu-tool` 抽 worklog fact）。
+- Removed: 删 `ai-knowledge` + `worklog` 两个独立详情页（git rm `site/data/projects/` + ssh 删服务器 `public/p/`）。
+- Added: nginx `location ^~ /p/ { try_files $uri =404 }`，删除项详情页旧 URL 真 404 不 redirect（避免 `location /` 的 SPA fallback 把删除页兜成首页 200）。
+- Fixed: P0 泄露，某 worklog 求职项目改名后 RAG source 黑名单正则（hardcode 旧名）静默失效，致少量求职 chunk 漏入索引；补新名条目堵回（见 MEMORY / ADR-003）。
+- Changed: `embeddings.json` 重建 ~2178 chunks（projects 重构后，原 ~2339）。
+
 ## v2.6.0 · 2026-05-26
 - Changed: 简历真相源迁至 worklog（`wiki/job/me/resume/`，worklog 成单一真相源）；chat-api `loadResume()` 的 `RESUME_PATH` 改读 worklog 那份（主源通道直读，绕过 `wiki/job` 排除，无需白名单）→ ADR-010。
 - Removed: 仓库根 `MaxwellLi-AIProductManager.{md,html,pdf}` + 整个 `versions/`（git rm；worklog 已存全量副本）。README / AIREADME 中简历引用同步更新。
+- Removed: `ai-knowledge` 移出 RAG 源（项目归档，scan-sources.mjs 不再索引该目录；build-embeddings/rag.ts 残留 category 为无害死键，待下次重构清）。
 
 ## v2.5.0 · 2026-05-24
 - Changed: chat-api LLM 上游由 newapi-proxy 中转**切回直连火山方舟 Ark**（`/api/coding/v3`，OpenAI 兼容，`ark-` key）→ ADR-009（取代 ADR-004）；`doubao-seed-2.0-lite` 加 `thinking:{type:"disabled"}` 关深度思考（reasoning 245→0，TTFT / 成本降）。

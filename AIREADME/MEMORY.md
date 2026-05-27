@@ -25,3 +25,8 @@
 - 现象: nginx CSS 设 `max-age=0, must-revalidate`，但浏览器实际拿到 `max-age=14400`，CSS 改动 4h 后才生效。
 - 根因: Cloudflare Browser Cache TTL 默认 4h，覆盖 origin 的 `max-age=0`。
 - 结论/避免: CF 后台 Caching → Configuration → Browser Cache TTL 设 "Respect Existing Headers" 才让 origin 生效；之后 CSS 改动 `bash site/deploy.sh` + ETag 校验自动生效，不需 `?v=` cache bust。
+
+## RAG source 黑名单 hardcode 项目名 → 项目改名后正则静默失效 → 求职 chunk 泄露 · 2026-05-28
+- 现象: 本应被 P0 第 4 层「整源黑名单」挡住的某 worklog 求职项目内容，有少量 chunk 漏入 embeddings.json，可被化身检索到。
+- 根因: 该求职项目在 worklog 改了名，但 build-embeddings.mjs 的 source 黑名单正则 hardcode 了旧项目名；改名后新名不再命中黑名单，又因该内容走 loadWiki 通道（非 worklog walk 的 wiki/job 前缀排除），两道防线都没拦住。
+- 结论/避免: 按 source 名 hardcode 的黑名单正则，关联项目一改名就静默失效（改名是隐蔽的防线失效源）。已补新名条目堵回（具体黑名单条目按红线不列）。P0 第 4 层依赖手维护正则，是已知脆弱点，重构可考虑用 frontmatter 隐私标记替代 hardcode 名单。见 ADR-003 / ADR-011。

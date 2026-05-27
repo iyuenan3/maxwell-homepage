@@ -51,9 +51,10 @@ per-IP 20/min（429）· per-IP 100/day（429）· global 5000/day（503）。
 |---|---|
 | `/` | V2 化身对话主页（主域，方案 C）|
 | `/v1/` | V1 简介模式主页 |
-| `/p/<slug>.html` | 10 个项目详情页（V1+V2 共享）|
+| `/p/<slug>.html` | 9 个项目详情页（V1+V2 共享）|
 | `/api/chat`、`/admin/`、`/_next/` | 反代 chat-api :3002 |
 | 4 条 301 redirect | 旧 URL 兜底：`ai-knowleage→ai-knowledge` / `openclaw-customize-skills→openclaw` / `ifind-agent→claude-financial-research` / `xhs-5agent-pipeline→xhs-agency` |
+| 删除项 `/p/*.html` | 已删详情页（ai-knowledge / worklog）经 `location ^~ /p/ { try_files $uri =404 }` 真 404，不 redirect（上面精确 redirect 优先级更高仍生效）|
 | 子域 | `naming.maxwellii.com`（取名 SaaS）/ `tale.maxwellii.com`（多人小说 H5）—— 独立产品，非本仓库 |
 
 ## ③ 详情页数据 frontmatter 契约（编辑详情页时遵守）
@@ -73,4 +74,4 @@ body 用 `## README` / `## NOTES` / `## DECISIONS` / `## STATS` / `## HISTORY` �
 ## 版本 / 兼容
 - chat-api SSE 事件格式 + `meta.model` 字段是前端（chat.js / token-hud.js）依赖的契约，改字段名需同步前端。
 - 详情页 frontmatter 改 `slug` / `wiki_slug` 字段名 = breaking（build 读不到）。
-- 版本史见 CHANGELOG（当前 v2.4.0）。
+- 版本史见 CHANGELOG（当前 v2.7.0）。
