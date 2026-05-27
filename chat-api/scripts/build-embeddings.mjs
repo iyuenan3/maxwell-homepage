@@ -62,7 +62,10 @@ const JOB_INTERVIEW_CHUNK_FILTER = /面试|面经|面试官|面试题|面试录�
 // source 整源黑名单：项目本身就是求职/面试辅助工具的，所有 chunks 一律 drop
 // 即使 chunk text 不含明显关键词（如功能模块设计表格），仍然完整排除
 const JOB_INTERVIEW_SOURCE_BLACKLIST = [
-  /^wiki:offerhelper$/,
+  /^wiki:jobs-hunt$/,    // 求职神器（原 offerhelper，5/20 改名），含正在进行的公司面试进度，整源排除
+  /^wiki:offerhelper$/,  // 兼容旧名（防回退 / 历史 chunk）
+  // ⚠️ 教训：求职类项目改名会让此黑名单失效（offerhelper→jobs-hunt 即漏过一次）。
+  //    新增/改名求职相关 wiki 项目时务必同步此处。
 ];
 
 function hasJobInterviewContent(text) {
