@@ -4,7 +4,7 @@
  *
  * 数据源：
  *   主源（手工真相源，永远 include，无 sanitize）:
- *     1. worklog/wiki/job/me/resume/MaxwellLi-AIPM-FDE.md → resume（2026-05-26 迁自本仓库根，worklog 成简历真相源；5-27 改名 + 扩 FDE 定位）
+ *     1. worklog/wiki/job/me/resume/MaxwellLi-AIPMorFDE.md → resume（2026-05-26 迁自本仓库根，worklog 成简历真相源；5-27 改名 + 扩 FDE 定位）
  *     2. ../site/data/home-data.js                → home-data
  *     3. ../site/data/projects/<slug>.md          → detail:<slug>
  *     4. ~/Desktop/Claude-Project/worklog/wiki/projects/<slug>.md → wiki:<slug>
@@ -40,7 +40,7 @@ const WORKLOG_WIKI = path.join(
 
 // 简历真相源 2026-05-26 迁至 worklog（统一知识库管理）；loadResume 主源通道直读，
 // 不经 scan-sources 的 worklog walk，故 wiki/job 排除不影响它（无需白名单）。
-const RESUME_PATH = path.join(HOME, "Desktop/Claude-Project/worklog/wiki/job/me/resume/MaxwellLi-AIPM-FDE.md");
+const RESUME_PATH = path.join(HOME, "Desktop/Claude-Project/worklog/wiki/job/me/resume/MaxwellLi-AIPMorFDE.md");
 const HOME_DATA_PATH = path.join(REPO_ROOT, "site/data/home-data.js");
 const DETAIL_DIR = path.join(REPO_ROOT, "site/data/projects");
 const MANIFEST_PATH = path.join(__dirname, "manifest.json");
