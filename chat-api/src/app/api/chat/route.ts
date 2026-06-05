@@ -129,6 +129,23 @@ function detectJobInterview(content: string): boolean {
   return JOB_INTERVIEW_PATTERNS.some((p) => p.test(content));
 }
 
+// ── 雇主机密硬拦截 (P0 隐私边界) ───────────────────────────
+// 当前雇主内部平台项目：访客=潜在雇主/同行，不能被问出当前雇主的产品/项目。
+// 回复中立不确认不否认（连"在职"都不暴露）。
+// ⚠️ 敏感词绝不入公开仓：从 gitignore 的 .env.local 读 EMPLOYER_CONFIDENTIAL_TERMS。
+const EMPLOYER_PATTERNS = (process.env.EMPLOYER_CONFIDENTIAL_TERMS || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean)
+  .map((t) => new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"));
+
+const REJECT_EMPLOYER_MSG =
+  "这块不方便公开聊。想了解 Maxwell 的公开项目和技术背景，可以直接问我，或邮件 limaxwell93@gmail.com 联系本人。";
+
+function detectEmployer(content: string): boolean {
+  return EMPLOYER_PATTERNS.length > 0 && EMPLOYER_PATTERNS.some((p) => p.test(content));
+}
+
 // ── 用 SSE 流式返回固定文案（不打 LLM） ────────────────
 function makeStaticReply(text: string, cors: Record<string, string>) {
   const encoder = new TextEncoder();
@@ -258,6 +275,27 @@ export async function POST(req: Request) {
       blocked: "job_interview",
     });
     return makeStaticReply(REJECT_JOB_INTERVIEW_MSG, cors);
+  }
+
+  // ── 雇主机密硬拦截（P0 隐私边界） ────────────────
+  if (detectEmployer(lastUserMsg)) {
+    console.log(`[chat] blocked employer from ${ip}: ${lastUserMsg.slice(0, 100)}`);
+    logChat({
+      ts: new Date().toISOString(),
+      ip,
+      user_agent: userAgent,
+      msg_count: messages.length,
+      user: lastUserMsg,
+      assistant: REJECT_EMPLOYER_MSG,
+      model: "blocked",
+      input_tokens: 0,
+      output_tokens: 0,
+      total_tokens: 0,
+      rag_hits: [],
+      duration_ms: Date.now() - startTime,
+      blocked: "employer",
+    });
+    return makeStaticReply(REJECT_EMPLOYER_MSG, cors);
   }
 
   // env check

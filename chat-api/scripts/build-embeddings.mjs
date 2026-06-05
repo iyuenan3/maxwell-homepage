@@ -76,6 +76,48 @@ function isJobInterviewSource(source) {
   return JOB_INTERVIEW_SOURCE_BLACKLIST.some((p) => p.test(source));
 }
 
+// ── 雇主机密过滤（P0 隐私边界，与求职/面试同级，但 universal 不豁免任何源）──
+// 当前雇主的内部平台项目：访客=潜在雇主/同行，绝不能被问出当前雇主的产品/项目。
+// 雇主名/项目名散落在 wiki/index.md（头部+日记表+项目表）/ log.md / todos.md /
+// worklog.md / claude-financial-research.md 等多个 chunk，任何含此词的 chunk 整段 drop。
+// 与"面试官"等正当产品叙事不同，雇主名无正当理由出现在任何对外输出（含 resume/
+// home-data/detail），故 universal、不走 FILTER_EXEMPT。
+// ⚠️ 敏感词本身绝不入公开仓：从 gitignore 的 .env.local 读 EMPLOYER_CONFIDENTIAL_TERMS
+//    （逗号分隔）+ PRIVATE_SOURCE_SLUGS。懒加载缓存，不依赖 loadEnv 调用顺序。
+function escapeRe(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function envList(name) {
+  return (process.env[name] || "").split(",").map((s) => s.trim()).filter(Boolean);
+}
+
+let _employerRe; // undefined=未初始化, null=无配置词
+function hasEmployerConfidential(text) {
+  if (_employerRe === undefined) {
+    const terms = envList("EMPLOYER_CONFIDENTIAL_TERMS");
+    _employerRe = terms.length ? new RegExp(terms.map(escapeRe).join("|"), "i") : null;
+  }
+  return _employerRe ? _employerRe.test(text) : false;
+}
+
+// 私有/雇主源整源黑名单（兜底）：主防线是 loadWiki 的 frontmatter flag 自动排除
+// （visibility:private / rag_exclude:true），此处按 slug 防 frontmatter 漏写/typo。
+let _privateSlugRe;
+function isPrivateSource(source) {
+  if (_privateSlugRe === undefined) {
+    const slugs = envList("PRIVATE_SOURCE_SLUGS");
+    _privateSlugRe = slugs.length
+      ? new RegExp(`^wiki:(${slugs.map(escapeRe).join("|")})$`)
+      : null;
+  }
+  return _privateSlugRe ? _privateSlugRe.test(source) : false;
+}
+
+// frontmatter flag 通用私有判定：未来同类雇主/机密 wiki 项目零改动自动排除
+function isFrontmatterPrivate(meta) {
+  return meta.visibility === "private" || meta.rag_exclude === "true";
+}
+
 const DRY_RUN = process.argv.includes("--dry-run");
 
 // ── env ──────────────────────────────────────────────────
@@ -357,11 +399,22 @@ function loadWiki() {
     .map((f) => path.join(WORKLOG_WIKI, f));
 
   const out = [];
+  let skippedPrivate = 0;
   for (const file of files) {
     const slug = path.basename(file, ".md");
     const text = fs.readFileSync(file, "utf8");
     if (text.trim().length < MIN_CHUNK_CHARS) continue;
+    // P0：frontmatter visibility:private / rag_exclude:true 的私有页整源排除
+    // （如雇主机密的私有项目页）。通用机制，未来同类项目零改动。
+    const { meta } = stripFrontmatter(text);
+    if (isFrontmatterPrivate(meta)) {
+      skippedPrivate++;
+      continue;
+    }
     out.push(...chunkMarkdown(text, `wiki:${slug}`));
+  }
+  if (skippedPrivate > 0) {
+    console.log(`  (wiki: skipped ${skippedPrivate} private page(s) via frontmatter flag)`);
   }
   return out;
 }
@@ -615,8 +668,14 @@ async function main() {
   // 针对自动 ingest 源（manifest 的 worklog/nokia/… + wiki）里漏网的求职隐私。
   const FILTER_EXEMPT_SOURCES = new Set(["resume", "home-data", "detail"]);
   const filteredBySource = {};
+  const employerBySource = {};
   const chunks = rawChunks.filter((c) => {
     const sk = c.source.split(":")[0];
+    // 雇主机密层（universal，连 curated 公开源也查）：先于求职豁免执行
+    if (isPrivateSource(c.source) || hasEmployerConfidential(c.text)) {
+      employerBySource[sk] = (employerBySource[sk] || 0) + 1;
+      return false;
+    }
     if (FILTER_EXEMPT_SOURCES.has(sk)) return true;
     if (isJobInterviewSource(c.source) || hasJobInterviewContent(c.text)) {
       filteredBySource[sk] = (filteredBySource[sk] || 0) + 1;
@@ -624,7 +683,14 @@ async function main() {
     }
     return true;
   });
-  const filteredCount = rawChunks.length - chunks.length;
+  const employerCount = Object.values(employerBySource).reduce((a, b) => a + b, 0);
+  if (employerCount > 0) {
+    console.log(`\n→ employer-confidential filter (terms from .env.local): dropped ${employerCount} chunks`);
+    for (const [k, v] of Object.entries(employerBySource).sort((a, b) => b[1] - a[1])) {
+      console.log(`    ${k.padEnd(18)} -${v}`);
+    }
+  }
+  const filteredCount = rawChunks.length - chunks.length - employerCount;
   if (filteredCount > 0) {
     console.log(`\n→ chunk-level job/interview filter: dropped ${filteredCount} chunks`);
     for (const [k, v] of Object.entries(filteredBySource).sort((a, b) => b[1] - a[1])) {

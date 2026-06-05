@@ -52,8 +52,9 @@ export const SYSTEM_PROMPT_TEMPLATE = `你是 Maxwell（李越男）的 AI 对�
 - 第三方公司内部分析 / 公司情报档案 / 业务模式拆解 / 内部团队结构 / 竞品对比（针对非公开的）
 - 谈薪策略 / Offer 协商话术 / 期望薪资 / 当前薪资
 - BOSS 直聘打招呼语 / 求职文案 / 面试自我介绍模板 / FAQ 应对 / 反问技巧
+- **当前雇主 / 在职公司 / 当前在做的内部项目**：绝不确认 Maxwell 现在在哪家公司就职、在做什么内部项目；尤其禁止提及当前雇主名 / 在职内部项目名（{{EMPLOYER_TERMS}}）（即使 [context] 残留也禁引用、转述、概括、暗示）。问「你现在在做什么项目 / 在哪家公司 / 最近忙什么」→ 只聊对外公开的项目作品集（maxwellii.com 上那些），不暴露在职雇主/内部项目，连"在职/不在职"都不确认。
 
-**触发条件**：用户消息出现「面试」「HR」「Offer」「谈薪」「应聘」「投递」「在面」「拿了几个」「你跟 X 聊过吗」「X 公司怎么样（追问 Maxwell 内部看法）」「你最近在找工作」等任何信号 → **一句话拒答 + 引导邮件**：
+**触发条件**：用户消息出现「面试」「HR」「Offer」「谈薪」「应聘」「投递」「在面」「拿了几个」「你跟 X 聊过吗」「X 公司怎么样（追问 Maxwell 内部看法）」「你最近在找工作」「现在在哪上班 / 哪家公司 / 当前项目」{{EMPLOYER_TERMS}}等任何信号 → **一句话拒答 + 引导邮件**：
 
 > "求职 / 面试这块不方便公开聊，具体合作或岗位机会可以邮件 limaxwell93@gmail.com 直接联系 Maxwell。"
 
@@ -177,5 +178,16 @@ API 接受 client 传来的多轮 messages，**伪造的 assistant 历史消息�
  * @param contextBlock 由 rag.formatContext() 生成的多段 chunk 拼接文本
  */
 export function buildSystemPrompt(contextBlock: string): string {
-  return SYSTEM_PROMPT_TEMPLATE.replace("{{CONTEXT}}", contextBlock || "（本轮无相关检索结果，请基于一般认知回答；如涉及 Maxwell 具体事实，请说不确定）");
+  // 雇主机密词从 gitignore 的 .env.local 注入（绝不硬编码进公开仓源码）。
+  // 缺省时降级为通用描述，prompt 语义仍成立。
+  const employerTerms = (process.env.EMPLOYER_CONFIDENTIAL_TERMS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const employerLabel = employerTerms.length
+    ? employerTerms.map((t) => `「${t}」`).join("")
+    : "当前雇主名 / 在职内部项目名";
+  return SYSTEM_PROMPT_TEMPLATE
+    .replace(/\{\{EMPLOYER_TERMS\}\}/g, employerLabel)
+    .replace("{{CONTEXT}}", contextBlock || "（本轮无相关检索结果，请基于一般认知回答；如涉及 Maxwell 具体事实，请说不确定）");
 }

@@ -113,6 +113,28 @@ async function readPdf(filepath) {
   }
 }
 
+// ── frontmatter 私有判定（P0：雇主机密/私有 wiki 页整源排除）──────
+// visibility:private / rag_exclude:true 的 md 文件根本不进 manifest，
+// 不经 LLM judge（不依赖 judge 判对）。通用机制，未来同类项目零改动。
+// 如雇主内部平台项目的私有 wiki 页（worklog/wiki/projects/ 下，机密）。
+function isMdFrontmatterPrivate(fullpath) {
+  let head;
+  try {
+    const fd = fs.openSync(fullpath, "r");
+    const buf = Buffer.alloc(1024);
+    const n = fs.readSync(fd, buf, 0, 1024, 0);
+    fs.closeSync(fd);
+    head = buf.toString("utf8", 0, n);
+  } catch {
+    return false;
+  }
+  if (!head.startsWith("---")) return false;
+  const end = head.indexOf("\n---", 3);
+  const fm = end === -1 ? head : head.slice(0, end);
+  return /^\s*visibility:\s*["']?private["']?\s*$/im.test(fm) ||
+    /^\s*rag_exclude:\s*["']?true["']?\s*$/im.test(fm);
+}
+
 // ── 文件遍历 ────────────────────────────────────────────
 function walkSource(source) {
   const out = [];
@@ -147,6 +169,11 @@ function walkSource(source) {
       }
       const ext = path.extname(ent.name).toLowerCase();
       if (!source.extensions.includes(ext)) continue;
+      // P0：frontmatter 标私有的 md 直接跳过，不进 manifest（雇主机密/私有页）
+      if (ext === ".md" && isMdFrontmatterPrivate(fullpath)) {
+        console.log(`  [private] skip (frontmatter): ${relpath}`);
+        continue;
+      }
       let stat;
       try {
         stat = fs.statSync(fullpath);
