@@ -150,6 +150,7 @@ const SOURCE_CATEGORY = {
   pets: "personal",                         // ← v3: 原 notion-pets 改名
   "notion-pets": "personal",                // 兼容旧 manifest
   "resume-archive": "personal",
+  hdu: "personal",                          // 杭电本科教育 / 毕业设计（学业背景）
   // work-history
   nokia: "work-history",                    // ← v3: 含原 notion-job 内容（合并）
   huawei: "work-history",

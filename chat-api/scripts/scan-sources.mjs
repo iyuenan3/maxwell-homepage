@@ -59,6 +59,7 @@ const SOURCES = [
   { label: "quanjing",          path: path.join(VAULT_ROOT, "quanjing"),          extensions: [".md"] },
   { label: "resume-archive",    path: path.join(VAULT_ROOT, "resume-archive"),    extensions: [".md"] },
   { label: "projects/openclaw", path: path.join(VAULT_ROOT, "projects/openclaw"), extensions: [".md"] },
+  { label: "hdu",               path: path.join(VAULT_ROOT, "hdu"),               extensions: [".md"] },
 
   // ── 不搬的源（保持原位置，每天可能更新）──
   // P0 隐私边界：diaries 整源排除（每日日记含面试 + 私人反思，访客不该看）
