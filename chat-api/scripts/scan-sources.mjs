@@ -49,7 +49,7 @@ if (!CHAT_LLM_API_KEY || !CHAT_LLM_BASE_URL) {
 
 // ── 数据源配置（migration v3 后：vault 内 + 不搬的本地源）───
 const HOME = os.homedir();
-const VAULT_ROOT = path.join(HOME, "Desktop/Claude-Project/maxwell-rag-sources");
+const VAULT_ROOT = path.join(HOME, "Desktop/Projects/maxwell-rag-sources");
 
 const SOURCES = [
   // ── vault 内的源（已 pre-sanitize，全 .md）──
@@ -66,7 +66,7 @@ const SOURCES = [
   // P0 隐私边界：worklog/wiki/job/ 整目录排除（公司情报档案 / 面试录音 / 求职文案 / 谈薪）
   {
     label: "worklog",
-    path: path.join(HOME, "Desktop/Claude-Project/worklog"),
+    path: path.join(HOME, "Desktop/Projects/worklog"),
     extensions: [".md"],
     excludeRelpaths: ["diaries", "wiki/job"],
   },

@@ -32,8 +32,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const CHAT_API_ROOT = path.resolve(__dirname, "..");
 const HOME = os.homedir();
-const VAULT_ROOT = path.join(HOME, "Desktop/Claude-Project/maxwell-rag-sources");
-const WORKLOG_OBSIDIAN = path.join(HOME, "Desktop/Claude-Project/worklog/.obsidian");
+const VAULT_ROOT = path.join(HOME, "Desktop/Projects/maxwell-rag-sources");
+const WORKLOG_OBSIDIAN = path.join(HOME, "Desktop/Projects/worklog/.obsidian");
 const MANIFEST_PATH = path.join(__dirname, "manifest.json");
 const REPORT_PATH = path.join(__dirname, "migration-report.md");
 
@@ -368,7 +368,7 @@ function writeVaultReadme(stats) {
 新增 / 修改 vault 文件后，触发完整 RAG 重建：
 
 \`\`\`bash
-cd ~/Desktop/Claude-Project/maxwell-homepage/chat-api
+cd ~/Desktop/Projects/maxwell-homepage/chat-api
 npm run update     # = scan (judge 增量) + reindex + deploy (~40 min)
 \`\`\`
 

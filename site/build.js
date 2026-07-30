@@ -2,7 +2,7 @@
 // build.js — Maxwellii 二级详情页构建器（纯 Node，零依赖）
 // 用法：node build.js
 // 输入：site/data/projects/<slug>.md（含 frontmatter + ## README/NOTES/...）
-// 可选：~/Desktop/Claude-Project/worklog/wiki/projects/<wiki_slug>.md
+// 可选：~/Desktop/Projects/worklog/wiki/projects/<wiki_slug>.md
 // 输出：site/public/p/<slug>.html
 
 const fs = require('fs');
@@ -13,7 +13,7 @@ const ROOT = __dirname;
 const DATA_DIR = path.join(ROOT, 'data', 'projects');
 const TEMPLATES_DIR = path.join(ROOT, 'templates');
 const OUTPUT_DIR = path.join(ROOT, 'public', 'p');
-const WIKI_DIR = path.join(os.homedir(), 'Desktop', 'Claude-Project', 'worklog', 'wiki', 'projects');
+const WIKI_DIR = path.join(os.homedir(), 'Desktop', 'Projects', 'worklog', 'wiki', 'projects');
 
 // ============================================================
 // 工具

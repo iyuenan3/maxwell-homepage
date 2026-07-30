@@ -7,7 +7,7 @@
  *     1. worklog/wiki/job/me/resume/MaxwellLi-AIPMorFDE.md → resume（2026-05-26 迁自本仓库根，worklog 成简历真相源；5-27 改名 + 扩 FDE 定位）
  *     2. ../site/data/home-data.js                → home-data
  *     3. ../site/data/projects/<slug>.md          → detail:<slug>
- *     4. ~/Desktop/Claude-Project/worklog/wiki/projects/<slug>.md → wiki:<slug>
+ *     4. ~/Desktop/Projects/worklog/wiki/projects/<slug>.md → wiki:<slug>
  *   manifest 源（scan-sources.mjs 产出 + Maxwell 审稿）:
  *     5. scripts/manifest.json 中 action="include" 的所有文件
  *        needs_sanitize=true 的 chunks 走 chunk-level LLM 脱敏
@@ -35,12 +35,12 @@ const REPO_ROOT = path.resolve(CHAT_API_ROOT, "..");
 const HOME = os.homedir();
 const WORKLOG_WIKI = path.join(
   HOME,
-  "Desktop/Claude-Project/worklog/wiki/projects",
+  "Desktop/Projects/worklog/wiki/projects",
 );
 
 // 简历真相源 2026-05-26 迁至 worklog（统一知识库管理）；loadResume 主源通道直读，
 // 不经 scan-sources 的 worklog walk，故 wiki/job 排除不影响它（无需白名单）。
-const RESUME_PATH = path.join(HOME, "Desktop/Claude-Project/worklog/wiki/job/me/resume/MaxwellLi-AIPMorFDE.md");
+const RESUME_PATH = path.join(HOME, "Desktop/Projects/worklog/wiki/job/me/resume/MaxwellLi-AIPMorFDE.md");
 const HOME_DATA_PATH = path.join(REPO_ROOT, "site/data/home-data.js");
 const DETAIL_DIR = path.join(REPO_ROOT, "site/data/projects");
 const MANIFEST_PATH = path.join(__dirname, "manifest.json");
@@ -464,7 +464,7 @@ async function loadFromManifest() {
     const sourceLabel = `${item.source_label}:${stem}`;
     // vault 已 file-level pre-sanitize → 跳过 chunk-level sanitize
     // 检测：fullpath 在 vault root 下 OR manifest 标了 migrated
-    const VAULT_ROOT_CHECK = path.join(os.homedir(), "Desktop/Claude-Project/maxwell-rag-sources");
+    const VAULT_ROOT_CHECK = path.join(os.homedir(), "Desktop/Projects/maxwell-rag-sources");
     const isVaultFile = item.fullpath?.startsWith(VAULT_ROOT_CHECK);
     const needsSanitize = (item.migrated || isVaultFile) ? false : (item.needs_sanitize === true);
     out.push(

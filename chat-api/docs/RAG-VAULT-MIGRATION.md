@@ -1,5 +1,7 @@
 # RAG Vault Migration — 方案 v3 完整文档
 
+> **历史路径说明**：本文记录 2026-05-10 的一次性迁移，文中的 `~/Desktop/Claude-Project/` 保留为当时证据，不可直接执行。当前运行路径统一使用 `~/Desktop/Projects/`，以脚本和 AIREADME 为准。
+>
 > **状态**：✅ 已执行完成 (2026-05-10)
 > **作者**：Maxwell + Claude
 > **方案日期**：2026-05-10 18:01
