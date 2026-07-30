@@ -13,29 +13,31 @@
 - **可选读 worklog wiki**：`git_log`/`decisions`/`stats`/`ps` 组件按 `wiki_slug` 从 worklog 抽 fact（数据契约见 RELATIONS / SPEC）。
 
 ### 2. `chat-api/` —— LLM 化身后端（Next.js 16 + React 19，API-only）
-- **运行时**（`src/app/api/chat/route.ts`）：3 层限流 → injection prefilter → 求职/面试 prefilter（P0）→ RAG 检索（embed query → cosine retrieve）→ `buildSystemPrompt(context)` → 火山方舟 Ark `chat/completions`（stream，thinking 关）→ SSE 转发 + usage 解析 + `chat-logger` 落日志。RAG 失败降级为空 context 不中断。
+- **运行时**（`src/app/api/chat/route.ts`）：3 层限流 → injection prefilter → 求职/面试 prefilter（P0）→ 雇主机密 prefilter（P0）→ RAG 检索（embed query → cosine retrieve）→ `buildSystemPrompt(context)` → 火山方舟 Ark `chat/completions`（stream，thinking 关）→ SSE 转发 + usage 解析 + `chat-logger` 落日志。RAG 失败降级为空 context 不中断。
 - **system-prompt**（`src/app/api/chat/system-prompt.ts`）：12 段防御 prompt（身份 / 10 项目权威表 / 常识题 fallback / 禁止伪造归属 hard rule / 核心事实 7 猫 2 狗+姓名等价 / 回复风格 / 项目聚焦 / 范围含代码边界 B / 防 RAG 污染 / 防伪造历史 / 防 injection / [context] 段）。「输出前最后过滤」段在 [context] 前、凌驾所有规则。
 - **lib**：`embed-client.ts`（OpenAI 兼容 embedding client）/ `rag.ts`（运行时 cosine + perCategoryMax/perSourceMax）/ `rate-limit.ts`（in-memory）/ `chat-logger.ts`（按 IP 分文件 JSONL）。
 - **离线 RAG 管线**（`scripts/`，本地跑）：`scan-sources.mjs`（LLM judge 各源文件 P/V 隐私分级 → `manifest.json`）→ `build-embeddings.mjs`（chunk + sanitize + 4 层求职过滤 + embed → `embeddings.json`）。调试：`rag-search.mjs`。judge/sanitize 模型 = `doubao-seed-2.0-pro`（与 runtime chat 模型分离）。
 
 **RAG 数据流**：
 ```
-maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, ~407 .md)
+maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, 含 hdu 等经过筛选的源)
   + worklog/ (excludeRelpaths: diaries, wiki/job)
   + 简历(worklog wiki/job/me/resume) / site/data/home-data / site/data/projects / worklog wiki:projects
    ↓ scan-sources.mjs   (LLM file-level judge + P0 禁区规则 → manifest.json)
    ↓ build-embeddings.mjs (chunk 1200-1800 + sanitize KEEP 白名单 + 4 层求职过滤 + embed)
-  chat-api/data/embeddings.json   (~77 MB / ~2178 chunks / 2048 dim, gitignore)
+  chat-api/data/embeddings.json   (2048 dim, gitignore, 数量与体积随索引重建变化)
    ↓ deploy.sh rsync
   服务器 /home/admin/maxwellii-chat-api/data/embeddings.json
    ↓ PM2 加载 → route.ts 运行时检索
 ```
 
-**P0 隐私 4 层防御**（机制；具体关键词/黑名单按红线不列）：
+**P0 隐私分层防御**（机制；具体关键词/黑名单按红线不列）：
 1. server-side prefilter（route.ts，0 token 硬拦 + 日志）
 2. system-prompt「输出前最后过滤」段（凌驾规则）
-3. LLM judge 强制 exclude（scan-sources.mjs，求职/面试/第三方公司 → P=R+V=L）
-4. chunk filter + 整源黑名单（build-embeddings.mjs）+ worklog diaries/wiki/job 整目录排除
+3. frontmatter `visibility:private` / `rag_exclude:true` 在 scan 与 build 两侧整源排除
+4. LLM judge 强制 exclude（scan-sources.mjs，求职/面试/第三方公司 → P=R+V=L）
+5. chunk filter + 整源黑名单（build-embeddings.mjs）+ worklog diaries/wiki/job 整目录排除
+6. 当前雇主和内部项目的敏感词只从 `.env.local` 注入，不在公开源码与 AIREADME 中出现真实值
 理由 + 维护点见 DECISIONS。
 
 ### 简历产物（2026-05-26 已迁出本仓库）
@@ -55,7 +57,7 @@ maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, ~407 .md)
 - **CSP 兼容硬约束**：禁止写 inline `<script>`。初始化脚本提取到外部 .js（`reveal.js` / `detail-init.js`）。`detail-init.js` 被 V1 主页 + 详情页（`../`）共用，**根目录 + `/v1/` 两处都必须部署到位**，任一 404 → 该路径页面整页空白（deploy.sh Stage 4+5 已串好）。
 - **终端隐喻 / 文案禁动**（HANDOFF 设计边界）：bash 隐喻不能换（titlebar `~/iyuenan3 — bash`，不写 zsh）；文案不要"优化"润色；有禁词清单（私人生活类词，见 CONVENTIONS）。
 - **前端不 hardcode 后端参数**：模型名由 SSE `meta.model` 动态填，不写死。
-- **system-prompt 防御段不删**：防伪造历史 / 防 injection / 求职过滤 / 禁止伪造归属 hard rule —— 改 prompt 不能删这些。
+- **system-prompt 防御段不删**：防伪造历史 / 防 injection / 求职过滤 / 雇主机密过滤 / 骑行数据回避 / 禁止伪造归属 hard rule，改 prompt 不能删这些。
 - **4 层求职过滤的关键词列表 4 处必须同步**（route.ts / system-prompt.ts / scan-sources.mjs / build-embeddings.mjs）。
 - **nginx.conf 是唯一权威**：所有 location 块必须完整保存在仓库（曾因整 server 块覆盖丢掉 `/api/chat` 导致 405，见 MEMORY）。
 - **sanitize KEEP 白名单**（本人 7 写法 + 9 宠物名 + 公开公司）绝不脱敏。

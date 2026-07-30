@@ -19,6 +19,7 @@
 - **标点风格**：并列项冒号半角（`Blog: maxwellii.com`）；范围用 en dash `–`（`2–8 人`）；离职时间月份精度（`2025.03 - 2026.04`）；中文段全角括号、半角括号仅用于代码/英文。
 - **跨项目协作走"清单 + 转发"**：本 session 默认只改当前仓库；需 worklog 同步时输出清单交用户转达，不直接 Edit worklog（除非用户明说"也改 worklog"）。责任边界：产品/代码/文案规则归 homepage，求职活动/文案正文归 worklog。
 - **提交前安全审计 SOP**：大批量 commit 前 grep 真实手机号 / `ark-`·`sk-` key / 用户绝对路径 / 长 token —— 全空才安全（命令见本地 CLAUDE.md）。
+- **敏感运行时词只走 env**：当前雇主、内部项目和其他私密过滤词只放 gitignore 的 `chat-api/.env.local`，跟踪源码只读取变量并提供通用缺省行为。不得为了调试把真实值写进测试、注释、AIREADME 或 commit message。
 
 ## 禁用模式
 - **禁 inline `<script>`**（CSP `script-src 'self'`）：初始化脚本提取到外部 .js（`reveal.js` / `detail-init.js`），注意三层引用路径（根 / `/v1/` / `/p/` 的 `../`）任一 404 致整页空白。见 ARCHITECTURE 禁改项 + ADR-008。

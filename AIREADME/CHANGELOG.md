@@ -3,6 +3,14 @@
 
 > 迁自仓库根 `CHANGELOG.md`（Keep a Changelog 风格）+ 补齐 v2.3 / v2.4。理由链 DECISIONS，运行时踩坑见 MEMORY。
 
+## v2.9.0 · 2026-06-14
+- Added: 外部 RAG vault 新增 `hdu` 源，纳入本科教育与毕业设计资料，归入 personal 类别。
+- Added: 化身增加骑行表现与身体数据回避护栏，明确任职过的单车旅游公司不是个人竞技战绩，禁止估算或编造数字 → ADR-013。
+
+## v2.8.0 · 2026-06-05
+- Added: 当前雇主与内部项目的纵深隐私防御。私有 frontmatter 在 scan/build 双侧整源排除，build 增加 chunk 与 source 兜底，route 与 system prompt 增加运行时拒答。
+- Security: 敏感词和私密 slug 改由 gitignore 的 `.env.local` 注入，公开源码只保留通用机制和变量名 → ADR-012。
+
 ## v2.7.0 · 2026-05-28
 - Changed: projects 板块重构 11→9 项 → ADR-011。两组合并并保留旧 slug 不改 URL：`maxwell-homepage` 收编 worklog 成「个人知识系统」（worklog 输入引擎 + maxwellii.com 输出界面）；`xhs-agency` 收编 xiaohongshu-tool 成「小红书自运营系统」（`wiki_slug` 改指 `xiaohongshu-tool` 抽 worklog fact）。
 - Removed: 删 `ai-knowledge` + `worklog` 两个独立详情页（git rm `site/data/projects/` + ssh 删服务器 `public/p/`）。

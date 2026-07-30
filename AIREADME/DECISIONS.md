@@ -77,3 +77,17 @@
 - Decision: 合并两组（maxwell-homepage 收编 worklog 成「个人知识系统」/ xhs-agency 收编 xiaohongshu-tool 成「小红书自运营系统」），合并项保留旧 slug 不改 URL（xhs-agency 仅把 `wiki_slug` 改指 xiaohongshu-tool 抽 worklog fact）；删 ai-knowledge + worklog 两详情页（git rm）；nginx 加 `location ^~ /p/ { try_files $uri =404 }` 让删除项 URL 真 404。
 - Alternatives（否决）: worklog 与 maxwell-homepage 分两卡（用户判断本是一个系统两端，合并更真实）；删除项 301 redirect 到首页（用户要干净 404，不留僵尸跳转）；合并项造新 slug + redirect（多余，旧 slug 仍贴切）。
 - Tradeoff: 合并项卡片承载两段叙事，文案密度升高；`build-embeddings.mjs` / `rag.ts` 残留 ai-knowledge category 死键（无害，下次重构清）；embeddings chunks 2339→2178。详情页数据源 + 板块约定见 CONVENTIONS。
+
+## ADR-012 · 雇主机密使用数据侧标记 + env 注入的纵深防御 · 2026-06-05
+- Problem: 当前雇主与内部项目可能散落在 worklog wiki 和多个 RAG chunk 中，访客追问时存在检索与运行时泄露风险。
+- Constraint: 本仓库公开，真实雇主名、内部项目名和私密 slug 本身也不能硬编码进源码、AIREADME、测试或 commit message。
+- Decision: 私有 wiki 使用 `visibility:private` / `rag_exclude:true` 通用标记；scan 与 build 两侧整源排除；build 再做 universal chunk 过滤与私有源兜底；route prefilter 与 system prompt 负责运行时拒答。敏感词与私密 slug 只从 gitignore 的 `.env.local` 注入。
+- Alternatives（否决）: 只靠 system prompt（RAG context 可能已泄露）；只靠 hardcode 黑名单（公开仓直接暴露敏感词，且改名会静默失效）。
+- Tradeoff: 本地与服务器 env 必须同步维护；缺少 env 时通用 frontmatter 机制仍生效，但词级兜底与入口硬拦覆盖面会下降。
+
+## ADR-013 · 新增 hdu RAG 源并对骑行数据执行固定回避 · 2026-06-14
+- Problem: 化身需要覆盖公开的本科教育与毕业设计背景，同时曾把单车旅游公司经历误解成个人竞技战绩并编造离谱数字。
+- Constraint: 学业资料先经过筛选与脱敏；骑行表现和身体数据不作为公开身份材料，也没有可信数据源支持回答。
+- Decision: 外部 RAG vault 增加 `hdu` 源并归入 personal 类别；system prompt 明确单车旅游公司是任职经历，不是竞技战绩。涉及爬坡、速度、功率、体重、排名等问题统一一句话回避，不输出数字。
+- Alternatives（否决）: 让模型依据一般常识估算（会把猜测包装成个人事实）；接入更多运动数据（不符合隐私边界，也不是主页产品目标）。
+- Tradeoff: 化身无法回答一部分个人爱好细节，但换来更稳定的可信度与隐私边界。

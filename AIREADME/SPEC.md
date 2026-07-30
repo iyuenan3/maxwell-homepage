@@ -35,7 +35,8 @@
 ### 0-token 硬拦截（返回 SSE 固定文案，不打 LLM）
 - **prompt injection** 命中 → "我只能聊 Maxwell 相关的话题。"（日志 `blocked:"injection"`）。
 - **求职 / 面试 / 谈薪** 命中 → 引导邮件联系的固定文案（日志 `blocked:"job_interview"`）。
-- 关键词表本身在 `route.ts`（`INJECTION_PATTERNS` / `JOB_INTERVIEW_PATTERNS`），**按隐私红线不在此转抄**。
+- **当前雇主 / 内部项目探测** 命中 → 中立拒答，不确认在职状态（日志 `blocked:"employer"`）。
+- 通用关键词表在 `route.ts`；雇主机密词由 `.env.local` 注入。**按隐私红线不在此转抄真实值**。
 
 ### 错误码（JSON，非 SSE）
 `429 rate_limited` / `429 rate_limited_daily` / `503 service_busy`（全局）/ `400 invalid_json` / `400 invalid_messages` / `500 server_misconfigured` / `502 upstream_error`。
@@ -74,4 +75,4 @@ body 用 `## README` / `## NOTES` / `## DECISIONS` / `## STATS` / `## HISTORY` �
 ## 版本 / 兼容
 - chat-api SSE 事件格式 + `meta.model` 字段是前端（chat.js / token-hud.js）依赖的契约，改字段名需同步前端。
 - 详情页 frontmatter 改 `slug` / `wiki_slug` 字段名 = breaking（build 读不到）。
-- 版本史见 CHANGELOG（当前 v2.7.0）。
+- 版本史见 CHANGELOG（当前 v2.9.0）。

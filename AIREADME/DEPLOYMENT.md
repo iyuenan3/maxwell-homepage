@@ -58,4 +58,4 @@ cat site/nginx.conf | ssh alicloud-sg "sudo tee /etc/nginx/sites-available/maxwe
 ## 运维约束
 - ⚠️ **SSH mux 挂死**：`~/.ssh/config` ControlMaster auto 的 mux socket 偶发挂死 → 所有走 alicloud-sg 的 ssh/rsync 无限挂起（deploy 卡 Stage 1）。修复一行 `ssh -O exit alicloud-sg`。预防：久未用先 `ssh alicloud-sg "date"` 烫连接。
 - nginx 安全头：⚠️ 当前仓库 `site/nginx.conf` **只有 HSTS**，缺 v2.2.0 应加的 4 头（CSP / X-Frame-Options / X-Content-Type-Options / Referrer-Policy）—— 可能服务器有、仓库 drift。**推 nginx 前务必核对服务器实际配置**，别用仓库版覆盖掉服务器上的安全头（见 MEMORY / DECISIONS-008）。
-- `.env.local` 含 key，部署后 chmod 600；deploy.sh 已排除 `.env.example` 不覆盖服务器真实 env。
+- `.env.local` 含 key、管理 token 与私密过滤词，部署后 chmod 600；任何真实值都不得进入跟踪文件或命令输出。
