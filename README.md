@@ -6,7 +6,7 @@
 
 李越男 (Maxwell Li) 的个人主页仓库 — **maxwellii.com 终端体网站源码 + AI 化身对话后端 (chat-api)**。
 
-[![version](https://img.shields.io/badge/version-2.4.0-1a5276)](./AIREADME/CHANGELOG.md) [![site](https://img.shields.io/badge/site-maxwellii.com-c0392b)](https://maxwellii.com)
+[![version](https://img.shields.io/badge/version-2.9.0-1a5276)](./AIREADME/CHANGELOG.md) [![site](https://img.shields.io/badge/site-maxwellii.com-c0392b)](https://maxwellii.com)
 
 > 5/9 由 `Maxwell-Resume` 改名为 `maxwell-homepage`：从「简历仓库」扩展到「个人主页 + AI 化身」。GitHub 自动 redirect 旧 URL，外链不会 404。简历归档 2026-05-26 迁至 Maxwell 私有知识库统一管理（本仓库不再存简历文件）。
 >
@@ -14,7 +14,7 @@
 
 ## 个人主页 — maxwellii.com
 
-终端体设计的个人静态站点（已上线 https://maxwellii.com）：bash 隐喻 + CRT 扫描线 + 朱砂方印 + 等宽/衬线中文字体。主页 `ls -lah projects/` 列出 10 个项目（含本仓库自身），每行点进对应详情页（终端 `cat README.md` 风格 + 中英双 H1）。两种模式：**V1 简介**（`/v1/`）与 **V2 化身对话**（主域 `/`，右下角 chat 框接 AI 版 Maxwell）。
+终端体设计的个人静态站点（已上线 https://maxwellii.com）：bash 隐喻 + CRT 扫描线 + 朱砂方印 + 等宽/衬线中文字体。主页 `ls -lah projects/` 列出 9 个项目（含本仓库自身），每行点进对应详情页（终端 `cat README.md` 风格 + 中英双 H1）。两种模式：**V1 简介**（`/v1/`）与 **V2 化身对话**（主域 `/`，右下角 chat 框接 AI 版 Maxwell）。
 
 | 属性 | 值 |
 |------|-----|
@@ -25,20 +25,19 @@
 
 > 部署架构 / nginx / CDN 缓存 / 构建管线等工程细节见 [`AIREADME/DEPLOYMENT.md`](./AIREADME/DEPLOYMENT.md) + [`AIREADME/ARCHITECTURE.md`](./AIREADME/ARCHITECTURE.md)。
 
-### 10 项目
+### 9 项目
 
 | URL slug | 中文双名 | 状态 |
 |---|---|---|
 | eastern-wisdom | 东方智慧 · 海外华人取名 SaaS | ● live |
 | multiplayer-xiaoshuo | 多人小说 · 多人互动小说 H5 | ● live |
-| maxwell-homepage | maxwellii.com · 终端体个人主页 | ● live |
-| worklog | 工作日志 · AI 自动日记 + LLM Wiki 知识库 | ◐ active |
-| ai-knowledge | AI 知识库 · 开源项目研究图谱 | ◐ active |
-| openclaw | OpenClaw · AI 助理平台 | ◐ active |
+| maxwell-homepage | worklog × maxwellii.com · 个人知识系统 | ● live |
 | claude-financial-research | 智投研 · A 股权益研究系统 | ◐ active |
+| short-story | 短篇小说 · 番茄平台商业短篇 | ◐ active |
+| openclaw | OpenClaw · AI 助理平台 | ◐ active |
 | petslog | PetsLog · 宠物健康伴侣 | ◐ active |
+| xhs-agency | 小红书自运营系统 | ◐ active |
 | k8s-om | k8s-om · K8s 多租户运维工具集 | ✕ archived |
-| xhs-agency | 小红书 Agency · 多 Agent 全自动账号运营 | ✕ archived |
 
 ## AI 化身对话 — chat-api
 
