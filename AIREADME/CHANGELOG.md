@@ -3,6 +3,9 @@
 
 > 迁自仓库根 `CHANGELOG.md`（Keep a Changelog 风格）+ 补齐 v2.3 / v2.4。理由链 DECISIONS，运行时踩坑见 MEMORY。
 
+## v2.9.1 · 2026-07-30
+- Security: 扩大 `.gitignore`，覆盖 `chat-api/data/` 整目录和 manifest 扫描备份，防止本地向量、路径与摘要误入公开仓。
+
 ## v2.9.0 · 2026-06-14
 - Added: 外部 RAG vault 新增 `hdu` 源，纳入本科教育与毕业设计资料，归入 personal 类别。
 - Added: 化身增加骑行表现与身体数据回避护栏，明确任职过的单车旅游公司不是个人竞技战绩，禁止估算或编造数字 → ADR-013。

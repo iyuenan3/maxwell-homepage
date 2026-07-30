@@ -1,6 +1,6 @@
 # maxwell-homepage · AIREADME
 > 李越男 (Maxwell) 的个人主页：终端体静态站 maxwellii.com（V1 简介 / V2 LLM 化身对话）+ chat-api RAG 后端 ｜ 生命周期: active
-> last-synced: 083f2a4 · 2026-07-30
+> last-synced: f05503d · 2026-07-30
 
 <!-- 路由器：只指路，不放实质内容。INDEX 不列自己。符号：✅已填 / ⚑占位 / —N/A -->
 
@@ -14,10 +14,10 @@
 | DEPLOYMENT | ✅ | alicloud-sg(47.84.100.47)：site 静态 + chat-api PM2:3002 + 共用 nginx |
 | PRD | ✅ | 个人品牌 + 可对话化身；求职=隐含价值主张、具体材料明确排除 |
 | ROADMAP | ✅ | Now=内容同步 + RAG 索引维护 + 隐私护栏稳态 |
-| CONVENTIONS | ✅ | kebab-case slug / 双名 frontmatter / 敏感词只走 env / CSP 无 inline |
+| CONVENTIONS | ✅ | kebab-case slug / 双名 frontmatter / 敏感词只走 env / RAG 本地产物不入库 / CSP 无 inline |
 | DECISIONS | ✅ | 13 条 ADR（方案 C / RAG vault / 分层隐私 / 直连 Ark / projects 11→9 / hdu 等）|
 | MEMORY | ✅ | 8 条事故（CSP / nginx / env / SSH mux / CF 缓存 / 黑名单改名 / 公开仓敏感词 / 骑行数据编造）|
-| CHANGELOG | ✅ | 1.0 → 2.9（切火山 / 简历迁移 / projects 11→9 / 雇主机密隔离 / hdu）|
+| CHANGELOG | ✅ | 1.0 → 2.9.1（切火山 / 简历迁移 / projects 11→9 / 雇主机密隔离 / hdu / RAG ignore）|
 
 ## 按任务读
 - 跨项目了解 → CORE + RELATIONS（+ SPEC 若要调 chat-api 或读详情页数据）
