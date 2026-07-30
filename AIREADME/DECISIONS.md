@@ -91,3 +91,10 @@
 - Decision: 外部 RAG vault 增加 `hdu` 源并归入 personal 类别；system prompt 明确单车旅游公司是任职经历，不是竞技战绩。涉及爬坡、速度、功率、体重、排名等问题统一一句话回避，不输出数字。
 - Alternatives（否决）: 让模型依据一般常识估算（会把猜测包装成个人事实）；接入更多运动数据（不符合隐私边界，也不是主页产品目标）。
 - Tradeoff: 化身无法回答一部分个人爱好细节，但换来更稳定的可信度与隐私边界。
+
+## ADR-014 · 本机项目根目录迁移至 Projects · 2026-07-31
+- Problem: 本机项目已从 `~/Desktop/Claude-Project/` 统一迁移到与客户端无关的 `~/Desktop/Projects/`，当前构建器与 RAG 脚本仍绑定旧绝对路径。
+- Constraint: maxwell-homepage 不保留旧 worklog 路径兼容；历史 ADR 与已完成的迁移记录不得改写。
+- Decision: 所有当前运行代码、操作说明和关系文档改用 `~/Desktop/Projects/`。ADR-002 中的旧 vault 路径只表示当时决策，不再是当前运行路径。
+- Alternatives（否决）: 建立永久旧根目录软链接（会掩盖漏改路径）；依赖当前工作目录推导相邻项目（任务从子目录启动时不稳定）。
+- Tradeoff: 迁移完成前，依赖 worklog 的构建与 RAG 脚本必须等 worklog 也移动到新根目录后再执行。
