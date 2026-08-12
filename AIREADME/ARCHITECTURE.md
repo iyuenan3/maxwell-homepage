@@ -50,7 +50,7 @@ maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, 含 hdu 等经过筛选
 - **LLM 上游：直连火山方舟 Ark**（曾 newapi-proxy 中转，2026-05-24 切回直连）→ ADR-009（取代 ADR-004）。
 - **env 变量 `CHAT_LLM_*` 前缀**（避开 shell rc 污染）→ ADR-005。
 - **build.js 纯 Node 零依赖**（详情页无 npm 包）→ ADR-006。
-- **chat 模型 doubao-seed-2.0-lite**（替代 deepseek-v4-flash）→ ADR-007。
+- **chat 模型 deepseek-v4-flash**（方舟实际解析为 `deepseek-v4-flash-ga-260731`，替代 doubao-seed-2.0-lite）→ ADR-015（取代 ADR-007 的当前模型结论）。
 - **CSP `script-src 'self'` 无 inline script** → ADR-008。
 
 ## 禁改项 / Forbidden Refactors

@@ -3,6 +3,9 @@
 
 > 迁自仓库根 `CHANGELOG.md`（Keep a Changelog 风格）+ 补齐 v2.3 / v2.4。理由链 DECISIONS，运行时踩坑见 MEMORY。
 
+## v2.9.2 · 2026-08-12
+- Changed: 线上 chat 模型从 `doubao-seed-2.0-lite` 切换为 `deepseek-v4-flash`；方舟当前实际解析为 `deepseek-v4-flash-ga-260731`。RAG、embedding 模型、SSE 与前端动态模型显示契约保持不变 → ADR-015。
+
 ## v2.9.1 · 2026-07-30
 - Security: 扩大 `.gitignore`，覆盖 `chat-api/data/` 整目录和 manifest 扫描备份，防止本地向量、路径与摘要误入公开仓。
 

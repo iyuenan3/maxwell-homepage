@@ -98,3 +98,10 @@
 - Decision: 所有当前运行代码、操作说明和关系文档改用 `~/Desktop/Projects/`。ADR-002 中的旧 vault 路径只表示当时决策，不再是当前运行路径。
 - Alternatives（否决）: 建立永久旧根目录软链接（会掩盖漏改路径）；依赖当前工作目录推导相邻项目（任务从子目录启动时不稳定）。
 - Tradeoff: 迁移完成前，依赖 worklog 的构建与 RAG 脚本必须等 worklog 也移动到新根目录后再执行。
+
+## ADR-015 · chat 模型切换为 deepseek-v4-flash · 2026-08-12
+- Problem: 线上化身需要从 `doubao-seed-2.0-lite` 切换到能力更强的 DeepSeek Flash 系列，同时保持现有 RAG、流式 SSE、usage 与前端模型显示契约不变。
+- Constraint: 继续直连火山方舟 Coding Plan；不改 embedding 模型与向量空间；目标模型必须兼容 OpenAI 流式接口、`stream_options.include_usage` 和 `thinking:{type:"disabled"}`。
+- Decision: `CHAT_LLM_MODEL` 改为 `deepseek-v4-flash`。2026-08-12 直连预检返回 200，方舟实际解析为 `deepseek-v4-flash-ga-260731`；同参数流式测试正常结束，usage 可解析，reasoning token 为 0。该结论取代 ADR-007 的当前 chat 模型选择，ADR-007 保留为历史。
+- Alternatives（否决）: 保持 `doubao-seed-2.0-lite`（不满足本次模型升级目标）；写死版本化 ID（会把方舟别名升级策略固化进配置）；同时重建 embeddings（chat 模型与 embedding 向量空间无关，没有收益）。
+- Tradeoff: DeepSeek Flash 的成本、延迟和别名后端版本可能随方舟调整；运行时应继续以 SSE `meta.model` 和真实对话验收为准，不能只看 `.env.local` 字面值。

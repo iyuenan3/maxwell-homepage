@@ -5,11 +5,11 @@
 
 | 依赖 | 用途 | 权威路径 |
 |---|---|---|
-| **火山方舟 Ark**（LLM 上游，直连）| chat-api 的 chat（`doubao-seed-2.0-lite`）+ embedding（`doubao-embedding-vision`），OpenAI 兼容 `/api/coding/v3` | 火山 console（Ark Coding Plan）|
+| **火山方舟 Ark**（LLM 上游，直连）| chat-api 的 chat（`deepseek-v4-flash`）+ embedding（`doubao-embedding-vision`），OpenAI 兼容 `/api/coding/v3` | 火山 console（Ark Coding Plan）|
 | **worklog**（wiki 数据 + 简历源） | ① `build.js` 读 `wiki/projects/<wiki_slug>.md` 抽详情页 fact ② chat-api `loadResume()` 读 `wiki/job/me/resume/MaxwellLi-AIPMorFDE.md` 入 RAG | `../worklog/AIREADME/SPEC.md` |
 
 ### 火山方舟 Ark（运行时 LLM 上游，直连，OpenAI 兼容）
-- chat-api `route.ts` 调 `${CHAT_LLM_BASE_URL}/chat/completions`（stream，`thinking:{type:"disabled"}` 关 doubao 深度思考）+ `/embeddings`（`doubao-embedding-vision` 2048 dim）。chat 模型 `doubao-seed-2.0-lite`（env `CHAT_LLM_MODEL`）；离线脚本 judge/sanitize 用 `doubao-seed-2.0-pro`。
+- chat-api `route.ts` 调 `${CHAT_LLM_BASE_URL}/chat/completions`（stream，`thinking:{type:"disabled"}` 关闭推理输出）+ `/embeddings`（`doubao-embedding-vision` 2048 dim）。chat 模型 `deepseek-v4-flash`（env `CHAT_LLM_MODEL`，方舟当前解析为 `deepseek-v4-flash-ga-260731`）；离线脚本 judge/sanitize 仍用 `doubao-seed-2.0-pro`。
 - 端点 `https://ark.cn-beijing.volces.com/api/coding/v3`（Coding Plan）；鉴权 `Bearer ark-<key>`（火山 console 申请，**仅存服务器 `.env.local` chmod 600，绝不入仓库**）；Ark 公网有效证书 → **无需** `NODE_TLS_REJECT_UNAUTHORIZED`。
 - **2026-05-24 由 newapi-proxy 中转站切回直连 Ark**（DECISIONS ADR-009 取代 ADR-004）：绕过 newapi 侧 embedding 渠道「暂不可用」阻塞 + 恢复 doubao prompt cache 透传 + 去掉自签 TLS hack。`embeddings.json` 零重建（同模型同 2048 维向量空间）。已线上验证 RAG + chat 全链路通。
 
