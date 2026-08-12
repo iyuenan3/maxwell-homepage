@@ -345,7 +345,7 @@ export async function POST(req: Request) {
       stream_options: { include_usage: true },  // 让最后一个 chunk 带 usage（OpenAI 兼容）
       temperature: 0.7,
       max_tokens: 2000,  // 体验优先：放宽（pro 版套餐 token 充足）
-      thinking: { type: "disabled" },  // 关 doubao 深度思考：TTFT 更快 + 省 token（实测 reasoning 245→0）
+      thinking: { type: "disabled" },  // 关闭推理输出：TTFT 更快 + 省 token（当前 DeepSeek Flash 兼容）
       messages: [
         { role: "system", content: systemPrompt },
         ...messages,
