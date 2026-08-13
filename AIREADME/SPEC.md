@@ -52,7 +52,7 @@ per-IP 20/min（429）· per-IP 100/day（429）· global 5000/day（503）。
 |---|---|
 | `/` | V2 化身对话主页（主域，方案 C）|
 | `/v1/` | V1 简介模式主页 |
-| `/p/<slug>.html` | 9 个项目详情页（V1+V2 共享）|
+| `/p/<slug>.html` | 11 个项目详情页（主页精选 9 个 + 历史归档 2 个，V1+V2 共享）|
 | `/api/chat`、`/admin/`、`/_next/` | 反代 chat-api :3002 |
 | 4 条 301 redirect | 旧 URL 兜底：`ai-knowleage→ai-knowledge` / `openclaw-customize-skills→openclaw` / `ifind-agent→claude-financial-research` / `xhs-5agent-pipeline→xhs-agency` |
 | 删除项 `/p/*.html` | 已删详情页（ai-knowledge / worklog）经 `location ^~ /p/ { try_files $uri =404 }` 真 404，不 redirect（上面精确 redirect 优先级更高仍生效）|
@@ -69,10 +69,11 @@ status: live|active|archived|planned|paused
 commands: [readme, links, ...]   # 渲染哪些组件（见 ARCHITECTURE 组件表）
 stack: [...]                     # STACK 组件数据
 links: { url: ..., source: ... } # LINKS 组件数据；值 "private" 渲染为 private
+rag_exclude: true               # 可选；详情页仍可发布，但不进入 RAG
 ```
 body 用 `## README` / `## NOTES` / `## DECISIONS` / `## STATS` / `## HISTORY` 等 H2 段对应组件 output。改完 `bash site/deploy.sh` 一键发版。
 
 ## 版本 / 兼容
 - chat-api SSE 事件格式 + `meta.model` 字段是前端（chat.js / token-hud.js）依赖的契约，改字段名需同步前端。
 - 详情页 frontmatter 改 `slug` / `wiki_slug` 字段名 = breaking（build 读不到）。
-- 版本史见 CHANGELOG（当前 v2.9.0）。
+- 版本史见 CHANGELOG（当前 v3.0.0）。

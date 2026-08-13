@@ -9,9 +9,11 @@
 - 命名美学：用户对"难听 / 系统日志感"命名敏感（否决过 `Resume-20260507` / `equity-200b`）。
 
 ## 偏好模式
-- **内容同步（跨项目）**：定位语 / 能力定位句 / 4 大独立项目 / 项目命名 任一变化 → 本仓库主页(`site/data/home-data.js` → index.html) + README **都改**，并跨项目同步 worklog 的简历（简历已迁 worklog，见 RELATIONS）。
+- **内容同步（跨项目）**：定位语 / 能力定位句 / 主页精选项目 / 项目命名任一变化 → 本仓库主页(`site/data/home-data.js` → index.html) + README **都改**，并以 worklog 的最新简历和项目状态为上游事实（简历已迁 worklog，见 RELATIONS）。
+- **静态履历与化身披露分离**：用户明确批准的简历任职事实可以写入 V1 静态页；由于 `home-data.js` 和简历同时是 RAG 主源，发布前必须跑 `npm run reindex:dry`，确认相关 resume / home-data chunks 被雇主 universal filter 丢弃，并先同步本地与生产 `.env.local` 词表再重载 chat-api。静态可见不代表化身可回答。
 - **主页 ls 三层 stacked**：slug(cyan) / name_zh 仅中文(amber) / 一句话 desc 聚焦"做什么+1 亮点"(接近白)。排序按 status 分层 + 段内"求职亮点驱动"手排，非严格 since 倒序。
-- **详情页板块**：最终 8 板块 `readme/links/decisions/stats/stack/notes`(9 项目必有) + `git_log`(仅有 wiki Git 数据的 3 项目) + `history`(仅按需 cfr/petslog)。`next` 已废弃并入 notes「项目方向」。k8s-om/xhs-agency 维持精简现状。
+- **详情页板块**：最终 8 板块 `readme/links/decisions/stats/stack/notes`（当前项目按资料可用性配置）+ `git_log`（仅有 wiki Git 数据的项目）+ `history`（仅按需 cfr/petslog）。`next` 已废弃并入 notes「项目方向」。主页精选固定 9 项，历史归档详情可保留但不占主页卡片。
+- **当前公开项目画像**：主页精选为 petsgraph / eastern-wisdom / multiplayer-xiaoshuo / maxwell-homepage / larkflow / petslog / xhs-agency / claude-financial-research / k8s-om。short-story 与 openclaw 只保留历史归档详情；OpenClaw 明确为第三方平台，不作为 Maxwell 自研产品展示。
 - **projects 合并 / 删除约定**（5/28 重构落定）：合并两个项目时保留更贴切的旧 slug 不改 URL（如 xhs-agency 收编 xiaohongshu-tool 仍用 `xhs-agency`，仅 `wiki_slug` 改指对方抽 worklog fact），不造新 slug + redirect；删除项 `git rm` 详情页 + ssh 删服务器 `public/p/` + nginx `/p/ 404`（不 redirect）。详情页 frontmatter 保留 `slug`/`name_en`/`name_zh`/`wiki_slug`，只更新 `status`/`since`/`stack`；body 只写 `## README` + `## NOTES`（`## DECISIONS`/`## STATS`/git_log build 时从 worklog wiki 自动拉，手写会冲突）。见 ADR-011。
 - **V2 /help 文案对齐 V1 section 注释**：`v2-redesign/commands.js cmdHelp()` 的命令描述必须跟 V1 `public/index.html` 对应 section 的 `# xxx` 注释一致（V1 注释是唯一真相源）。改 V1 注释要同步改 V2。
 - **化身 prompt 边界**：体验优先 token 不计较（max_tokens 2000 / topK 12 / 召回宁宽勿窄）；前端不 hardcode 模型名（由 SSE `meta.model` 填）；可讨论自身技术架构/实现（这是技术网站，展示能力）。

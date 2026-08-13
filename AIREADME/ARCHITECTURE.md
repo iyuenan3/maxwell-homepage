@@ -8,15 +8,15 @@
 ### 1. `site/` —— maxwellii.com 静态主页（纯前端，零运行时依赖）
 - **V1 简介模式**：`data/home-data.js`（whoami / git log / ls projects / pets / stack / history 真相源）+ `templates/home.html` → `build.js buildHome()` → `public/index.html`。
 - **V2 化身对话模式**：`v2-redesign/`（index.html + styles.css + chat.js + commands.js + token-hud.js + emotes.js + reveal.js），含终端壳 + chat 框 + Token HUD。
-- **详情页**：`data/projects/<slug>.md`（9 个）+ `templates/_base.html` → `build.js buildOne()` → `public/p/<slug>.html`。
+- **详情页**：`data/projects/<slug>.md`（11 个，主页精选 9 个 + 历史归档 2 个）+ `templates/_base.html` → `build.js buildOne()` → `public/p/<slug>.html`。
 - **构建器 `build.js`**：纯 Node 零依赖。自实现 frontmatter/YAML 子集解析 + markdown→HTML（段落/列表/行内/H3-H6/表格/fenced 代码块）+ `parseSections`（按 H2 切，支持中文 H2）。11 个组件渲染器：`readme` / `links` / `git_log` / `decisions` / `stats` / `notes` / `next`(废弃保留) / `stack` / `ps` / `history` / `timeline`(预留)。详情页板块覆盖约定见 CONVENTIONS。
 - **可选读 worklog wiki**：`git_log`/`decisions`/`stats`/`ps` 组件按 `wiki_slug` 从 worklog 抽 fact（数据契约见 RELATIONS / SPEC）。
 
 ### 2. `chat-api/` —— LLM 化身后端（Next.js 16 + React 19，API-only）
 - **运行时**（`src/app/api/chat/route.ts`）：3 层限流 → injection prefilter → 求职/面试 prefilter（P0）→ 雇主机密 prefilter（P0）→ RAG 检索（embed query → cosine retrieve）→ `buildSystemPrompt(context)` → 火山方舟 Ark `chat/completions`（stream，thinking 关）→ SSE 转发 + usage 解析 + `chat-logger` 落日志。RAG 失败降级为空 context 不中断。
-- **system-prompt**（`src/app/api/chat/system-prompt.ts`）：12 段防御 prompt（身份 / 10 项目权威表 / 常识题 fallback / 禁止伪造归属 hard rule / 核心事实 7 猫 2 狗+姓名等价 / 回复风格 / 项目聚焦 / 范围含代码边界 B / 防 RAG 污染 / 防伪造历史 / 防 injection / [context] 段）。「输出前最后过滤」段在 [context] 前、凌驾所有规则。
+- **system-prompt**（`src/app/api/chat/system-prompt.ts`）：12 段防御 prompt（身份 / 9 个主页精选项目 + 2 个历史归档详情 / 常识题 fallback / 禁止伪造归属 hard rule / 核心事实 7 猫 2 狗+姓名等价 / 回复风格 / 项目聚焦 / 范围含代码边界 B / 防 RAG 污染 / 防伪造历史 / 防 injection / [context] 段）。「输出前最后过滤」段在 [context] 前、凌驾所有规则。
 - **lib**：`embed-client.ts`（OpenAI 兼容 embedding client）/ `rag.ts`（运行时 cosine + perCategoryMax/perSourceMax）/ `rate-limit.ts`（in-memory）/ `chat-logger.ts`（按 IP 分文件 JSONL）。
-- **离线 RAG 管线**（`scripts/`，本地跑）：`scan-sources.mjs`（LLM judge 各源文件 P/V 隐私分级 → `manifest.json`）→ `build-embeddings.mjs`（chunk + sanitize + 4 层求职过滤 + embed → `embeddings.json`）。调试：`rag-search.mjs`。judge/sanitize 模型 = `doubao-seed-2.0-pro`（与 runtime chat 模型分离）。
+- **离线 RAG 管线**（`scripts/`，本地跑）：`scan-sources.mjs`（LLM judge 各源文件 P/V 隐私分级 → `manifest.json`）→ `build-embeddings.mjs`（chunk + sanitize + 4 层求职过滤 + embed → `embeddings.json`）。调试：`rag-search.mjs`。judge/sanitize 模型 = `doubao-seed-2.0-pro`（与 runtime chat 模型分离）。管线严格 fail-closed：任何 fresh judge/read 错误都会阻止 reindex，任何 sanitize 错误都会阻止 embedding；`AccountQuotaExceeded` 立即失败，不做无收益长退避或单条 fallback。脱敏并发固定为 5，并对瞬时连接错误做 5 次有界退避。成功脱敏结果按模型、prompt 与原文内容哈希写入 gitignored 的 `data/sanitize-cache.json`，网络失败或中断后只补未完成 chunks；输入或规则变化会自动 cache miss。
 
 **RAG 数据流**：
 ```
@@ -34,10 +34,10 @@ maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, 含 hdu 等经过筛选
 **P0 隐私分层防御**（机制；具体关键词/黑名单按红线不列）：
 1. server-side prefilter（route.ts，0 token 硬拦 + 日志）
 2. system-prompt「输出前最后过滤」段（凌驾规则）
-3. frontmatter `visibility:private` / `rag_exclude:true` 在 scan 与 build 两侧整源排除
+3. frontmatter `visibility:private` / `rag_exclude:true` 在 scan 与 build 两侧整源排除，项目详情页 loader 同样执行
 4. LLM judge 强制 exclude（scan-sources.mjs，求职/面试/第三方公司 → P=R+V=L）
 5. chunk filter + 整源黑名单（build-embeddings.mjs）+ worklog diaries/wiki/job 整目录排除
-6. 当前雇主和内部项目的敏感词只从 `.env.local` 注入，不在公开源码与 AIREADME 中出现真实值
+6. 当前雇主和内部项目的敏感词表只从 `.env.local` 注入；用户明确批准的简历任职事实可以进入静态页，但命中词表的 resume / home-data chunks 在 embedding 前仍由 universal filter 丢弃，运行时继续 0 token 硬拦
 理由 + 维护点见 DECISIONS。
 
 ### 简历产物（2026-05-26 已迁出本仓库）

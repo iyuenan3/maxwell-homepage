@@ -105,3 +105,24 @@
 - Decision: `CHAT_LLM_MODEL` 改为 `deepseek-v4-flash`。2026-08-12 直连预检返回 200，方舟实际解析为 `deepseek-v4-flash-ga-260731`；同参数流式测试正常结束，usage 可解析，reasoning token 为 0。该结论取代 ADR-007 的当前 chat 模型选择，ADR-007 保留为历史。
 - Alternatives（否决）: 保持 `doubao-seed-2.0-lite`（不满足本次模型升级目标）；写死版本化 ID（会把方舟别名升级策略固化进配置）；同时重建 embeddings（chat 模型与 embedding 向量空间无关，没有收益）。
 - Tradeoff: DeepSeek Flash 的成本、延迟和别名后端版本可能随方舟调整；运行时应继续以 SSE `meta.model` 和真实对话验收为准，不能只看 `.env.local` 字面值。
+
+## ADR-016 · 最新简历与项目状态只生成公开安全画像 · 2026-08-12
+- Problem: worklog 中的简历与项目清单已经更新，主页、详情页、README 与化身 prompt 仍停留在 2026 年 5 月的项目组合，已归档项目继续占据主页，新项目缺席。
+- Constraint: 主页固定保持 9 个精选项目；worklog 的简历含非公开任职信息，当前雇主与内部项目不得进入公开仓、静态站或 RAG；历史详情不能因主页下架而无意丢失。
+- Decision: 公开画像加入 larkflow 与 PetsGraph，short-story 与 openclaw 移出主页但保留 archived 详情，智投研改为 archived；职业定位统一为 AI 产品经理 / FDE / AI Native 全栈工程师。详情页 RAG loader 补齐 `visibility:private` / `rag_exclude:true` 过滤，公开画像只投影可验证的公开材料。
+- Alternatives（否决）: 把最新简历全文直接复制到公开仓（会混入非公开任职信息）；删除所有下架详情（破坏历史 URL）；扩大主页项目数量（削弱精选层级）。
+- Tradeoff: 主页卡片和历史详情不再一一对应，需要在文档中明确 9 个精选项目与 2 个历史归档详情的双层结构；RAG 全量更新与生产读回成为本次内容同步的必要验收。
+
+## ADR-017 · RAG 审稿与脱敏错误必须 fail-closed · 2026-08-13
+- Problem: 获得外部处理授权后执行 `npm run update`，22 个增量文件因账户额度无法完成 judge，但 scan 仍以成功退出；随后 133 个 chunks 脱敏失败，build 仍保留原文进入 embedding 阶段。embedding 同样返回 `AccountQuotaExceeded`，暴露出不完整索引和未脱敏原文可能继续下游的风险。
+- Constraint: 旧生产索引必须在新索引完整通过前保持可用；任何 judge、read 或 sanitize 错误都不能被降级成可部署结果；额度类确定性错误不应触发长退避和单条 fallback。
+- Decision: scan 写出诊断 manifest 后，只要 `error>0` 就以非零退出阻断 npm 链；sanitize 任一 chunk 最终失败就终止，不再保留原文继续 embedding；`AccountQuotaExceeded` 在 sanitize 和 embedding 两处立即失败。部署仍只发生在完整 reindex 成功之后。
+- Alternatives（否决）: 失败 chunk 原文继续 embedding（破坏隐私边界）；静默丢弃失败文件后生成部分索引（答案覆盖不完整且难以察觉）；对账户额度错误继续分钟级退避（不会自行恢复，只放大等待与请求量）。
+- Tradeoff: 单个瞬时 sanitize 错误也会让整轮失败，需要恢复后完整重跑；换来索引完整性、隐私边界和生产状态三者可证明。
+
+## ADR-018 · 静态简历事实与化身披露边界解耦 · 2026-08-14
+- Problem: 最新简历已将一段当前任职经历列为可公开事实，V1 需要同步展示；但简历与 `home-data.js` 同时是 RAG 主源，直接更新会让同一事实进入化身上下文，违背当前任职信息不经化身扩写的边界。
+- Constraint: 静态页必须忠实投影用户明确批准的简历事实；内部细节、词表和私密项目仍不得进入公开文档；化身入口硬拦与向量索引隔离必须继续成立。
+- Decision: V1 可以展示经批准的当前任职摘要；相关实体仍加入 gitignored 的雇主词表，使 resume / home-data 中命中的 chunks 在 embedding 前被 universal filter 丢弃，并由 route prefilter 在运行时 0 token 拒答。独立产品实践等非雇主段保持可索引。此决策仅取代 ADR-016 中“当前任职事实不得进入静态站”的范围，ADR-016 的私密项目隔离和公开安全画像原则继续有效。
+- Alternatives（否决）: 静态页继续隐藏最新任职（与简历不一致）；同时开放化身回答（会把经批准摘要扩写成不可控内容）；整源排除简历和 home-data（会损失其他公开经历与技术栈召回）。
+- Tradeoff: 访客可以在静态页阅读摘要，却不能通过化身追问同一任职；每次履历变更都必须同时检查本地与生产词表、RAG dry-run 和公网 0 token 拦截，维护步骤增加。

@@ -29,10 +29,10 @@
    - chat-api LLM 上游 key（`CHAT_LLM_API_KEY=sk-...`）、`ADMIN_TOKEN` → 只在 `chat-api/.env.local`（gitignore + 服务器 chmod 600）。
    - 提交前跑安全审计（grep ark-/sk-/真实手机号/用户绝对路径/长 token，见 CONVENTIONS）。
 2. **真实手机号绝不进公开版**：公开仓库一律脱敏 `xxxxx170755`；真实号只在桌面投递版 PDF（`~/Desktop/`，不在仓库内）。邮箱 `limaxwell93@gmail.com` 是公开联系方式，保留。
-3. **求职 / 面试 / 第三方公司情报 / 当前雇主内部项目绝不经化身外泄**：化身访客可能是潜在雇主。chat-api 采用入口硬拦、system prompt、frontmatter 私有标记、LLM judge、chunk/source 过滤与目录排除等分层防御。**被屏蔽的具体关键词表 / 黑名单条目不写进 AIREADME**，只记机制（见 ARCHITECTURE / DECISIONS）。
+3. **求职 / 面试 / 第三方公司情报 / 当前雇主内部项目绝不经化身外泄**：化身访客可能是潜在雇主。chat-api 采用入口硬拦、system prompt、frontmatter 私有标记、LLM judge、chunk/source 过滤与目录排除等分层防御。静态页可展示用户明确批准的简历任职事实，但这不放开化身确认、检索或扩写当前任职信息。**被屏蔽的具体关键词表 / 黑名单条目不写进 AIREADME**，只记机制（见 ARCHITECTURE / DECISIONS）。
 4. **化身禁止伪造归属**：永远禁止说 OpenClaw / Claude / Cursor 等第三方产品是"我做的"；第三方产品归属不确定就坦白"建议查官方"。
 5. **gitignore 的私密文件正文绝不进 AIREADME**：只记"存在 + 用途 + 已 gitignore"，不抄正文。
 6. **化身禁止编造骑行表现与身体数据**：这类问题统一简短回避，不输出数字，不把任职过的单车旅游公司误解成个人竞技战绩。
 
 ## 生命周期
-**active**：maxwellii.com 2026-05-08 上线，chat-api 持续维护中；2026-06-14 已增加 `hdu` RAG 源与骑行数据防编造护栏。
+**active**：maxwellii.com 2026-05-08 上线，chat-api 持续维护中；2026-08-14 已按最新简历刷新 V1 公开履历，同时保持静态展示与化身披露隔离。

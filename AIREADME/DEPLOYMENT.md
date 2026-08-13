@@ -5,7 +5,7 @@
 - **Origin**：`alicloud-sg`（SSH 别名 → `admin@47.84.100.47:22`，新加坡阿里云）。sudo 免密。
 - **CDN**：Cloudflare 代理 maxwellii.com（SSL/TLS 模式必须 **Full** 或 **Full (strict)**，否则 nginx 80→https 重定向 + CF Flexible 触发无限循环）。
 - **静态站点**：`/home/admin/maxwellii-site/`（nginx 直接 serve）。
-- **chat-api**：`/home/admin/maxwellii-chat-api/`，PM2 进程 `maxwellii-chat-api`，`next start` fork 模式，监听 `127.0.0.1:3002`，`max_memory_restart 512M`，日志 `/home/admin/logs/`。
+- **chat-api**：`/home/admin/maxwellii-chat-api/`，Next.js 16.3.0，要求 Node.js >=20.9（生产已验证 22.22.2）；PM2 进程 `maxwellii-chat-api`，`next start` fork 模式，监听 `127.0.0.1:3002`，`max_memory_restart 512M`，日志 `/home/admin/logs/`。
 - **nginx**：远端 `/etc/nginx/sites-available/maxwellii`（软链 sites-enabled）；本地真相源 `site/nginx.conf`。
 - **SSL 证书**：`/etc/nginx/ssl/maxwellii.com.{pem,key}`，与 naming.maxwellii.com / tale.maxwellii.com 共用 SNI。
 
@@ -14,14 +14,15 @@
 ### 静态站点（改 site/* 后）
 ```bash
 bash site/deploy.sh
-# build.js（V1 index + 9 详情页）→ 5 stage rsync：
+# build.js（V1 index + 11 详情页）→ 5 stage rsync：
 #   Stage1 V2→根 / Stage2 data/→data/ / Stage3 p/→p/(--delete) / Stage4 V1→v1/ / Stage5 detail-init.js→根
 ```
 
 ### chat-api（改后端 / 重建索引后）
 ```bash
+cd chat-api && npm run lint && npm run build && npm audit --omit=dev
 cd chat-api && bash deploy.sh
-# 检查 embeddings.json 在场 → npm run build(失败即 abort) → rsync(排除 .git/.env.example/node_modules/.next/cache)
+# 检查 embeddings.json 在场 → npm run build(失败即 abort) → rsync(排除 .git/.env.example/node_modules/.next/cache 与本地脱敏缓存)
 #   → ssh chmod 600 .env.local → npm install --omit=dev → pm2 reload ecosystem.config.cjs --update-env
 ```
 
@@ -30,6 +31,8 @@ cd chat-api && bash deploy.sh
 cd chat-api && npm run update      # = scan(增量 judge) + reindex(4 层 filter + chunk+embed) + deploy
 cd chat-api && npm run scan:force  # 改了 judge prompt 必须全量重 judge（~50 min 全链路）
 ```
+
+`npm run update` 只允许在 scan `error=0` 且 sanitize 全部成功后进入 embedding 和 deploy。账户额度不足会 fail-fast，旧 `embeddings.json` 与生产服务保持不变；恢复额度后必须从 scan 重跑，不得跳过失败阶段直接部署旧 manifest。
 
 ### nginx 配置变更（**不在 deploy.sh 流程里，必须单独推**）
 ```bash

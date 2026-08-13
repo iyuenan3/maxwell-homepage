@@ -3,6 +3,35 @@
 
 > 迁自仓库根 `CHANGELOG.md`（Keep a Changelog 风格）+ 补齐 v2.3 / v2.4。理由链 DECISIONS，运行时踩坑见 MEMORY。
 
+## v3.1.0 · 2026-08-14
+- Changed: V1 `git log --all --decorate` 按最新简历重建职业时间线，当前段改为经批准的现职摘要，并在全境骑行与 Nokia 之间补入“独立 AI 产品实践（OPC 探索）”。
+- Changed: `stack --top` 改为当前 AI Agent、Multi-Agent、DAG、RAG、MCP 与全栈交付技术组合，移除已不再代表当前重点的模型与知识库标签。
+- Security: 静态任职事实与化身披露解耦；RAG dry-run 确认相关 resume / home-data chunks 被 universal 雇主过滤丢弃，生产词表同步并重载后，公网直接询问仍以 0 token 拦截 → ADR-018。
+- Deployed: `/v1/` 公网回读返回 200，新现职段、OPC 段和技术栈均存在，旧“AI 产品与开源实践”段已移除。
+
+## v3.0.3 · 2026-08-14
+- Changed: 生产 Ark 凭证完成获准轮换；同步前以非明文指纹确认除 `CHAT_LLM_API_KEY` 外其余生产配置与本地一致，生产 `.env.local` 保持 600 权限。
+- Deployed: PM2 使用 `--update-env` 重载后在线；公网主页返回 200，真实 LarkFlow RAG 问答完成 SSE，`meta.model=deepseek-v4-flash`，求职隐私请求以 0 token 固定拦截。
+
+## v3.0.2 · 2026-08-14
+- Security: Next.js 从 16.2.4 升级到 16.3.0，连带修复生产依赖 postcss、nanoid 与 sharp；完整依赖和 production-only `npm audit` 均为 0。
+- Fixed: 新增 ESLint 9 flat config，恢复 `npm run lint`；同时清理 1 个 `prefer-const` 错误和 3 个未使用变量警告，lint 以 0 问题通过。
+- Changed: `eslint-config-next` 同步到 16.3.0，Babel、brace-expansion 与 js-yaml 等开发工具链传递依赖更新到安全版本。
+- Deployed: 生产已实际安装 Next.js 16.3.0，production audit 为 0，PM2 在线且 RAG 哈希未变；隐私静态拦截回读通过，真实模型问答受 Ark 月度额度耗尽阻断，见 MEMORY。
+
+## v3.0.1 · 2026-08-13
+- Security: RAG scan 与 sanitize 改为 fail-closed，任何 fresh judge/read 或脱敏错误都会阻断 embedding 与生产部署。
+- Fixed: `AccountQuotaExceeded` 立即失败，避免无收益长退避、单条 fallback 和未脱敏原文继续下游 → ADR-017。
+- Fixed: sanitize 增加按模型、prompt 与原文哈希的 gitignored 本地断点缓存，网络抖动后的重跑只补缺口；缓存文件明确排除于生产部署。
+- Changed: 全量重建产出 2932 个 2048 维 chunks，其中 232 个需净化 chunks 全部完成；部署前隐私聚合检查与产物哈希通过。
+- Deployed: 新索引已发布到生产，远端哈希与本地一致；larkflow、PetsGraph 和雇主隐私硬拦截的公网 SSE 回读通过，线上模型仍为 `deepseek-v4-flash`。
+
+## v3.0.0 · 2026-08-12
+- Changed: 按最新简历与项目状态刷新公开画像，当前定位统一为 AI 产品经理 / FDE / AI Native 全栈工程师。
+- Added: larkflow 与 PetsGraph 进入主页精选、详情页与化身权威项目表，主页仍保持 9 个精选项目。
+- Changed: short-story 与 openclaw 移出主页，详情页改为历史归档；OpenClaw 明确为第三方平台。智投研改为 archived。
+- Security: 详情页 RAG loader 增加 `visibility:private` / `rag_exclude:true` 整源排除，当前雇主与内部项目继续只通过私有 env 过滤，不进入公开画像 → ADR-016。
+
 ## v2.9.2 · 2026-08-12
 - Changed: 线上 chat 模型从 `doubao-seed-2.0-lite` 切换为 `deepseek-v4-flash`；方舟当前实际解析为 `deepseek-v4-flash-ga-260731`。RAG、embedding 模型、SSE 与前端动态模型显示契约保持不变 → ADR-015。
 
