@@ -2,7 +2,7 @@
 slug: short-story
 name_en: "Short-Story · Tomato Platform Commercial Shorts"
 name_zh: "短篇小说 · 番茄平台商业短篇"
-status: active
+status: archived
 since: 2026-05-06
 links:
   url: "https://fanqienovel.com/main/writer"
@@ -24,6 +24,8 @@ stack:
 ---
 
 ## README
+
+> 历史归档：该内容创作与发布工作流已停止日常维护，保留本页作为阶段性方法与自动化实践记录。
 
 为番茄小说平台创作商业级短篇故事的 Claude Code 工作流，配套 Playwright 自动化发布。每篇 7000-10000 字 TXT 纯文本，每日配额 20 篇，覆盖 9 个品类（追妻火葬场/真假千金/重生复仇/家庭伦理/豪门总裁/悬疑惊悚/年代文/现言甜宠等）。截至 5/12 累计 108 篇约 91.5 万字，单日峰值 25 篇/19.4 万字。
 

@@ -17,10 +17,10 @@
     whoami: {
       name:       '李越男 · Li Maxwell',
       location:   '杭州',
-      role:       'AI 产品经理 · FDE 工程师 · Vibe Coding 全栈',
+      role:       'AI 产品经理 · FDE · AI Native 全栈',
       previously: '全境骑行 (2025.03 - 2026.04) · Nokia (2018.08 - 2024.04) · 华为 (2016.07 - 2018.07)',
       household:  '<em>7</em> cats · <em>2</em> dogs · 1 wife',
-      tags:       'claude-code · openclaw · multi-agent · llm-wiki · full-stack · INTJ',
+      tags:       'codex · multi-agent · dag-workflow · llm-wiki · full-stack · INTJ',
       contact: {
         email:  'limaxwell93@gmail.com',
         wechat: 'iyuenan3',
@@ -37,22 +37,21 @@
     gitLog: [
       {
         head:    true,  // 第一段:HEAD → main 高亮
-        hash:    'e2d9f04',
+        hash:    'e0a09ca',
         branches: [
           { name: 'HEAD → main' },
           { name: 'origin/main' },
         ],
-        date:    '2026-04 → present · 独立战场',
-        subject: '[feat] AI 产品经理 · FDE 工程师 · Vibe Coding 全栈',
-        body: `2026-04 起转为独立交付：从产品定义、吃透客户业务、全栈实现到生产部署，端到端落地 AI 方案。沉淀 Multi-Agent 编排 · LLM Wiki 知识工程化 · Vibe Coding 工作流 三条方法论主线。
+        date:    '2026-06 → present · 遥望科技',
+        subject: '[feat] 资深产品专家 / CarryGo 产品负责人',
+        body: `全面负责 CarryGo 企业级 AI Agent 协作平台，统筹产品规划、架构演进与规模化落地；产品已覆盖遥望内部 1,000+ 名员工，承载 5 条公司核心业务工作流，整体效率提升 60%+。
 <ul class="commit-items">
-  <li><span class="b">PetsLog · 多宠 AI 健康记录</span>：Cursor → OpenClaw → LLM 自然语言录入三次范式跨越，最终「微信说一句话，LLM 自动拆字段归档」，砍掉小程序对接微信机器人 + Notion。</li>
-  <li><span class="b">小红书自运营系统</span>：OpenClaw 多 Agent Roundtable（议题加权 + 并行议事 + 人工裁决）→ 产品化为 Electron 桌面端 SaaS，内嵌 Go xiaohongshu-mcp + 14 工具，买断 + LLM 月费商业化。</li>
-  <li><span class="b">worklog × maxwellii.com</span>：个人知识系统：worklog（LLM Wiki 三层架构输入引擎）+ AIREADME（跨项目方法论模板）+ maxwellii.com（活简历 RAG 化身，407 .md / 自写向量检索 + 12 段 prompt 防御）。</li>
-  <li><span class="b">FDE 实战交付者</span>：第一性原理重构业务流程 + MVP 锚定优先级，将通用 AI 能力快速定制到客户生产环境；既能独立交付，也能融入 AI Native 团队担纲核心落地。</li>
-</ul>
-<span class="dim"># see also: $ ls -lah projects/</span>`,
-        tags:    ['Claude Code', 'Multi-Agent', 'LLM Wiki', 'RAG', 'FDE', 'Vibe Coding'],
+  <li><span class="b">平台规划与架构治理</span>：以 IM 为统一交互入口，搭建由 DAG 任务编排、知识与工具底座、应用市场组成的产品体系，打通从目标输入、过程追踪到结果交付的完整链路。</li>
+  <li><span class="b">应用生态与业务规模化</span>：以应用市场承载和分发业务 Agent，推动直播、漫剧、签约等核心工作流接入，建立场景设计、能力接入和发布验收的标准流程。</li>
+  <li><span class="b">Agent 自主执行与可信协作</span>：设计任务规划、动态拆解、并行执行、节点质检、失败重试、断点恢复与人工接管闭环，将权限、审计与异常回滚纳入治理框架。</li>
+  <li><span class="b">全栈产品化与质量体系</span>：贯通前端、后端、数据库、MCP、部署与验收，建立覆盖模型效果、业务流程和真实环境的分层评测与发布标准。</li>
+</ul>`,
+        tags:    ['AI Agent', 'Multi-Agent', 'DAG', 'RAG', 'MCP', '产品架构'],
       },
       {
         hash:    'a7f3c91',
@@ -78,6 +77,20 @@
   <li><span class="b">FinOps 降本</span>：阿里云成本 -31%；复用闭店资源零投入支撑 3 家新店开业。</li>
 </ul>`,
         tags:    ['OpenClaw', 'Multi-Agent', 'RAG', 'Playwright', '飞书 API', 'FinOps'],
+      },
+      {
+        hash:    'b2d4f61',
+        date:    '2024-05 → 2025-02 · 独立 AI 产品实践（PetsLog 持续迭代至今）',
+        subject: '[feat] OPC 探索 · AI 全栈开发',
+        body: `职业间隔期间探索一人公司与生成式 AI 产品方向，独立完成 PetsLog 从需求定义、产品设计到微信小程序上线，并在后续迭代中重构为自然语言驱动的 AI 产品。
+<ul class="commit-items">
+  <li><span class="b">AI 技术学习与方向探索</span>：系统学习大模型基础、Prompt Engineering 与 RAG 应用原理，围绕知识问答、内容生成和数据分析理解模型能力边界、效果评估与调用成本。</li>
+  <li><span class="b">PetsLog 从 0 到 1</span>：从多宠家庭就医时难以完整说明病史的真实问题出发，使用 Copilot 与 Cursor 完成第一版微信小程序和基础健康档案体系。</li>
+  <li><span class="b">AI 原生重构与可信边界</span>：先以 OpenClaw 验证 Agent 架构，再使用 Claude Code 将多步骤表单重构为一句话自然语言建档；LLM 只负责结构化提取，身份无法精确匹配时拒绝写入。</li>
+  <li><span class="b">真实使用验证</span>：完成 Notion 历史档案迁移和 240 页数据核对，持续管理 9 只宠物、217 条健康记录与 46 份病历附件，形成日常记录到就医出示的业务闭环。</li>
+</ul>
+<span class="dim"># github.com/iyuenan3/petslog</span>`,
+        tags:    ['AI Product', 'Prompt Engineering', 'RAG', 'uni-app', '微信云开发', 'Claude Code'],
       },
       {
         hash:    '3b8e2d4',
@@ -125,15 +138,15 @@
 
     /* ── projects / 有趣的项目 ──────────────────────── */
     projects: [
-      { perm: '-rwxr-xr-x', state: 'live',     date: '2026-05-08', slug: 'eastern-wisdom',           dir: true,  zh: '东方智慧 · 中式传统文化 SaaS',                 desc: 'monorepo 多 app 中式文化 SaaS · 已上线「取名」（八字 4 阶段 AI 流水线）与「东方占卜」（小六壬 / 梅花易数）两款 · 共享 Python 命理计算层 + 朱砂印博物馆视觉',                                       stack: 'next.js 16 · 阿里云百炼 · python · monorepo' },
-      { perm: '-rwxr-xr-x', state: 'live',     date: '2026-05-08', slug: 'multiplayer-xiaoshuo',     dir: true,  zh: '多人与 AI 互动共创小说',                       desc: '3-8 人多人 AI 共创互动叙事 H5 · AI 隐形 DM 实时生成剧情 + 隐藏属性驱动叙事效果（非多数决投票）+ 个性化结局 + 服务端 puppeteer PDF 导出',                                                                       stack: 'vue3 · socket.io · 阿里云百炼 · puppeteer' },
-      { perm: '-rwxr-xr-x', state: 'live',     date: '2026-05-10', slug: 'maxwell-homepage',         dir: true,  zh: 'worklog × maxwellii.com · 个人知识系统',               desc: '个人知识系统 · worklog（Karpathy LLM Wiki 三层架构「输入引擎」，摄入时编译）+ maxwellii.com（终端体主页 + RAG 化身「输出界面」，407 .md 多源平衡 + 12 段防御）',                                              stack: 'obsidian · claude-code · next.js · rag' },
-      { perm: '-rw-------', state: 'active',   date: '2026-05-06', slug: 'claude-financial-research', dir: false, zh: '智投研 · A 股权益研究系统',                    desc: 'A 股 200 亿+ 标的池基本面研究（1,095 只）· 健康度评分 9 版迭代至 v3.4（可接受率 79.6%）+ Daily Wave 盘后日更 + Next.js 选股器 · 严守「不输出投资建议」合规边界',                                          stack: 'claude-code · csv · pdf · next.js · fastapi', priv: true },
-      { perm: 'drwxr-xr-x', state: 'active',   date: '2026-05-06', slug: 'short-story',              dir: true,  zh: '短篇小说 · 番茄平台商业短篇',                  desc: '番茄平台商业短篇创作工作流 · 黄金 8 步法 + 9 品类 + 情绪曲线轮换 + 扩写策略库 + Playwright 自动发布 · 累计 108 篇 / 91.5 万字',                       stack: 'claude-code · playwright · python · txt' },
-      { perm: 'drwxr-xr-x', state: 'active',   date: '2026-05-03', slug: 'openclaw',                 dir: true,  zh: 'OpenClaw · AI 助理平台',                       desc: '本机 AI 助理平台基座 ·「Max」主 Agent 预加载 15 核心能力模块（全栈 + 产品 + DevOps）+ 3 生产级自定义 Skill + 凌晨 cron 自动构建知识库',          stack: 'openclaw · ark-code · agent-main · cron' },
-      { perm: 'drwxr-xr-x', state: 'active',   date: '2026-04-08', slug: 'petslog',                  dir: true,  zh: 'PetsLog · 多宠 AI 健康记录',                       desc: '多宠家庭 AI 健康记录工具 · 三代范式迭代（Cursor 4h MVP → OpenClaw 多 Agent 工程化 → LLM 自然语言录入取消表单）· 一句话自动归档',                                                              stack: 'uni-app · 微信云开发 · 阿里云百炼 · claude-code' },
-      { perm: '-rwxr-xr-x', state: 'active', date: '2025-03-12', slug: 'xhs-agency',               dir: false, zh: '小红书自运营系统',      desc: '从前司 Multi-Agent Roundtable 内部自动化（单人运营 2-3h/日 → 1h/周）演化为独立商业化桌面应用 · Electron + Go MCP（CDP attach）+ 自营 LLM 中转 + 14 工具全链路',                                                    stack: 'electron · go · playwright · openclaw'},
-      { perm: 'drwxr-xr-x', state: 'archived', date: '2024-04-15', slug: 'k8s-om',                   dir: true,  zh: 'k8s-om · K8s 多租户运维工具集',                desc: 'Nokia RAN 容器化平台运维工具集 · Ansible Playbooks 实现 K8s 多租户批量管理（创建 / 权限 / 用量）+ Helm 3 一键部署 · 已开源',                                                                     stack: 'ansible · helm3 · python' },
+      { perm: '-rwxr-xr-x', state: 'live',     date: '2026-08-10', slug: 'petsgraph',                 dir: true,  zh: 'PetsGraph · 真实宠物桌面陪伴',                  desc: '开源 macOS 离线桌面陪伴运行时 · 李五百 v0.4.0 已发布 · 53 个动作片段 / 14 个节点 / 39 条边 · 完整动作图自然换姿 + 低功耗逐帧渲染',                                                      stack: 'swift · appkit · core graphics · github actions' },
+      { perm: '-rwxr-xr-x', state: 'live',     date: '2026-05-10', slug: 'maxwell-homepage',         dir: true,  zh: 'worklog × maxwellii.com · 个人知识系统',        desc: 'worklog 以 LLM Wiki 摄入时编译多项目知识 · maxwellii.com 以终端体作品集 + RAG 化身安全输出 · AIREADME 与分层记忆支撑长期 AI 协作',                                                             stack: 'obsidian · codex · next.js · rag' },
+      { perm: '-rwxr-xr-x', state: 'live',     date: '2026-05-08', slug: 'eastern-wisdom',           dir: true,  zh: '东方智慧 · 中式传统文化 SaaS',                 desc: 'monorepo 多 app 中式文化 SaaS · 已上线中文取名与东方占卜两款产品 · 共享 AI 流水线、Python 命理计算层和现代中式设计系统',                                                                       stack: 'next.js 16 · 阿里云百炼 · python · monorepo' },
+      { perm: '-rwxr-xr-x', state: 'live',     date: '2026-05-08', slug: 'multiplayer-xiaoshuo',     dir: true,  zh: '剧聊 · 多人 AI 共创互动叙事',                  desc: '3-8 人实时共创互动叙事 H5 · AI 隐形 DM 生成世界观与剧情 · 专属选项和隐藏属性驱动个性化结局 · 服务端 PDF 收藏',                                                                            stack: 'vue 3 · socket.io · redis · 阿里云百炼' },
+      { perm: 'drwxr-xr-x', state: 'active',   date: '2026-07-23', slug: 'larkflow',                 dir: true,  zh: 'larkflow · 飞书原生企业协作 DAG',              desc: '把多人协作目标拆成有依赖、有唯一人类 Owner、可验收和可追溯的节点 · Human / Agent / Tool 统一编排 · 草稿确认、受控返工与审计',                                                              stack: 'python · postgresql · lark · react flow' },
+      { perm: '-rwxr-xr-x', state: 'active',   date: '2025-03-12', slug: 'xhs-agency',               dir: false, zh: '小红书自运营系统',                              desc: '从 Multi-Agent Roundtable 运营自动化演化为 Electron 商业桌面产品 · Chromium + Go MCP + 14 个业务工具 · 覆盖发布、互动、数据与受控自主运营',                                                                       stack: 'electron · go · react · playwright' },
+      { perm: 'drwxr-xr-x', state: 'active',   date: '2026-04-08', slug: 'petslog',                  dir: true,  zh: 'PetsLog · 多宠 AI 健康记录',                   desc: '多宠家庭 AI 健康记录微信小程序 · 一句话自然语言录入并结构化归档 · 家庭隔离、健康时间线、体重趋势与兽医小结形成真实使用闭环',                                                                     stack: 'uni-app · 微信云开发 · 火山方舟 · typescript' },
+      { perm: '-rw-------',  state: 'archived', date: '2026-05-06', slug: 'claude-financial-research', dir: false, zh: '智投研 · A 股权益研究系统',                  desc: 'A 股 200 亿以上标的池基本面研究 · 健康度评分 9 版迭代 · 以全样本评审和客观报告为核心 · 严守不输出投资建议的合规边界',                                                                        stack: 'python · csv · pdf · next.js · fastapi', priv: true },
+      { perm: 'drwxr-xr-x', state: 'archived', date: '2024-04-15', slug: 'k8s-om',                   dir: true,  zh: 'k8s-om · K8s 多租户运维工具集',                desc: 'Nokia RAN 容器化平台运维工具集 · Ansible Playbooks 实现 K8s 多租户批量管理 · Helm 3 标准化部署 · 已开源',                                                                                    stack: 'ansible · helm 3 · python' },
     ],
 
     /* ── pets / 我的毛孩子们 ────────────────────────── */
@@ -151,9 +164,9 @@
 
     /* ── stack / 技术栈 ─────────────────────────────── */
     stack: {
-      daily: 'Claude Code  ·  OpenClaw  ·  Multi-Agent  ·  LLM Wiki  ·  Next.js 16  ·  Vue 3  ·  TypeScript  ·  Python',
-      often: 'Socket.IO  ·  Redis  ·  Node.js  ·  Kubernetes  ·  Jenkins / GHA  ·  doubao  ·  DeepSeek V4',
-      done:  'OpenStack  ·  Ansible  ·  Robot Framework  ·  autossh + FRP  ·  阿里云 / FinOps  ·  Playwright  ·  RAG',
+      daily: 'AI Agent  ·  Multi-Agent  ·  DAG 工作流  ·  RAG  ·  MCP  ·  Codex  ·  飞书',
+      often: 'Python  ·  TypeScript  ·  React / Next.js  ·  PostgreSQL  ·  Electron  ·  Playwright  ·  Vibe Coding',
+      done:  'OpenStack  ·  Kubernetes  ·  Ansible  ·  Jenkins / GHA  ·  Swift / AppKit  ·  Socket.IO / Redis  ·  阿里云 / FinOps',
     },
 
     /* ── history / 学历 ─────────────────────────────── */
@@ -164,20 +177,20 @@
 
     /* ── tagline (V1 顶部 tagline) ──────────────────── */
     tagline: {
-      ver:    'v1.10.0',
-      sync:   '2026-05-10',
+      ver:    'v3.1.0',
+      sync:   '2026-08-14',
     },
 
     /* ── signoff (V1 底部) ──────────────────────────── */
     signoff: {
       echo:   '字以载道，码以谋生',
-      end:    'end of stream · last sync 2026-05-07 17:42:04 +0800',
+      end:    'end of stream · last sync 2026-08-14 03:20:06 +0800',
     },
 
     /* ── V2 hero (仅 V2 用,V1 不引用) ──────────────── */
     hero: {
-      role:    'AI 产品经理 · FDE 工程师 · Vibe Coding 全栈',
-      live:    '杭州 · last push 5h ago · ● online',
+      role:    'AI 产品经理 · FDE · AI Native 全栈',
+      live:    '杭州 · last sync 2026-08-14 · ● online',
       history: '华为 2yr · Nokia 6yr · 全境 1yr',
       links: [
         { url: 'https://github.com/iyuenan3',         label: '[github]' },

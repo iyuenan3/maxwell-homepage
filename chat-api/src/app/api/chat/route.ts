@@ -221,7 +221,7 @@ export async function POST(req: Request) {
 
   // ── 截断历史：只留最后 20 条（约 10 轮 user+assistant） ─
   // 防 client 灌假 history
-  let messages = messagesRaw.slice(-20);
+  const messages = messagesRaw.slice(-20);
   // 截断后保证最后一条是 user
   while (messages.length > 0 && messages[messages.length - 1].role !== "user") {
     messages.pop();

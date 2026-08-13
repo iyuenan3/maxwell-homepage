@@ -6,7 +6,7 @@
 
 李越男 (Maxwell Li) 的个人主页仓库 — **maxwellii.com 终端体网站源码 + AI 化身对话后端 (chat-api)**。
 
-[![version](https://img.shields.io/badge/version-2.9.0-1a5276)](./AIREADME/CHANGELOG.md) [![site](https://img.shields.io/badge/site-maxwellii.com-c0392b)](https://maxwellii.com)
+[![version](https://img.shields.io/badge/version-3.1.0-1a5276)](./AIREADME/CHANGELOG.md) [![site](https://img.shields.io/badge/site-maxwellii.com-c0392b)](https://maxwellii.com)
 
 > 5/9 由 `Maxwell-Resume` 改名为 `maxwell-homepage`：从「简历仓库」扩展到「个人主页 + AI 化身」。GitHub 自动 redirect 旧 URL，外链不会 404。简历归档 2026-05-26 迁至 Maxwell 私有知识库统一管理（本仓库不再存简历文件）。
 >
@@ -29,15 +29,17 @@
 
 | URL slug | 中文双名 | 状态 |
 |---|---|---|
+| petsgraph | PetsGraph · 真实宠物桌面陪伴 | ● live |
 | eastern-wisdom | 东方智慧 · 海外华人取名 SaaS | ● live |
 | multiplayer-xiaoshuo | 多人小说 · 多人互动小说 H5 | ● live |
 | maxwell-homepage | worklog × maxwellii.com · 个人知识系统 | ● live |
-| claude-financial-research | 智投研 · A 股权益研究系统 | ◐ active |
-| short-story | 短篇小说 · 番茄平台商业短篇 | ◐ active |
-| openclaw | OpenClaw · AI 助理平台 | ◐ active |
+| larkflow | larkflow · 飞书原生企业协作 DAG | ◐ active |
 | petslog | PetsLog · 宠物健康伴侣 | ◐ active |
 | xhs-agency | 小红书自运营系统 | ◐ active |
+| claude-financial-research | 智投研 · A 股权益研究系统 | ✕ archived |
 | k8s-om | k8s-om · K8s 多租户运维工具集 | ✕ archived |
+
+`short-story` 与 `openclaw` 的历史详情页继续保留，但不再进入主页精选项目。OpenClaw 是第三方 AI 助理平台，不作为 Maxwell 自研产品展示。
 
 ## AI 化身对话 — chat-api
 
@@ -52,11 +54,12 @@ maxwellii.com 主页右下角对话框背后运行的 LLM 化身后端。访客�
 - **直接问 AI 版 Maxwell** —— maxwellii.com 右下角对话框（化身基于简历 + 项目档案回答）
 - LinkedIn / 邮件索取完整简历
 
-**当前定位**：AI 产品经理 | FDE 工程师 | Vibe Coding 全栈工程师
+**当前定位**：AI 产品经理 | FDE | AI Native 全栈工程师
 
 **已交付的生产级产品**：
 - [naming.maxwellii.com](https://naming.maxwellii.com) — 海外华人取名 SaaS
 - [tale.maxwellii.com](https://tale.maxwellii.com) — 多人实时共创叙事 H5
+- [PetsGraph](https://github.com/iyuenan3/petsgraph/releases) — 离线运行的真实宠物 macOS 桌面伴侣
 
 ## 联系方式
 

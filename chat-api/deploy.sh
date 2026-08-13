@@ -61,6 +61,8 @@ rsync -avz \
   --exclude 'node_modules' \
   --exclude '.next/cache' \
   --exclude '.next/dev' \
+  --exclude 'data/sanitize-cache.json' \
+  --exclude 'data/sanitize-cache.json.tmp' \
   --exclude '.DS_Store' \
   "$SCRIPT_DIR/" "$SSH_HOST:$REMOTE_DIR/"
 

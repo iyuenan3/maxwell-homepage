@@ -186,7 +186,7 @@ async function readPdf(filepath) {
     const parser = new PDFParse({ data: buf });
     const result = await parser.getText();
     return result?.text || null;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -262,7 +262,7 @@ function dedupOneDrive(items) {
 
   const keep = new Set();
   const removed = [];
-  for (const [key, group] of groups) {
+  for (const group of groups.values()) {
     if (group.length === 1) {
       keep.add(group[0].fullpath);
     } else {

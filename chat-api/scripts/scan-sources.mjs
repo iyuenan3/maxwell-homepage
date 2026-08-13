@@ -109,7 +109,7 @@ async function readPdf(filepath) {
     const parser = new PDFParse({ data: buf });
     const result = await parser.getText();
     return result?.text || null;
-  } catch (e) {
+  } catch {
     return null; // 让上层标 error
   }
 }
@@ -498,6 +498,11 @@ async function main() {
   console.log(
     `\n✓ done in ${Math.round((Date.now() - t0) / 1000)}s · include=${stat.include} review=${stat.review} exclude=${stat.exclude} error=${stat.error || 0}`,
   );
+  if ((stat.error || 0) > 0) {
+    throw new Error(
+      `scan incomplete: ${stat.error} file(s) failed judge/read; aborting before reindex`,
+    );
+  }
 }
 
 main().catch((e) => {

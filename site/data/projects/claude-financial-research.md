@@ -2,7 +2,7 @@
 slug: claude-financial-research
 name_en: "Claude Financial Research · A-Share Equity Atlas"
 name_zh: "智投研 · A 股权益研究系统"
-status: active
+status: archived
 since: 2026-05-06
 links:
   url: ""

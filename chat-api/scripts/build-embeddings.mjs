@@ -24,6 +24,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
+import { createHash } from "node:crypto";
 import os from "node:os";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -45,13 +46,14 @@ const HOME_DATA_PATH = path.join(REPO_ROOT, "site/data/home-data.js");
 const DETAIL_DIR = path.join(REPO_ROOT, "site/data/projects");
 const MANIFEST_PATH = path.join(__dirname, "manifest.json");
 const OUT_PATH = path.join(CHAT_API_ROOT, "data/embeddings.json");
+const SANITIZE_CACHE_PATH = path.join(CHAT_API_ROOT, "data/sanitize-cache.json");
 
 // chunk 参数：体验优先，每 chunk 更大语义更完整（doubao-embedding 上限 8K tokens）
 const TARGET_CHUNK_CHARS = 2000; // 中文 ~1300 token / chunk
 const MAX_CHUNK_CHARS = 3000;
 const MIN_CHUNK_CHARS = 200;     // 提高最小 → 过滤碎片噪声
 const EMBED_BATCH_SIZE = 10;
-const SANITIZE_CONCURRENCY = 10;
+const SANITIZE_CONCURRENCY = 5;
 
 // chunk-level 求职/面试关键词过滤（P0 隐私边界第 4 层防御）
 // 防御漏网：wiki:projects/* / detail / home-data 等 hardcoded 源不走 LLM judge,
@@ -378,13 +380,19 @@ function loadDetailPages() {
     .map((f) => path.join(DETAIL_DIR, f));
 
   const out = [];
+  let skippedPrivate = 0;
   for (const file of files) {
     const slug = path.basename(file, ".md");
     const raw = fs.readFileSync(file, "utf8");
-    const { body } = stripFrontmatter(raw);
+    const { meta, body } = stripFrontmatter(raw);
+    if (isFrontmatterPrivate(meta)) {
+      skippedPrivate++;
+      continue;
+    }
     if (body.trim().length < MIN_CHUNK_CHARS) continue;
     out.push(...chunkMarkdown(body, `detail:${slug}`));
   }
+  if (skippedPrivate) console.log(`  skipped ${skippedPrivate} private detail pages`);
   return out;
 }
 
@@ -525,37 +533,80 @@ async function sanitizeText(text) {
 }
 
 async function sanitizeWithRetry(text) {
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  const waits = [2000, 5000, 10000, 20000];
+  for (let attempt = 1; attempt <= 5; attempt++) {
     try {
       return await sanitizeText(text);
     } catch (e) {
-      if (attempt === 3) throw e;
-      await new Promise((r) => setTimeout(r, 1500 * attempt));
+      if (/AccountQuotaExceeded/i.test(e.message || "")) throw e;
+      if (attempt === 5) throw e;
+      await new Promise((r) => setTimeout(r, waits[attempt - 1]));
     }
   }
 }
 
+function sanitizeCacheKey(text) {
+  return createHash("sha256")
+    .update(`${SANITIZE_MODEL}\0${SANITIZE_PROMPT(text)}`)
+    .digest("hex");
+}
+
+function loadSanitizeCache() {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(SANITIZE_CACHE_PATH, "utf8"));
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeSanitizeCache(cache) {
+  fs.mkdirSync(path.dirname(SANITIZE_CACHE_PATH), { recursive: true });
+  const tmp = `${SANITIZE_CACHE_PATH}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(cache));
+  fs.renameSync(tmp, SANITIZE_CACHE_PATH);
+}
+
 async function sanitizeChunks(chunks) {
-  const targets = chunks.map((c, i) => ({ c, i })).filter((x) => x.c.needs_sanitize);
+  const allTargets = chunks.map((c, i) => ({ c, i })).filter((x) => x.c.needs_sanitize);
+  const cache = loadSanitizeCache();
+  let cacheHits = 0;
+  const targets = [];
+  for (const target of allTargets) {
+    const key = sanitizeCacheKey(target.c.text);
+    const cached = cache[key];
+    if (typeof cached === "string" && cached.trim()) {
+      target.c.text = cached;
+      target.c.sanitized = true;
+      cacheHits++;
+    } else {
+      targets.push({ ...target, key });
+    }
+  }
+  if (cacheHits) console.log(`→ sanitize cache: ${cacheHits} hit, ${targets.length} pending`);
   if (targets.length === 0) {
     console.log("→ no chunks need sanitize\n");
     return chunks;
   }
-  console.log(`=== sanitizing ${targets.length} chunks (concurrency=${SANITIZE_CONCURRENCY}) ===`);
+  console.log(`=== sanitizing ${targets.length}/${allTargets.length} chunks (concurrency=${SANITIZE_CONCURRENCY}) ===`);
 
   let next = 0;
   let done = 0;
   let failed = 0;
+  let fatalError = null;
   async function loop() {
-    while (next < targets.length) {
-      const { c } = targets[next++];
+    while (next < targets.length && !fatalError) {
+      const { c, key } = targets[next++];
       try {
         c.text = await sanitizeWithRetry(c.text);
         c.sanitized = true;
+        cache[key] = c.text;
+        writeSanitizeCache(cache);
       } catch (e) {
         c.sanitized = false;
         c.sanitize_error = e.message.slice(0, 100);
         failed++;
+        fatalError ||= e;
       }
       done++;
       if (done % 10 === 0 || done === targets.length) {
@@ -565,7 +616,12 @@ async function sanitizeChunks(chunks) {
   }
   await Promise.all(Array.from({ length: SANITIZE_CONCURRENCY }, () => loop()));
   process.stdout.write("\n");
-  if (failed) console.warn(`  ⚠️ ${failed} chunks sanitize failed (kept original text)`);
+  if (failed) {
+    throw new Error(
+      `sanitize incomplete: ${failed} chunk(s) failed; aborting before embedding`,
+      { cause: fatalError },
+    );
+  }
   return chunks;
 }
 
@@ -595,6 +651,7 @@ async function embedWithRetry(texts, label) {
     try {
       return await embedBatch(texts);
     } catch (e) {
+      if (/AccountQuotaExceeded/i.test(e.message || "")) throw e;
       if (attempt === 5) {
         console.log(`\n  ${label} batch failed 5x, falling back to single`);
         const out = [];

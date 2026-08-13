@@ -2,8 +2,9 @@
 slug: openclaw
 name_en: "OpenClaw · AI Assistant Platform"
 name_zh: "OpenClaw · AI 助理平台"
-status: active
+status: archived
 since: 2026-05-03
+rag_exclude: true
 links:
   url: ""
   source: private
@@ -25,6 +26,8 @@ stack:
 ---
 
 ## README
+
+> 历史归档：本机 OpenClaw 配置已于 2026-07-10 卸载。本页只保留当时的使用与工程实践记录；OpenClaw 是第三方平台，不是 Maxwell 开发的产品。
 
 Maxwell-MBP 本机 AI 助理平台基座。火山方舟 `ark-code-latest` 作为 LLM 基座，Gateway loopback `:18789` + Token 认证暴露给本机和云端 Skill 调用，每天凌晨 4 点 cron 自动构建知识库。
 
