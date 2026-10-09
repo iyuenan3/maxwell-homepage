@@ -69,3 +69,7 @@ maxwellii.com 主页右下角对话框背后运行的 LLM 化身后端。访客�
 - Blog: [limaxwell93.wordpress.com](https://limaxwell93.wordpress.com)
 
 > 出于公开仓库隐私考虑，简历中的手机号已打码处理。如需联系电话请发邮件索取。
+
+## pageTogether 项目展示
+
+已登记 [pageTogether](https://github.com/iyuenan3/page-together)，面向朋友共享空间的文档与画板项目。当前仅完成立项，尚未实现或开放试用。展示文案位于 site/data/projects/page-together.md。

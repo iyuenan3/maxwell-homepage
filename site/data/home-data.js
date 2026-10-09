@@ -138,6 +138,7 @@
 
     /* ── projects / 有趣的项目 ──────────────────────── */
     projects: [
+      { perm: 'drwxr-xr-x', state: 'planned', date: '2026-10-09', slug: 'page-together', dir: true, zh: 'pageTogether · 共享文档与画板', desc: '面向朋友共享空间的协同文档与画板 · BlockSuite + Yjs · 邀请加昵称 · 已立项，尚未实现', stack: 'blocksuite · yjs' },
       { perm: '-rwxr-xr-x', state: 'live',     date: '2026-08-10', slug: 'petsgraph',                 dir: true,  zh: 'PetsGraph · 真实宠物桌面陪伴',                  desc: '开源 macOS 离线桌面陪伴运行时 · 李五百 v0.4.0 已发布 · 53 个动作片段 / 14 个节点 / 39 条边 · 完整动作图自然换姿 + 低功耗逐帧渲染',                                                      stack: 'swift · appkit · core graphics · github actions' },
       { perm: '-rwxr-xr-x', state: 'live',     date: '2026-05-10', slug: 'maxwell-homepage',         dir: true,  zh: 'worklog × maxwellii.com · 个人知识系统',        desc: 'worklog 以 LLM Wiki 摄入时编译多项目知识 · maxwellii.com 以终端体作品集 + RAG 化身安全输出 · AIREADME 与分层记忆支撑长期 AI 协作',                                                             stack: 'obsidian · codex · next.js · rag' },
       { perm: '-rwxr-xr-x', state: 'live',     date: '2026-05-08', slug: 'eastern-wisdom',           dir: true,  zh: '东方智慧 · 中式传统文化 SaaS',                 desc: 'monorepo 多 app 中式文化 SaaS · 已上线中文取名与东方占卜两款产品 · 共享 AI 流水线、Python 命理计算层和现代中式设计系统',                                                                       stack: 'next.js 16 · 阿里云百炼 · python · monorepo' },
