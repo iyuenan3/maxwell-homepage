@@ -3,6 +3,12 @@
 
 > 迁自仓库根 `CHANGELOG.md`（Keep a Changelog 风格）+ 补齐 v2.3 / v2.4。理由链 DECISIONS，运行时踩坑见 MEMORY。
 
+## 2026-10-09 · pageTogether 立项展示
+
+- Added: pageTogether 公开仓库与详情页，明确标记 planned，尚未实现或部署。
+- Changed: 主页项目列表新增该项目，既有项目文案保持原样。
+- Scope: 仅静态展示，不更新 RAG 索引或部署聊天后端。
+
 ## v3.1.0 · 2026-08-14
 - Changed: V1 `git log --all --decorate` 按最新简历重建职业时间线，当前段改为经批准的现职摘要，并在全境骑行与 Nokia 之间补入“独立 AI 产品实践（OPC 探索）”。
 - Changed: `stack --top` 改为当前 AI Agent、Multi-Agent、DAG、RAG、MCP 与全栈交付技术组合，移除已不再代表当前重点的模型与知识库标签。

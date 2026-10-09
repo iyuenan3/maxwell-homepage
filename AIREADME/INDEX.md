@@ -26,3 +26,7 @@
 - 加功能 / 改产品定位 → PRD + ROADMAP + CONVENTIONS
 - 改 chat 化身（prompt / RAG / 隐私）→ ARCHITECTURE（数据流）+ DECISIONS（隐私·选型）+ CONVENTIONS（prompt 边界）
 - 改主页文案 / 定位 → CONVENTIONS（命名·同步）+ PRD（定位语）（简历改在 worklog）
+
+## 定向更新 · 2026-10-09
+
+新增 pageTogether 立项展示，主页当前十项，其中一项 planned。仅审阅本轮静态展示变更，原同步锚点保留，不声明此前全部漂移已审阅。
