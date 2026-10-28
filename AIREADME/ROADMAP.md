@@ -5,11 +5,12 @@
 - **公开履历与项目画像**：V1 按最新简历展示经批准的职业时间线与技术栈；主页、README、详情页与化身 prompt 维持 9 个精选项目，静态任职事实与化身披露继续隔离。
 - **RAG 索引维护**：知识源（外部 vault，含 hdu / worklog）变动后按索引维护流程重建 + 部署，保持化身答案新鲜。
 - **隐私防御稳态**：维护求职过滤、frontmatter 私有标记、env 注入的雇主机密过滤与骑行数据回避；化身翻车（泄露 / 伪造归属 / 编造数据）随时修。
+- **Qwen 文本迁移**：在线对话、RAG 审稿与脱敏先直连 Qwen，Embedding 保留旧索引与独立配置，向量服务不可用时以空 context 继续对话。
 
 ## Next
-- **观察直连 Ark 线上表现**：TTFT（首查 ~5.5s，多为 RAG context prefill）/ 成本 / 错误率，跑一段时间确认稳态。
+- **Embedding 单独迁移**：另行选择向量供应商、重建并验证索引；文本能力迁移不代表完整 RAG 恢复。
 - **同步 nginx 安全头**：核对服务器实际 4 安全头，把仓库 `site/nginx.conf` 补齐到与服务器一致（消除 drift，见 DEPLOYMENT / MEMORY）。
-- **DeepSeek Flash 稳态观察**：持续核对 SSE `meta.model`、TTFT、usage 与错误率，避免只依赖 env 中的模型别名判断线上状态。
+- **Qwen 稳态观察与凭证用途调整**：持续核对 SSE `meta.model`、TTFT、usage 与错误率，长期切换为支持应用后端的通用 API 凭证。
 
 ## Later
 - **（已放弃）newapi-proxy 内网二阶段** —— 2026-05-24 chat-api 改直连火山方舟 Ark，不再经 newapi，此方案作废。

@@ -22,7 +22,7 @@ bash site/deploy.sh
 ```bash
 cd chat-api && npm run lint && npm run build && npm audit --omit=dev
 cd chat-api && bash deploy.sh
-# 检查 embeddings.json 在场 → npm run build(失败即 abort) → rsync(排除 .git/.env.example/node_modules/.next/cache 与本地脱敏缓存)
+# 检查 embeddings.json 在场 → npm run build(失败即 abort) → rsync(排除 .git/.env.example/.env.local/node_modules/.next/cache、本地脱敏缓存与配置备份)
 #   → ssh chmod 600 .env.local → npm install --omit=dev → pm2 reload ecosystem.config.cjs --update-env
 ```
 
@@ -33,6 +33,8 @@ cd chat-api && npm run scan:force  # 改了 judge prompt 必须全量重 judge�
 ```
 
 `npm run update` 只允许在 scan `error=0` 且 sanitize 全部成功后进入 embedding 和 deploy。账户额度不足会 fail-fast，旧 `embeddings.json` 与生产服务保持不变；恢复额度后必须从 scan 重跑，不得跳过失败阶段直接部署旧 manifest。
+
+2026-10-28 仅迁移 chat / judge / sanitize，不运行 `npm run update` 或全量 reindex。`npm run scan` 的新审稿请求使用 Qwen，既有 manifest 仍按 mtime 增量复用；需要全部重新审稿时单独运行 `npm run scan:force`。Embedding 待后续迁移，当前不能以文本接口成功宣称完整 RAG 恢复。
 
 ### nginx 配置变更（**不在 deploy.sh 流程里，必须单独推**）
 ```bash
@@ -45,7 +47,8 @@ cat site/nginx.conf | ssh alicloud-sg "sudo tee /etc/nginx/sites-available/maxwe
 - 路由 / 缓存 / 安全头细节见 SPEC ② + 下方运维约束。
 
 ## 共享底座引用
-- **LLM 上游 = 火山方舟 Ark（直连）**：`CHAT_LLM_BASE_URL` = `https://ark.cn-beijing.volces.com/api/coding/v3`（Coding Plan），`ark-` key 仅存服务器 `.env.local`（chmod 600）。Ark 公网有效证书 → 无 `NODE_TLS_REJECT_UNAUTHORIZED`。2026-05-24 由 newapi-proxy 切回直连（见 RELATIONS / DECISIONS ADR-009）。
+- **文本 LLM = 百炼 Qwen（直连）**：`CHAT_LLM_BASE_URL=https://coding.dashscope.aliyuncs.com/v1`，`CHAT_LLM_MODEL` / `RAG_JUDGE_MODEL` / `RAG_SANITIZE_MODEL` 当前均为 `qwen3.7-plus`，共享 `CHAT_LLM_API_KEY`。本次按用户指定使用 Coding Plan；[官方用途限制](https://help.aliyun.com/zh/model-studio/coding-plan-faq) 将其定位于交互式编程工具，网站后端与自动化脚本不在允许用途内，长期运行应换成通用按量 API。通用 API 可以通过同一变量改用账号对应的业务空间端点，无需 new-api 或关闭 TLS 校验。
+- **Embedding 暂留 Ark**：`EMBED_LLM_BASE_URL` / `EMBED_LLM_API_KEY` 保存迁移前的向量端点和凭证，与 Qwen 完全分离。火山不可用时，查询最长等待 5 秒后使用空 context 对话；模型和 `embeddings.json` 本次不变。
 - **CDN = Cloudflare**（账号级，非本仓库管理）。
 
 ## 缓存策略
@@ -62,3 +65,4 @@ cat site/nginx.conf | ssh alicloud-sg "sudo tee /etc/nginx/sites-available/maxwe
 - ⚠️ **SSH mux 挂死**：`~/.ssh/config` ControlMaster auto 的 mux socket 偶发挂死 → 所有走 alicloud-sg 的 ssh/rsync 无限挂起（deploy 卡 Stage 1）。修复一行 `ssh -O exit alicloud-sg`。预防：久未用先 `ssh alicloud-sg "date"` 烫连接。
 - nginx 安全头：⚠️ 当前仓库 `site/nginx.conf` **只有 HSTS**，缺 v2.2.0 应加的 4 头（CSP / X-Frame-Options / X-Content-Type-Options / Referrer-Policy）—— 可能服务器有、仓库 drift。**推 nginx 前务必核对服务器实际配置**，别用仓库版覆盖掉服务器上的安全头（见 MEMORY / DECISIONS-008）。
 - `.env.local` 含 key、管理 token 与私密过滤词，部署后 chmod 600；任何真实值都不得进入跟踪文件或命令输出。
+- 本地模型配置备份位于 gitignored 的 `data/config-backups/`，不随 deploy 同步；`.env.local` 也不自动同步。发布时通过 SSH 加密通道仅替换已核对的模型变量，先保存远端可恢复备份，保留生产独立的管理 token 和隐私词表。

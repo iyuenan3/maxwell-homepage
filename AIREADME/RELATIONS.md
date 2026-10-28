@@ -5,13 +5,14 @@
 
 | 依赖 | 用途 | 权威路径 |
 |---|---|---|
-| **火山方舟 Ark**（LLM 上游，直连）| chat-api 的 chat（`deepseek-v4-flash`）+ embedding（`doubao-embedding-vision`），OpenAI 兼容 `/api/coding/v3` | 火山 console（Ark Coding Plan）|
+| **阿里云百炼 Qwen**（文本上游，直连）| 在线对话 + RAG 审稿和脱敏，默认 `qwen3.7-plus` | 百炼控制台；配置与用途约束见 DEPLOYMENT |
+| **火山方舟 Ark**（仅保留 embedding）| `doubao-embedding-vision`，2048 维，原索引保留；账号失效时无法向量检索 | 火山 console；后续迁移另行安排 |
 | **worklog**（wiki 数据 + 简历源） | ① `build.js` 读 `wiki/projects/<wiki_slug>.md` 抽详情页 fact ② chat-api `loadResume()` 读 `wiki/job/me/resume/MaxwellLi-AIPMorFDE.md` 入 RAG | `../worklog/AIREADME/SPEC.md` |
 
-### 火山方舟 Ark（运行时 LLM 上游，直连，OpenAI 兼容）
-- chat-api `route.ts` 调 `${CHAT_LLM_BASE_URL}/chat/completions`（stream，`thinking:{type:"disabled"}` 关闭推理输出）+ `/embeddings`（`doubao-embedding-vision` 2048 dim）。chat 模型 `deepseek-v4-flash`（env `CHAT_LLM_MODEL`，方舟当前解析为 `deepseek-v4-flash-ga-260731`）；离线脚本 judge/sanitize 仍用 `doubao-seed-2.0-pro`。
-- 端点 `https://ark.cn-beijing.volces.com/api/coding/v3`（Coding Plan）；鉴权 `Bearer ark-<key>`（火山 console 申请，**仅存服务器 `.env.local` chmod 600，绝不入仓库**）；Ark 公网有效证书 → **无需** `NODE_TLS_REJECT_UNAUTHORIZED`。
-- **2026-05-24 由 newapi-proxy 中转站切回直连 Ark**（DECISIONS ADR-009 取代 ADR-004）：绕过 newapi 侧 embedding 渠道「暂不可用」阻塞 + 恢复 doubao prompt cache 透传 + 去掉自签 TLS hack。`embeddings.json` 零重建（同模型同 2048 维向量空间）。已线上验证 RAG + chat 全链路通。
+### 模型供应商（2026-10-28 起分离文本与向量）
+- 文本生成调用 `${CHAT_LLM_BASE_URL}/chat/completions`，直连百炼；在线与离线模型分别配置，当前均为 `qwen3.7-plus`，HTTP 请求使用 `enable_thinking:false`。
+- Embedding 独立调用 `${EMBED_LLM_BASE_URL}/embeddings`，继续使用 Ark 的 `doubao-embedding-vision` 2048 维向量空间。当前账号已过期，本次只迁移文本能力，向量检索可能降级。
+- 所有真实凭证仅存本地及生产 `.env.local`，不经 new-api；历史上游选择保留在 ADR-004 / ADR-009 / ADR-015，新选择见 ADR-019。
 
 ### worklog（构建/索引期数据依赖 —— 合法回读例外，2 处）
 - **方向**：数据流 worklog → maxwell-homepage（build 期读 worklog wiki）；依赖方向上 maxwell-homepage 依赖 worklog，故记于出向。与 worklog 自己 SPEC 把 maxwell-homepage 列为 inbound 消费方一致。
@@ -27,6 +28,6 @@
 
 ## 共享底座 / 复用资产
 - **chat-api 不是共享底座** —— 仅被 maxwellii.com 站点消费（单一消费方 < 2），且是本仓库专属子模块 → **是组件不是独立 AIREADME 节点**（架构见 ARCHITECTURE）。
-- **（历史）newapi-proxy** —— chat-api 2026-05-19~05-24 曾以它为 LLM 上游，现已切回直连火山方舟 Ark（ADR-009），**本项目不再依赖**。newapi-proxy 仍是 Maxwell 其他工具的共享底座（独立节点 `../newapi-proxy/AIREADME/`），但与本项目无关。
+- **（历史）newapi-proxy**：chat-api 曾使用该中转服务，当前直连 Qwen，本项目不再依赖或维护其接入支持。历史节点为 `../newapi-proxy/AIREADME/`，本次不修改该项目或其运行服务。
 - **SSL 证书 `*.maxwellii.com`** 与子站 naming.maxwellii.com / tale.maxwellii.com 共用 SNI（部署细节见 DEPLOYMENT）。
 - **求职活动归 worklog**：面试 / 求职沟通文案 / 谈薪 / 公司情报 等全在 worklog（私密），本仓库不维护其正文；本项目仅维护"文案产品规则"（字数算法 / 平台机制 / 排序原则）—— 边界判断「会随求职阶段变 → worklog；产品规则不变 → homepage」见 CONVENTIONS。

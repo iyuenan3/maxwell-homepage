@@ -126,3 +126,10 @@
 - Decision: V1 可以展示经批准的当前任职摘要；相关实体仍加入 gitignored 的雇主词表，使 resume / home-data 中命中的 chunks 在 embedding 前被 universal filter 丢弃，并由 route prefilter 在运行时 0 token 拒答。独立产品实践等非雇主段保持可索引。此决策仅取代 ADR-016 中“当前任职事实不得进入静态站”的范围，ADR-016 的私密项目隔离和公开安全画像原则继续有效。
 - Alternatives（否决）: 静态页继续隐藏最新任职（与简历不一致）；同时开放化身回答（会把经批准摘要扩写成不可控内容）；整源排除简历和 home-data（会损失其他公开经历与技术栈召回）。
 - Tradeoff: 访客可以在静态页阅读摘要，却不能通过化身追问同一任职；每次履历变更都必须同时检查本地与生产词表、RAG dry-run 和公网 0 token 拦截，维护步骤增加。
+
+## ADR-019 · 文本能力迁移 Qwen，Embedding 暂缓 · 2026-10-28
+- Problem: 火山账号过期，在线对话、RAG 审稿和脱敏共用的文本上游不可用；公开对话入口出现 502。
+- Constraint: 用户明确要求先迁移在线对话和 RAG 审稿、脱敏到 Qwen，暂不处理 Embedding，且不再维护 new-api 接入；旧向量空间和索引必须保留。
+- Decision: 按用户指定的百炼直连端点，三个文本角色默认使用 `qwen3.7-plus`，关闭思考；judge 使用 JSON 输出，sanitize 和 judge 对空内容或截断响应 fail-closed。Embedding 改为独立 `EMBED_LLM_*` 配置，保留原 Ark 模型与凭证，不回退到 Qwen key；运行时向量查询最多等待 5 秒，失败按既有逻辑以空 context 继续对话。
+- Alternatives（否决）: 只修改 chat 的共享端点（会把旧 embedding 请求发给 Qwen）；顺带迁移向量模型并重建索引（超出本次范围）；重新接入 new-api（用户明确取消该需求）。
+- Tradeoff: 在线文本恢复不等于 RAG 向量检索恢复，后续仍需单独迁移 embedding。用户本次提供 Coding Plan 凭证，其官方用途限制不覆盖网站后端和自动化批量脚本，长期需使用通用按量 API；运行结果不能替代产品用途许可。

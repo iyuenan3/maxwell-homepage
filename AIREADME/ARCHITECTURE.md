@@ -13,10 +13,11 @@
 - **可选读 worklog wiki**：`git_log`/`decisions`/`stats`/`ps` 组件按 `wiki_slug` 从 worklog 抽 fact（数据契约见 RELATIONS / SPEC）。
 
 ### 2. `chat-api/` —— LLM 化身后端（Next.js 16 + React 19，API-only）
-- **运行时**（`src/app/api/chat/route.ts`）：3 层限流 → injection prefilter → 求职/面试 prefilter（P0）→ 雇主机密 prefilter（P0）→ RAG 检索（embed query → cosine retrieve）→ `buildSystemPrompt(context)` → 火山方舟 Ark `chat/completions`（stream，thinking 关）→ SSE 转发 + usage 解析 + `chat-logger` 落日志。RAG 失败降级为空 context 不中断。
+- **运行时**（`src/app/api/chat/route.ts`）：3 层限流 → injection prefilter → 求职/面试 prefilter（P0）→ 雇主机密 prefilter（P0）→ RAG 检索（embed query → cosine retrieve）→ `buildSystemPrompt(context)` → 百炼 Qwen `chat/completions`（stream，`enable_thinking:false`）→ SSE 转发 + usage 解析 + `chat-logger` 落日志。查询 embedding 保留原 Ark 模型和独立凭证，最多等待 5 秒，失败降级为空 context 后继续 Qwen 对话。
 - **system-prompt**（`src/app/api/chat/system-prompt.ts`）：12 段防御 prompt（身份 / 9 个主页精选项目 + 2 个历史归档详情 / 常识题 fallback / 禁止伪造归属 hard rule / 核心事实 7 猫 2 狗+姓名等价 / 回复风格 / 项目聚焦 / 范围含代码边界 B / 防 RAG 污染 / 防伪造历史 / 防 injection / [context] 段）。「输出前最后过滤」段在 [context] 前、凌驾所有规则。
 - **lib**：`embed-client.ts`（OpenAI 兼容 embedding client）/ `rag.ts`（运行时 cosine + perCategoryMax/perSourceMax）/ `rate-limit.ts`（in-memory）/ `chat-logger.ts`（按 IP 分文件 JSONL）。
-- **离线 RAG 管线**（`scripts/`，本地跑）：`scan-sources.mjs`（LLM judge 各源文件 P/V 隐私分级 → `manifest.json`）→ `build-embeddings.mjs`（chunk + sanitize + 4 层求职过滤 + embed → `embeddings.json`）。调试：`rag-search.mjs`。judge/sanitize 模型 = `doubao-seed-2.0-pro`（与 runtime chat 模型分离）。管线严格 fail-closed：任何 fresh judge/read 错误都会阻止 reindex，任何 sanitize 错误都会阻止 embedding；`AccountQuotaExceeded` 立即失败，不做无收益长退避或单条 fallback。脱敏并发固定为 5，并对瞬时连接错误做 5 次有界退避。成功脱敏结果按模型、prompt 与原文内容哈希写入 gitignored 的 `data/sanitize-cache.json`，网络失败或中断后只补未完成 chunks；输入或规则变化会自动 cache miss。
+- **离线 RAG 管线**（`scripts/`，本地跑）：`scan-sources.mjs`（LLM judge 各源文件 P/V 隐私分级 → `manifest.json`）→ `build-embeddings.mjs`（chunk + sanitize + 4 层求职过滤 + embed → `embeddings.json`）。调试：`rag-search.mjs`。judge/sanitize 通过 `qwen-completion.mjs` 直连百炼，默认 `qwen3.7-plus`，关闭思考，judge 使用 JSON 输出；`migrate-to-vault.mjs` 的脱敏入口同步使用该实现。非完整结束、空内容或上游错误均阻断下游，原有 fail-closed 与额度 fail-fast 保留。脱敏并发为 5，瞬时连接错误做 5 次有界退避；成功缓存按端点、模型、关闭思考参数、prompt 与原文内容哈希区分，新 Qwen 不复用旧模型缓存。Embedding 构建仍使用原 Ark 配置，本次不重建索引。
+- **模型配置**（`llm-config.mjs`）：在线与离线文本请求共用 `CHAT_LLM_API_KEY` / `CHAT_LLM_BASE_URL`；在线模型读 `CHAT_LLM_MODEL`，审稿与脱敏分别读 `RAG_JUDGE_MODEL` / `RAG_SANITIZE_MODEL`。Embedding 只读 `EMBED_LLM_API_KEY` / `EMBED_LLM_BASE_URL`，不回退到 chat 凭证，模型保持 `doubao-embedding-vision`。本项目不再维护 new-api 接入或自签证书绕过逻辑。
 
 **RAG 数据流**：
 ```
@@ -47,10 +48,10 @@ maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, 含 hdu 等经过筛选
 - **部署方案 C**：V2 占主域 / V1 退 `/v1/` / `/p/` 共享 → ADR-001。
 - **RAG 独立 Obsidian Vault**（仓库外，不入 git）→ ADR-002。
 - **求职内容 4 层防御**（单层 system-prompt 不足）→ ADR-003。
-- **LLM 上游：直连火山方舟 Ark**（曾 newapi-proxy 中转，2026-05-24 切回直连）→ ADR-009（取代 ADR-004）。
+- **文本 LLM 上游：直连百炼 Qwen；Embedding 暂留 Ark** → ADR-019（取代 ADR-009 的文本上游结论）。
 - **env 变量 `CHAT_LLM_*` 前缀**（避开 shell rc 污染）→ ADR-005。
 - **build.js 纯 Node 零依赖**（详情页无 npm 包）→ ADR-006。
-- **chat 模型 deepseek-v4-flash**（方舟实际解析为 `deepseek-v4-flash-ga-260731`，替代 doubao-seed-2.0-lite）→ ADR-015（取代 ADR-007 的当前模型结论）。
+- **chat / judge / sanitize 默认 qwen3.7-plus** → ADR-019（取代 ADR-015 的当前 chat 模型结论）。
 - **CSP `script-src 'self'` 无 inline script** → ADR-008。
 
 ## 禁改项 / Forbidden Refactors

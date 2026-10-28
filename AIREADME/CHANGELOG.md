@@ -3,6 +3,14 @@
 
 > 迁自仓库根 `CHANGELOG.md`（Keep a Changelog 风格）+ 补齐 v2.3 / v2.4。理由链 DECISIONS，运行时踩坑见 MEMORY。
 
+## 2026-10-28 · Qwen 文本迁移
+
+- Changed: 在线对话、RAG 审稿与脱敏直连百炼 Qwen，默认 `qwen3.7-plus`，关闭思考，取消本项目的 new-api 接入支持。
+- Fixed: Embedding 使用独立 `EMBED_LLM_*` 凭证，保留 Ark 模型和旧索引，向量查询失败时最多等待 5 秒后继续对话。
+- Security: RAG 文本调用拒绝空内容和截断响应；脱敏缓存绑定端点、模型和参数，配置备份排除于部署同步。
+- Validation: 真实 Qwen 流式对话、JSON 判断与虚构样例脱敏通过；未运行全量审稿、脱敏或 reindex。
+- Deployed: 生产公网对话返回 200、`meta.model=qwen3.7-plus` 且 SSE 完整结束；求职问题和经批准公开的任职词追问均为 0 token 拦截。部署前后索引哈希一致，旧应用和配置备份保留于服务器本机。
+
 ## 2026-10-09 · pageTogether 立项展示
 
 - Added: pageTogether 公开仓库与详情页，明确标记 planned，尚未实现或部署。

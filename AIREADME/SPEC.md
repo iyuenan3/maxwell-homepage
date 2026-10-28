@@ -45,7 +45,7 @@
 per-IP 20/min（429）· per-IP 100/day（429）· global 5000/day（503）。
 
 ### 运行时参数（contract-relevant）
-模型 = env `CHAT_LLM_MODEL`（当前 `deepseek-v4-flash`，方舟实际解析为 `deepseek-v4-flash-ga-260731`）· `thinking disabled` · `temperature 0.7` · `max_tokens 2000` · RAG `topK 12` / `perCategoryMax 4` / `perSourceMax 2`。上游为 OpenAI 兼容 `chat/completions`（`stream:true` + `stream_options.include_usage`）。
+模型 = env `CHAT_LLM_MODEL`（当前默认 `qwen3.7-plus`）· `enable_thinking:false` · `temperature 0.7` · `max_tokens 2000` · RAG `topK 12` / `perCategoryMax 4` / `perSourceMax 2`。上游为百炼直连的 OpenAI 兼容 `chat/completions`（`stream:true` + `stream_options.include_usage`）。向量查询最多等待 5 秒，失败继续使用空 context；SSE 事件和前端模型显示契约不变。
 
 ## ② 站点 URL 路由（nginx）
 | 路径 | 内容 |
