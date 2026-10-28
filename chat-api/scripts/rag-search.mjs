@@ -11,6 +11,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { getEmbedConfig } from "../llm-config.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,9 +27,7 @@ function loadEnv() {
 }
 loadEnv();
 
-const CHAT_LLM_API_KEY = process.env.CHAT_LLM_API_KEY;
-const CHAT_LLM_BASE_URL = process.env.CHAT_LLM_BASE_URL;
-const EMBED_MODEL = "doubao-embedding-vision";
+const EMBED_CONFIG = getEmbedConfig();
 
 // ── parse args ─────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -61,13 +60,16 @@ process.stderr.write(`${idx.count} chunks (${idx.dim}d) in ${Date.now() - t0}ms\
 // ── embed query ─────────────────────────────────────────
 process.stderr.write("embedding query... ");
 const t1 = Date.now();
-const res = await fetch(`${CHAT_LLM_BASE_URL}/embeddings`, {
+if (!EMBED_CONFIG.baseUrl || !EMBED_CONFIG.apiKey) {
+  throw new Error("EMBED_LLM_BASE_URL / EMBED_LLM_API_KEY missing");
+}
+const res = await fetch(`${EMBED_CONFIG.baseUrl}/embeddings`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${CHAT_LLM_API_KEY}`,
+    Authorization: `Bearer ${EMBED_CONFIG.apiKey}`,
   },
-  body: JSON.stringify({ model: EMBED_MODEL, input: [query] }),
+  body: JSON.stringify({ model: EMBED_CONFIG.model, input: [query] }),
 });
 if (!res.ok) {
   console.error(`\nembedding failed ${res.status}: ${(await res.text()).slice(0, 200)}`);

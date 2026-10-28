@@ -25,6 +25,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
 import os from "node:os";
+import { getRagConfig } from "../llm-config.mjs";
+import { qwenCompletion } from "./qwen-completion.mjs";
 
 const DRY_RUN = process.argv.includes("--dry-run");
 
@@ -46,9 +48,8 @@ function loadEnv() {
   }
 }
 loadEnv();
-const CHAT_LLM_API_KEY = process.env.CHAT_LLM_API_KEY;
-const CHAT_LLM_BASE_URL = process.env.CHAT_LLM_BASE_URL;
-const SANITIZE_MODEL = "doubao-seed-2.0-pro";
+const RAG_CONFIG = getRagConfig();
+const SANITIZE_MODEL = RAG_CONFIG.sanitizeModel;
 
 // ── source label 重映射 (旧 → 新) ────────────────────
 const LABEL_REMAP = {
@@ -215,25 +216,11 @@ ${text}
 直接给脱敏后的文本，不加任何解释、标注、JSON 包裹、代码块包裹。保持原段落结构与标点。`;
 
 async function sanitizeOnce(text) {
-  const res = await fetch(`${CHAT_LLM_BASE_URL}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${CHAT_LLM_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: SANITIZE_MODEL,
-      temperature: 0.1,
-      max_tokens: 4000,
-      messages: [{ role: "user", content: SANITIZE_PROMPT(text) }],
-    }),
+  let out = await qwenCompletion(RAG_CONFIG, {
+    model: SANITIZE_MODEL,
+    prompt: SANITIZE_PROMPT(text),
+    maxTokens: 4000,
   });
-  if (!res.ok) {
-    const err = await res.text().catch(() => "");
-    throw new Error(`sanitize ${res.status}: ${err.slice(0, 200)}`);
-  }
-  const json = await res.json();
-  let out = json.choices?.[0]?.message?.content?.trim() || "";
   out = out.replace(/^```(?:\w+)?\n?/, "").replace(/\n?```$/, "");
   return out;
 }

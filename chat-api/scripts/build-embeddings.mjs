@@ -26,6 +26,8 @@ import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
 import os from "node:os";
+import { getEmbedConfig, getRagConfig } from "../llm-config.mjs";
+import { qwenCompletion } from "./qwen-completion.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -135,13 +137,16 @@ function loadEnv() {
 }
 loadEnv();
 
-const CHAT_LLM_API_KEY = process.env.CHAT_LLM_API_KEY;
-const CHAT_LLM_BASE_URL = process.env.CHAT_LLM_BASE_URL;
-const EMBED_MODEL = "doubao-embedding-vision";
-const SANITIZE_MODEL = "doubao-seed-2.0-pro";
+const EMBED_CONFIG = getEmbedConfig();
+const RAG_CONFIG = getRagConfig();
+const EMBED_MODEL = EMBED_CONFIG.model;
+const SANITIZE_MODEL = RAG_CONFIG.sanitizeModel;
 
-if (!DRY_RUN && (!CHAT_LLM_API_KEY || !CHAT_LLM_BASE_URL)) {
+if (!DRY_RUN && (!RAG_CONFIG.apiKey || !RAG_CONFIG.baseUrl)) {
   throw new Error("CHAT_LLM_API_KEY / CHAT_LLM_BASE_URL missing in .env.local");
+}
+if (!DRY_RUN && (!EMBED_CONFIG.apiKey || !EMBED_CONFIG.baseUrl)) {
+  throw new Error("EMBED_LLM_API_KEY / EMBED_LLM_BASE_URL missing in .env.local");
 }
 
 // ── 4 大类 source category ───────────────────────────────
@@ -508,25 +513,11 @@ ${chunkText}
 直接给脱敏后的文本，不加任何解释、标注、JSON 包裹、代码块包裹。保持原段落结构与标点。`;
 
 async function sanitizeText(text) {
-  const res = await fetch(`${CHAT_LLM_BASE_URL}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${CHAT_LLM_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: SANITIZE_MODEL,
-      temperature: 0.1,
-      max_tokens: 2000,
-      messages: [{ role: "user", content: SANITIZE_PROMPT(text) }],
-    }),
+  let result = await qwenCompletion(RAG_CONFIG, {
+    model: SANITIZE_MODEL,
+    prompt: SANITIZE_PROMPT(text),
+    maxTokens: 2000,
   });
-  if (!res.ok) {
-    const err = await res.text().catch(() => "");
-    throw new Error(`sanitize ${res.status}: ${err.slice(0, 200)}`);
-  }
-  const json = await res.json();
-  let result = json.choices?.[0]?.message?.content?.trim() || "";
   // 去除可能的 markdown 包裹
   result = result.replace(/^```(?:\w+)?\n?/, "").replace(/\n?```$/, "");
   return result;
@@ -547,7 +538,7 @@ async function sanitizeWithRetry(text) {
 
 function sanitizeCacheKey(text) {
   return createHash("sha256")
-    .update(`${SANITIZE_MODEL}\0${SANITIZE_PROMPT(text)}`)
+    .update(`${RAG_CONFIG.baseUrl}\0${SANITIZE_MODEL}\0enable_thinking=false\0${SANITIZE_PROMPT(text)}`)
     .digest("hex");
 }
 
@@ -627,12 +618,12 @@ async function sanitizeChunks(chunks) {
 
 // ── embedding ───────────────────────────────────────────
 async function embedBatch(texts) {
-  const url = `${CHAT_LLM_BASE_URL}/embeddings`;
+  const url = `${EMBED_CONFIG.baseUrl}/embeddings`;
   const res = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${CHAT_LLM_API_KEY}`,
+      Authorization: `Bearer ${EMBED_CONFIG.apiKey}`,
     },
     body: JSON.stringify({ model: EMBED_MODEL, input: texts }),
   });

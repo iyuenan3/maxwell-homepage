@@ -3,6 +3,7 @@ import { buildSystemPrompt } from "./system-prompt";
 import { createEmbedClient } from "@/lib/embed-client";
 import { retrieve, formatContext } from "@/lib/rag";
 import { logChat } from "@/lib/chat-logger";
+import { getChatConfig, getEmbedConfig } from "../../../../llm-config.mjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,11 +12,11 @@ export const dynamic = "force-dynamic";
 let _embedClient: ReturnType<typeof createEmbedClient> | null = null;
 function getEmbedClient() {
   if (_embedClient) return _embedClient;
-  _embedClient = createEmbedClient({
-    baseUrl: process.env.CHAT_LLM_BASE_URL!,
-    apiKey: process.env.CHAT_LLM_API_KEY!,
-    model: "doubao-embedding-vision",
-  });
+  const config = getEmbedConfig();
+  if (!config.baseUrl || !config.apiKey) {
+    throw new Error("EMBED_LLM_BASE_URL / EMBED_LLM_API_KEY missing");
+  }
+  _embedClient = createEmbedClient(config);
   return _embedClient;
 }
 
@@ -299,9 +300,7 @@ export async function POST(req: Request) {
   }
 
   // env check
-  const apiBase = process.env.CHAT_LLM_BASE_URL;
-  const apiKey = process.env.CHAT_LLM_API_KEY;
-  const model = process.env.CHAT_LLM_MODEL;
+  const { baseUrl: apiBase, apiKey, model } = getChatConfig();
   if (!apiBase || !apiKey || !model) {
     console.error("[chat] missing env: CHAT_LLM_BASE_URL / CHAT_LLM_API_KEY / CHAT_LLM_MODEL");
     return new Response(JSON.stringify({ error: "server_misconfigured" }), {
@@ -332,7 +331,7 @@ export async function POST(req: Request) {
 
   const systemPrompt = buildSystemPrompt(contextBlock);
 
-  // Ark stream call (OpenAI-compatible)
+  // Qwen direct stream call (OpenAI-compatible)
   const upstream = await fetch(`${apiBase}/chat/completions`, {
     method: "POST",
     headers: {
@@ -345,7 +344,7 @@ export async function POST(req: Request) {
       stream_options: { include_usage: true },  // 让最后一个 chunk 带 usage（OpenAI 兼容）
       temperature: 0.7,
       max_tokens: 2000,  // 体验优先：放宽（pro 版套餐 token 充足）
-      thinking: { type: "disabled" },  // 关闭推理输出：TTFT 更快 + 省 token（当前 DeepSeek Flash 兼容）
+      enable_thinking: false,
       messages: [
         { role: "system", content: systemPrompt },
         ...messages,
@@ -427,7 +426,7 @@ export async function POST(req: Request) {
                 acc += delta;
                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({ delta })}\n\n`));
               }
-              // doubao SSE 末段（include_usage 启用后）有 usage
+              // OpenAI 兼容 SSE 的 usage 通常位于最后一个 chunk
               if (json?.usage && typeof json.usage.prompt_tokens === "number") {
                 // 兼容多种 cache 字段路径（OpenAI 新版 / 旧版 / 火山自定义）
                 const cached =

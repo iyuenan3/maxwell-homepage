@@ -4,7 +4,7 @@
  *
  * 流程：
  *   walk → (skip 二进制/代码/excludeDirs) → readContent (md/pdf) → regex 隐私扫
- *   → doubao-pro file-level judge → 自动决策 → 输出 manifest.json + report.md
+ *   → Qwen file-level judge → 自动决策 → 输出 manifest.json + report.md
  *
  * 增量：mtime 没变就复用上次 LLM 结果（manifest.json 持久化）
  *
@@ -17,6 +17,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import os from "node:os";
+import { getRagConfig } from "../llm-config.mjs";
+import { qwenCompletion } from "./qwen-completion.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,15 +37,14 @@ function loadEnv() {
 }
 loadEnv();
 
-const CHAT_LLM_API_KEY = process.env.CHAT_LLM_API_KEY;
-const CHAT_LLM_BASE_URL = process.env.CHAT_LLM_BASE_URL;
-const JUDGE_MODEL = "doubao-seed-2.0-pro";
+const RAG_CONFIG = getRagConfig();
+const JUDGE_MODEL = RAG_CONFIG.judgeModel;
 const FORCE = process.argv.includes("--force");
 const ONLY_SOURCE = process.argv
   .find((a) => a.startsWith("--source="))
   ?.split("=")[1];
 
-if (!CHAT_LLM_API_KEY || !CHAT_LLM_BASE_URL) {
+if (!RAG_CONFIG.apiKey || !RAG_CONFIG.baseUrl) {
   throw new Error("CHAT_LLM_API_KEY / CHAT_LLM_BASE_URL missing in .env.local");
 }
 
@@ -244,25 +245,12 @@ async function llmJudge(filepath, parent_dir, content) {
     : head;
   const prompt = buildJudgePrompt(filepath, parent_dir, preview);
 
-  const res = await fetch(`${CHAT_LLM_BASE_URL}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${CHAT_LLM_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: JUDGE_MODEL,
-      temperature: 0.1, // 判断要稳定
-      max_tokens: 300,
-      messages: [{ role: "user", content: prompt }],
-    }),
+  let text = await qwenCompletion(RAG_CONFIG, {
+    model: JUDGE_MODEL,
+    prompt,
+    maxTokens: 300,
+    json: true,
   });
-  if (!res.ok) {
-    const err = await res.text().catch(() => "");
-    throw new Error(`judge ${res.status}: ${err.slice(0, 200)}`);
-  }
-  const json = await res.json();
-  let text = json.choices?.[0]?.message?.content?.trim() || "";
   text = text
     .replace(/^```(?:json)?\n?/i, "")
     .replace(/\n?```$/, "")
@@ -450,7 +438,7 @@ async function main() {
     return;
   }
 
-  // 3. judge (10 concurrent — 火山方舟可承受)
+  // 3. judge (10 concurrent)
   console.log("=== judging (concurrency=10) ===");
   const fresh = await runConcurrent(toJudge, 10, async (f) => {
     let content;

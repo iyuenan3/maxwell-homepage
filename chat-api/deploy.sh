@@ -58,11 +58,13 @@ echo "=== Syncing $SCRIPT_DIR/ → $SSH_HOST:$REMOTE_DIR ==="
 rsync -avz \
   --exclude '.git' \
   --exclude '.env.example' \
+  --exclude '.env.local' \
   --exclude 'node_modules' \
   --exclude '.next/cache' \
   --exclude '.next/dev' \
   --exclude 'data/sanitize-cache.json' \
   --exclude 'data/sanitize-cache.json.tmp' \
+  --exclude 'data/config-backups' \
   --exclude '.DS_Store' \
   "$SCRIPT_DIR/" "$SSH_HOST:$REMOTE_DIR/"
 

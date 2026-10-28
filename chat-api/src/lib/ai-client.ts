@@ -1,6 +1,6 @@
 /**
  * OpenAI-compatible AI client.
- * Works with Volcano Ark, OpenAI, and any OpenAI-compatible API.
+ * Direct Qwen requests through its OpenAI-compatible API.
  */
 export interface AIClientConfig {
   baseUrl: string;
@@ -26,6 +26,7 @@ export function createAIClient(config: AIClientConfig) {
         model: config.model,
         temperature: options.temperature ?? 0.7,
         max_tokens: options.maxTokens ?? 2048,
+        enable_thinking: false,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userMessage },

@@ -32,6 +32,8 @@ export function createEmbedClient(config: EmbedClientConfig) {
           model: config.model,
           input: inputs,
         }),
+        // Query embedding can fail while chat remains available on Qwen.
+        signal: AbortSignal.timeout(5_000),
       });
 
       if (!res.ok) {
