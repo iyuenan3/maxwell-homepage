@@ -1,0 +1,55 @@
+{
+	admin off
+	auto_https off
+	persist_config off
+}
+
+:8080 {
+	root * /srv
+	@compress {
+		not path /api/chat /api/chat/*
+	}
+	encode @compress gzip
+	header Strict-Transport-Security "max-age=63072000"
+	redir /v1 /v1/ 301
+
+	redir /p/ai-knowleage.html /p/ai-knowledge.html 301
+	redir /p/openclaw-customize-skills.html /p/openclaw.html 301
+	redir /p/ifind-agent.html /p/claude-financial-research.html 301
+	redir /p/xhs-5agent-pipeline.html /p/xhs-agency.html 301
+
+	@backend path /api/chat /api/chat/* /admin/* /_next/*
+	handle @backend {
+		@next path /_next/*
+		header @next Cache-Control "public, max-age=31536000, immutable"
+		reverse_proxy maxwellii-chat-api:3002 {
+			trusted_proxies private_ranges
+			flush_interval -1
+			transport http {
+				response_header_timeout 300s
+			}
+		}
+	}
+
+	# 详情页不存在时保持 404，不进入主页的 SPA fallback。
+	@details path /p/*
+	handle @details {
+		file_server
+	}
+
+	@assets path_regexp assets \.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot)$
+	handle @assets {
+		@code path_regexp code \.(css|js)$
+		header @code Cache-Control "public, max-age=0, must-revalidate"
+		@media path_regexp media \.(jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot)$
+		header @media Cache-Control "public, max-age=2592000, immutable"
+		file_server
+	}
+
+	handle {
+		try_files {path} {path}/ /index.html
+		file_server
+	}
+}
+
+import public-ip.Caddyfile

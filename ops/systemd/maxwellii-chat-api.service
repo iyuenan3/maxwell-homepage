@@ -1,0 +1,34 @@
+# Historical systemd candidate only. Beijing uses ops/compose.yaml instead.
+[Unit]
+Description=Maxwell homepage chat API
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=maxwellii
+Group=maxwellii
+WorkingDirectory=/srv/maxwell-homepage/current/chat-api
+Environment=NODE_ENV=production
+Environment=PORT=3002
+Environment=HOME=/var/lib/maxwellii
+Environment=NEXT_TELEMETRY_DISABLED=1
+Environment=TZ=Asia/Shanghai
+ExecStart=/usr/bin/node /srv/maxwell-homepage/current/chat-api/node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3002
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+KillMode=control-group
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+CPUQuota=200%
+MemoryHigh=768M
+MemoryMax=1G
+
+[Install]
+WantedBy=multi-user.target

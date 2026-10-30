@@ -1,0 +1,20 @@
+# Independent public HTTP entry. Keep :8080 private for TLS preview and admin.
+:8081 {
+	@private path /admin* /_next* /.env* /.git*
+	route {
+		respond @private 404
+		reverse_proxy 127.0.0.1:8080 {
+			# Never accept a client-supplied address on the direct-IP entry.
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Real-IP {remote_host}
+			header_up -Forwarded
+			header_up -CF-Connecting-IP
+			header_down -Strict-Transport-Security
+			flush_interval -1
+			transport http {
+				response_header_timeout 300s
+				compression off
+			}
+		}
+	}
+}

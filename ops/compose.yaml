@@ -1,0 +1,94 @@
+name: maxwellii-homepage
+
+services:
+  chat-api:
+    image: node:24.14.0-bookworm-slim@sha256:d8e448a56fc63242f70026718378bd4b00f8c82e78d20eefb199224a4d8e33d8
+    container_name: maxwellii-chat-api
+    user: "10001:10001"
+    init: true
+    restart: unless-stopped
+    working_dir: /srv/maxwell-homepage/current/chat-api
+    command: [node, node_modules/next/dist/bin/next, start, --hostname, 0.0.0.0, --port, "3002"]
+    environment:
+      NODE_ENV: production
+      HOME: /var/lib/maxwellii
+      TZ: Asia/Shanghai
+      NEXT_TELEMETRY_DISABLED: "1"
+      NODE_OPTIONS: --max-old-space-size=512
+    volumes:
+      - /srv/maxwell-homepage:/srv/maxwell-homepage
+      - /var/lib/maxwellii:/var/lib/maxwellii
+    ports:
+      - "127.0.0.1:3002:3002"
+    networks: [edge]
+    cpus: 1.0
+    mem_limit: 768m
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: ["/tmp:rw,nosuid,nodev,noexec,size=64m"]
+    stop_grace_period: 30s
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3002/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  site:
+    image: caddy:2.11.3-alpine@sha256:86deaf5e3d3408a6ccec08fbb79989783dd26e206ae10bcf78a801dc8c9ab794
+    container_name: maxwellii-site
+    user: "10001:10001"
+    restart: unless-stopped
+    command: [caddy, run, --config, /etc/caddy/homepage/site.Caddyfile, --adapter, caddyfile]
+    volumes:
+      - /srv/maxwell-homepage/current/site:/srv:ro
+      - /srv/maxwell-homepage/current/ops/caddy:/etc/caddy/homepage:ro
+    ports:
+      - "127.0.0.1:3080:8080"
+      # Independent public HTTP entry; management routes are denied on :8081.
+      - "0.0.0.0:18080:8081"
+    networks: [edge]
+    cpus: 0.25
+    mem_limit: 128m
+    read_only: true
+    cap_drop: [ALL]
+    # Official Caddy binary has this file capability; retain its bounding bit.
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,noexec,size=16m
+      - /data:rw,nosuid,nodev,noexec,size=16m,mode=1777
+      - /config:rw,nosuid,nodev,noexec,size=16m,mode=1777
+    healthcheck:
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:8080/]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  preview:
+    profiles: [preview]
+    image: caddy:2.11.3-alpine@sha256:86deaf5e3d3408a6ccec08fbb79989783dd26e206ae10bcf78a801dc8c9ab794
+    container_name: maxwellii-preview
+    restart: unless-stopped
+    command: [caddy, run, --config, /etc/caddy/homepage/preview.Caddyfile, --adapter, caddyfile]
+    volumes:
+      - /srv/maxwell-homepage/current/ops/caddy:/etc/caddy/homepage:ro
+      - /home/admin/edge/caddy_data/maxwellii-origin:/data/maxwellii-origin:ro
+    ports:
+      - "127.0.0.1:3443:443"
+    networks: [edge]
+    cpus: 0.25
+    mem_limit: 128m
+    read_only: true
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,noexec,size=16m
+      - /data:rw,nosuid,nodev,noexec,size=16m,mode=1777
+      - /config:rw,nosuid,nodev,noexec,size=16m,mode=1777
+
+networks:
+  edge:
+    external: true

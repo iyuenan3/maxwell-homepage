@@ -1,0 +1,10 @@
+[Unit]
+Description=Expire Maxwell homepage admin token at 07:00 Shanghai time
+
+[Timer]
+OnCalendar=*-*-* 07:00:00 Asia/Shanghai
+Persistent=true
+Unit=maxwellii-admin-token-reset.service
+
+[Install]
+WantedBy=timers.target

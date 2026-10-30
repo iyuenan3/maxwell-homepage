@@ -1,0 +1,10 @@
+[Unit]
+Description=Expire Maxwell homepage admin token in Docker
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker compose -f /srv/maxwell-homepage/current/ops/compose.yaml exec -T chat-api node /srv/maxwell-homepage/current/ops/reset-admin-token.mjs
+ExecStartPost=/usr/bin/docker compose -f /srv/maxwell-homepage/current/ops/compose.yaml restart chat-api
+UMask=0077

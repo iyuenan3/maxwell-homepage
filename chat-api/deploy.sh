@@ -2,19 +2,47 @@
 # Deploy maxwellii-chat-api (LLM chat backend for maxwellii.com)
 # Usage: bash chat-api/deploy.sh
 #
-# Prereq on server (one-time):
-#   - Node 20+ + pm2 安装好
-#   - vi /home/admin/maxwellii-chat-api/.env.local 写入 CHAT_LLM_API_KEY / CHAT_LLM_BASE_URL / CHAT_LLM_MODEL
-#   - nginx 加 location /api/chat → proxy_pass http://127.0.0.1:3002 + proxy_buffering off
+# 默认目标保留旧机 PM2。北京候选环境显式指定 PROCESS_MANAGER=docker。
+# 新机首次配置与迁移阻断状态见 AIREADME/DEPLOYMENT.md。
+# .env.local 始终由服务器保管，不随代码发布。
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 [ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"
 
-SSH_HOST="${SSH_HOST:-alicloud-sg}"
-REMOTE_DIR="${REMOTE_DIR:-/home/admin/maxwellii-chat-api}"
+PROCESS_MANAGER="${PROCESS_MANAGER:-pm2}"
+case "$PROCESS_MANAGER" in
+  docker)
+    SSH_HOST="${SSH_HOST:-alicloud-bj}"
+    REMOTE_DIR="${REMOTE_DIR:-/srv/maxwell-homepage/current/chat-api}"
+    INDEX_DIR="/srv/maxwell-homepage/shared/data"
+    RSYNC_PRIVILEGE=(--rsync-path "sudo -n rsync")
+    ;;
+  pm2)
+    SSH_HOST="${SSH_HOST:-alicloud-sg}"
+    REMOTE_DIR="${REMOTE_DIR:-/home/admin/maxwellii-chat-api}"
+    INDEX_DIR="$REMOTE_DIR/data"
+    RSYNC_PRIVILEGE=(--rsync-path rsync)
+    ;;
+  *)
+    echo "Error: PROCESS_MANAGER must be docker or pm2. The former systemd candidate is retired."
+    exit 1
+    ;;
+esac
+SSH_OPTS=(-o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=10 -o ServerAliveCountMax=2 -o ControlMaster=no -o ControlPath=none)
+DEPLOY_ID=$(TZ=Asia/Shanghai date +%Y%m%d-%H%M%S)
+
+remote_run() {
+  local script
+  script=$(printf '%q' "$1")
+  if [ "$PROCESS_MANAGER" = docker ]; then
+    ssh "${SSH_OPTS[@]}" "$SSH_HOST" "sudo -n bash -c $script"
+  else
+    ssh "${SSH_OPTS[@]}" "$SSH_HOST" "bash -c $script"
+  fi
+}
 
 # Sanity check
 if [ ! -f "$SCRIPT_DIR/package.json" ]; then
@@ -55,31 +83,43 @@ if [ ! -d "$SCRIPT_DIR/.next" ]; then
 fi
 
 echo "=== Syncing $SCRIPT_DIR/ → $SSH_HOST:$REMOTE_DIR ==="
-rsync -avz \
+rsync -avz "${RSYNC_PRIVILEGE[@]}" -e "ssh ${SSH_OPTS[*]}" \
   --exclude '.git' \
-  --exclude '.env.example' \
-  --exclude '.env.local' \
+  --exclude '.env*' \
   --exclude 'node_modules' \
   --exclude '.next/cache' \
   --exclude '.next/dev' \
-  --exclude 'data/sanitize-cache.json' \
-  --exclude 'data/sanitize-cache.json.tmp' \
-  --exclude 'data/config-backups' \
+  --exclude 'data/' \
   --exclude '.DS_Store' \
   "$SCRIPT_DIR/" "$SSH_HOST:$REMOTE_DIR/"
 
-# 把 .env.local 的权限收紧到 600（只 admin 可读，含 KEY）
-ssh "$SSH_HOST" "chmod 600 $REMOTE_DIR/.env.local 2>/dev/null || true"
+# 仅分发索引文件，不把缓存、备份或其他本地资料带到生产。
+# 临时文件校验后原子替换，保留原索引，防止进程加载半个 JSON。
+INDEX_SHA=$(shasum -a 256 "$SCRIPT_DIR/data/embeddings.json" | cut -d ' ' -f 1)
+remote_run "set -e; mkdir -p '$INDEX_DIR'; chmod 600 '$REMOTE_DIR/.env.local'"
+rsync -vz "${RSYNC_PRIVILEGE[@]}" --chmod=u=rw,go= -e "ssh ${SSH_OPTS[*]}" \
+  "$SCRIPT_DIR/data/embeddings.json" "$SSH_HOST:$INDEX_DIR/embeddings.json.incoming.$DEPLOY_ID"
+remote_run "set -e; cd '$INDEX_DIR'; echo '$INDEX_SHA  embeddings.json.incoming.$DEPLOY_ID' | sha256sum -c -; if [ -f embeddings.json ]; then cp -p embeddings.json 'embeddings.json.bak.$DEPLOY_ID'; fi; mv 'embeddings.json.incoming.$DEPLOY_ID' embeddings.json; chmod 600 embeddings.json"
 
 echo "=== Installing prod deps on remote ==="
-ssh "$SSH_HOST" "cd $REMOTE_DIR && npm install --omit=dev"
-
-echo "=== Reloading pm2 ==="
-ssh "$SSH_HOST" "pm2 reload $REMOTE_DIR/ecosystem.config.cjs --update-env || pm2 start $REMOTE_DIR/ecosystem.config.cjs"
+if [ "$PROCESS_MANAGER" = docker ]; then
+  remote_run "set -e; chown -R maxwellii:maxwellii '$REMOTE_DIR'; chown maxwellii:maxwellii '$INDEX_DIR/embeddings.json'; docker compose -f /srv/maxwell-homepage/current/ops/compose.yaml run --rm --no-deps --entrypoint npm chat-api ci --omit=dev --no-audit --fund=false; docker compose -f /srv/maxwell-homepage/current/ops/compose.yaml up -d --no-deps --force-recreate chat-api"
+else
+  remote_run "cd '$REMOTE_DIR' && npm ci --omit=dev && (pm2 reload '$REMOTE_DIR/ecosystem.config.cjs' --update-env || pm2 start '$REMOTE_DIR/ecosystem.config.cjs')"
+fi
 
 echo "=== Status ==="
-ssh "$SSH_HOST" "pm2 list | grep maxwellii-chat-api || true"
+if [ "$PROCESS_MANAGER" = docker ]; then
+  remote_run "docker compose -f /srv/maxwell-homepage/current/ops/compose.yaml ps chat-api"
+else
+  ssh "${SSH_OPTS[@]}" "$SSH_HOST" "pm2 list | grep maxwellii-chat-api || true"
+fi
 
 echo
-echo "✓ Deploy complete: https://maxwellii.com/api/chat"
-echo "  log: ssh $SSH_HOST 'pm2 logs maxwellii-chat-api'"
+if [ "$PROCESS_MANAGER" = docker ]; then
+  echo "✓ Beijing candidate deployed. Public DNS is unchanged; see AIREADME/DEPLOYMENT.md for acceptance."
+  echo "  log: ssh $SSH_HOST 'sudo docker compose -f /srv/maxwell-homepage/current/ops/compose.yaml logs --tail 50 chat-api'"
+else
+  echo "✓ Legacy origin deployed. Domain availability is managed separately; see AIREADME/DEPLOYMENT.md."
+  echo "  log: ssh $SSH_HOST 'pm2 logs maxwellii-chat-api'"
+fi

@@ -1,0 +1,9 @@
+# Historical systemd candidate only. Beijing uses the -docker.service template.
+[Unit]
+Description=Expire Maxwell homepage admin token
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/node /srv/maxwell-homepage/current/ops/reset-admin-token.mjs
+ExecStartPost=/usr/bin/systemctl try-restart maxwellii-chat-api.service
+UMask=0077

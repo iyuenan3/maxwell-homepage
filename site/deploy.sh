@@ -7,7 +7,7 @@
 #     ├── index.html         ← V2 (主域 maxwellii.com/)
 #     ├── styles.css / chat.js / emotes.js / commands.js / token-hud.js
 #     ├── data/home-data.js  ← V1 + V2 共用真相源
-#     ├── p/                 ← 11 详情页（主页精选 9 项 + 历史归档 2 项）
+#     ├── p/                 ← 12 详情页（含 planned 与历史归档项）
 #     └── v1/                ← V1 主页 (/v1/)
 #         ├── index.html / styles.css / avatar.jpg
 
@@ -17,6 +17,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 [ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"
 
+# 北京候选已部署，公网仍有备案阻断，生产默认值保留旧机。
 SSH_HOST="${SSH_HOST:-alicloud-sg}"
 REMOTE_DIR="${REMOTE_DIR:-/home/admin/maxwellii-site}"
 
