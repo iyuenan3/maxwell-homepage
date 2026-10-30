@@ -6,16 +6,19 @@
 ## ① chat-api API
 
 ### 端点
-- `POST /api/chat` —— 主对话，SSE 流式。经 nginx 反代 `127.0.0.1:3002`（`proxy_buffering off` + `read_timeout 300s`）。线上 `https://maxwellii.com/api/chat`。
+- `POST /api/chat`：主对话，SSE 流式，不压缩、不缓冲。预期域名端点为 `https://maxwellii.com/api/chat`；当前域名按备案方案暂停解析，入口状态与反代实现见 DEPLOYMENT。
 - `OPTIONS /api/chat` —— CORS 预检，返回 204。
-- `GET /admin/logs?token=<ADMIN_TOKEN>` —— 私有日志查看页（Next.js 页面，nginx `^~ /admin/` + `^~ /_next/` 反代到 :3002）。
+- `GET /admin/logs?token=<ADMIN_TOKEN>` —— 私有日志查看页（Next.js 页面），相关 `/_next/` 资源同样转发后端。
+- 北京独立 IP 入口基址 `http://39.96.12.136:18080`：公开页面与同源 `POST /api/chat` 保持相同契约；`/admin*` 与 `/_next*` 在该入口统一返回 404，即使提供 token 也不转发管理请求。它不是 HTTPS 域名入口的替代。
 
 ### 鉴权
 - `/api/chat`：无鉴权（公开化身），靠限流 + prefilter 防滥用。
-- `/admin/logs`：query `token` 必须等于服务器 `.env.local` 的 `ADMIN_TOKEN`；每天北京时间 7:00 cron 清空 token（`clear-admin-token.sh`），续期跑 `/admin-url` 流程。
+- `/admin/logs`：query `token` 必须等于服务器 `.env.local` 的非空 `ADMIN_TOKEN`；每天北京时间 7:00 清空，旧生产使用 cron，北京候选使用 systemd timer。无效或缺失 token 显示 `401 unauthorized`，当前页面 HTTP 状态仍为 200，不返回日志数据；运行命令见 DEPLOYMENT。
 
 ### CORS 白名单
 `https://maxwellii.com` · `https://www.maxwellii.com` · `http://localhost:4567` · `http://localhost:8080` · `http://127.0.0.1:4567`（其余 origin 回落到第一个）。
+
+IP 站点前端使用相对 `/api/chat` 同源请求，不新增跨源调用许可，不能把 IP 页面可用误认为任意 IP origin 已加入 CORS 白名单。
 
 ### 请求体（POST /api/chat）
 ```json
@@ -47,16 +50,16 @@ per-IP 20/min（429）· per-IP 100/day（429）· global 5000/day（503）。
 ### 运行时参数（contract-relevant）
 模型 = env `CHAT_LLM_MODEL`（当前默认 `qwen3.7-plus`）· `enable_thinking:false` · `temperature 0.7` · `max_tokens 2000` · RAG `topK 12` / `perCategoryMax 4` / `perSourceMax 2`。上游为百炼直连的 OpenAI 兼容 `chat/completions`（`stream:true` + `stream_options.include_usage`）。向量查询最多等待 5 秒，失败继续使用空 context；SSE 事件和前端模型显示契约不变。
 
-## ② 站点 URL 路由（nginx）
+## ② 站点 URL 路由
 | 路径 | 内容 |
 |---|---|
 | `/` | V2 化身对话主页（主域，方案 C）|
 | `/v1/` | V1 简介模式主页 |
-| `/p/<slug>.html` | 11 个项目详情页（主页精选 9 个 + 历史归档 2 个，V1+V2 共享）|
+| `/p/<slug>.html` | 12 个项目详情页（含 planned 与历史归档项，V1+V2 共享）|
 | `/api/chat`、`/admin/`、`/_next/` | 反代 chat-api :3002 |
 | 4 条 301 redirect | 旧 URL 兜底：`ai-knowleage→ai-knowledge` / `openclaw-customize-skills→openclaw` / `ifind-agent→claude-financial-research` / `xhs-5agent-pipeline→xhs-agency` |
-| 删除项 `/p/*.html` | 已删详情页（ai-knowledge / worklog）经 `location ^~ /p/ { try_files $uri =404 }` 真 404，不 redirect（上面精确 redirect 优先级更高仍生效）|
-| 子域 | `naming.maxwellii.com`（取名 SaaS）/ `tale.maxwellii.com`（多人小说 H5）—— 独立产品，非本仓库 |
+| 删除项 `/p/*.html` | 已删详情页（ai-knowledge / worklog）真 404，不回落到首页（上面精确 redirect 优先级更高仍生效）|
+| 历史子域 | `naming.maxwellii.com` / `oracle.maxwellii.com` / `tale.maxwellii.com` 属于独立产品，用户已确认停用，本次 DNS 迁移不恢复 |
 
 ## ③ 详情页数据 frontmatter 契约（编辑详情页时遵守）
 `site/data/projects/<slug>.md` frontmatter 必备：

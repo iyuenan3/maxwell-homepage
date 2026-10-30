@@ -70,3 +70,25 @@
 - 现象: V1 按最新简历加入当前任职摘要后，第一次 `reindex:dry` 仍把对应 resume 与 home-data chunks 列入可索引集合；静态页面尚未部署，但若继续全量重建，化身上下文会获得这些内容。
 - 根因: `site/data/home-data.js` 既是 V1 / V2 静态展示数据，也是 `build-embeddings.mjs` 的 curated RAG 主源；原雇主词表没有覆盖新公开的实体，curated 源又豁免普通求职过滤。
 - 结论/避免: 履历更新不能只做站点构建。发布前先跑 RAG dry-run，确认 universal 雇主过滤明确丢弃 resume / home-data 命中；同步生产词表并重载 chat-api 后，再部署静态站和执行公网 0 token 回读。静态公开与化身披露是两条独立验收链。
+
+## TCP 端口和初次 TLS 验收通过，切域名后仍被上游 SNI 重置 · 2026-10-30
+- 现象: 新 ECS 的 80/443 TCP 可达，指定 IP 的严格 TLS 验收初次通过，静态页与真实 Qwen SSE 均正常。切换 Cloudflare 主域和 www 后，从独立公网链路均得到 525；随后外部携带 SNI 的源站直连也被 reset。已回退两条 A 记录，主域和 www 从本机及旧机回读均恢复 200。
+- 证据: 新机 loopback HTTPS 持续正常，证书与私钥公钥摘要匹配，nginx 无对应 TLS 错误。短时抓包确认外部 ClientHello 后出现 RST；相同 IP 不发送 SNI、但仍严格校验域名与 Origin CA 时可完成 TLS 1.3 握手。新机元数据为 cn-hangzhou，其他既有服务的 PID、启动时间、重启数与健康状态未变。
+- 根因边界: 已定位到依赖 SNI 的链路级重置，不是单纯端口未监听或证书不配对。备案或阿里云接入拦截是高优先级推测，与 [阿里云官方排障说明](https://help.aliyun.com/zh/icp-filing/basic-icp-service/support/access-for-the-record-the-faq/) 中 TLS reset 的现象一致，但未访问云控制台，未确认具体拦截规则和备案状态。
+- 结论/避免: 迁入中国内地 ECS 前先核对地域、域名备案与接入状态；TCP 探活和一次源站验证不能代替 CDN 实际回源验收。出现 525 先回退 DNS 保住生产，再由云账号持有人核查平台拦截。不要通过降级 Flexible、关闭证书验证或隐藏 SNI 宣称修复；新候选环境可保留，生产发布默认值在迁移完成前仍指向旧机。
+- 8443 补验（同日）: 用户要求换端口后，给同一虚拟主机临时新增 8443，保留相同域名、证书和严格验证。本机 loopback HTTPS 为 200，本机及旧服务器两条公网链路携带 maxwellii.com SNI 时均收到 connection reset；旧服务器不发送 SNI、仍严格校验 Origin CA 与 maxwellii.com 时可完成 TLS 1.3 握手。试验未通过源站验收，没有新增 Cloudflare 规则或修改 DNS；已恢复试验前 nginx 配置，保留前后备份。结果不支持“仅 443 端口受限”的解释，具体平台拦截原因仍需云账号持有人确认。
+
+## 公网 HTTP 明确返回备案拦截，改迁北京仍有相同边界 · 2026-10-30
+- 现象: 后续对杭州和北京发起携带主域 Host 的公网 HTTP 请求，均返回 `403`、`Server: Beaver` 和 `Non-compliance ICP Filing` 页面。北京的独立回环 HTTPS、静态页面和真实 Qwen SSE 均正常。
+- 根因边界: HTTP 已得到阿里云平台备案拦截的明确证据，不再只是根据 TLS reset 推测；但未登录 ECS 控制台，不能据此断言是未备案、接入未完成还是具体哪条平台规则，TLS reset 与同一策略的因果仍未获得平台日志确认。
+- 结论/避免: 北京也属于中国内地，换区域或端口不能替代备案与接入验收。用户决定改迁后可准备私有候选环境，但应保留旧生产和 DNS，等待公网域名严格验收通过。杭州已按授权离机备份后退役，原有服务不受影响；当前状态见 DEPLOYMENT。
+
+## 官方 Caddy 文件 capability 与容器 bounding set 不匹配导致启动 EPERM · 2026-10-30
+- 现象: Caddy 2.11.3 Alpine 镜像以非 root 用户、只读根文件系统和 `cap_drop: ALL` 启动，即使监听 8080，仍报 `exec /usr/bin/caddy: operation not permitted`。
+- 根因: 当前镜像的 Caddy 二进制带 `cap_net_bind_service=ep` 文件 capability；全部丢弃 capability 后，执行时要求的 permitted capability 不在 bounding set 中。最小容器复现实验确认，仅补回 `NET_BIND_SERVICE` 即可启动。
+- 结论/避免: 保留非 root、只读根文件系统和禁止提权，只加入必要 bounding capability，不用 privileged 或整体关闭安全限制。Compose 健康检查必须与实际页面、反代和 SSE 验收结合，不能把容器创建成功当作服务可用。
+
+## 空闲端口可本地监听，但安全组未放行时公网仍超时 · 2026-10-30
+- 现象: 北京主机 UFW inactive、INPUT ACCEPT，18080 和其他 8 个空闲候选端口的临时 HTTP 探针可在机内监听，本机与旧生产两条公网链路却全部超时。用户报告新增 TCP 18080 安全组规则后，两条公网链路均收到相同探针标记。
+- 根因边界: 此次前后对照支持云侧入站规则限制，而非应用未监听；未读取控制台规则明细，不把全部候选超时归因为同一具体规则，也不从一个成功端口外推其他端口可用。
+- 结论/避免: 先确认精确端口的监听，再从独立网络校验 HTTP 标记；必要时请云账号持有人只新增目标入站规则，不改已有规则或主机全局策略。配置上线后仍需验证公开页面、SSE、管理隔离及既有服务身份，而不只是 TCP 通断。

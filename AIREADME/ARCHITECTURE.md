@@ -8,7 +8,7 @@
 ### 1. `site/` —— maxwellii.com 静态主页（纯前端，零运行时依赖）
 - **V1 简介模式**：`data/home-data.js`（whoami / git log / ls projects / pets / stack / history 真相源）+ `templates/home.html` → `build.js buildHome()` → `public/index.html`。
 - **V2 化身对话模式**：`v2-redesign/`（index.html + styles.css + chat.js + commands.js + token-hud.js + emotes.js + reveal.js），含终端壳 + chat 框 + Token HUD。
-- **详情页**：`data/projects/<slug>.md`（11 个，主页精选 9 个 + 历史归档 2 个）+ `templates/_base.html` → `build.js buildOne()` → `public/p/<slug>.html`。
+- **详情页**：`data/projects/<slug>.md`（12 个，含 planned 与历史归档项）+ `templates/_base.html` → `build.js buildOne()` → `public/p/<slug>.html`。
 - **构建器 `build.js`**：纯 Node 零依赖。自实现 frontmatter/YAML 子集解析 + markdown→HTML（段落/列表/行内/H3-H6/表格/fenced 代码块）+ `parseSections`（按 H2 切，支持中文 H2）。11 个组件渲染器：`readme` / `links` / `git_log` / `decisions` / `stats` / `notes` / `next`(废弃保留) / `stack` / `ps` / `history` / `timeline`(预留)。详情页板块覆盖约定见 CONVENTIONS。
 - **可选读 worklog wiki**：`git_log`/`decisions`/`stats`/`ps` 组件按 `wiki_slug` 从 worklog 抽 fact（数据契约见 RELATIONS / SPEC）。
 
@@ -28,8 +28,8 @@ maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, 含 hdu 等经过筛选
    ↓ build-embeddings.mjs (chunk 1200-1800 + sanitize KEEP 白名单 + 4 层求职过滤 + embed)
   chat-api/data/embeddings.json   (2048 dim, gitignore, 数量与体积随索引重建变化)
    ↓ deploy.sh rsync
-  服务器 /home/admin/maxwellii-chat-api/data/embeddings.json
-   ↓ PM2 加载 → route.ts 运行时检索
+  旧生产机 data/embeddings.json / 新候选机 shared/data/embeddings.json（应用 data 软链指向）
+   ↓ 分别由旧机 PM2 / 北京 Docker 专用用户进程加载 → route.ts 运行时检索
 ```
 
 **P0 隐私分层防御**（机制；具体关键词/黑名单按红线不列）：
@@ -44,6 +44,10 @@ maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, 含 hdu 等经过筛选
 ### 简历产物（2026-05-26 已迁出本仓库）
 简历正文 + 多版本归档迁至 worklog `wiki/job/me/resume/`（worklog 成单一真相源）。chat-api 的 `loadResume()`（`build-embeddings.mjs`）改读 worklog 那份入 RAG（见 RELATIONS）；本仓库不再存 `MaxwellLi-*` / `versions/`。命名 / 编辑约定随简历归 worklog。
 
+### 北京候选运行结构
+
+两个业务组件不变，运行于独立 Compose 项目：`maxwellii-site`（静态文件与 SSE 反代）→ `maxwellii-chat-api`（Next.js）。二者复用已有外部网络 `edge`，后端和管理入口只发布回环端口。站点容器另设独立公网 HTTP 监听，拒绝管理路径并重写客户端地址头后，转发到同容器私有站点入口，不经过共享网关。可选 `maxwellii-preview` 加载未来域名路由与真实证书，提供独立回环 HTTPS 验收，不承载生产流量。共享 `edge-caddy` 的配置和进程尚未改动，域名接入因备案阻断待验收。权威 DNS 已迁入阿里云，主域与 `www` 的北京 A 记录保持暂停；无代理直连上线须另配公有可信证书，现有 Origin CA 预览不能替代该验收。路径、资源限额与发布方式见 DEPLOYMENT，共享底座属主见 RELATIONS。
+
 ## 关键技术选型（结论 + 链 DECISIONS）
 - **部署方案 C**：V2 占主域 / V1 退 `/v1/` / `/p/` 共享 → ADR-001。
 - **RAG 独立 Obsidian Vault**（仓库外，不入 git）→ ADR-002。
@@ -53,6 +57,9 @@ maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, 含 hdu 等经过筛选
 - **build.js 纯 Node 零依赖**（详情页无 npm 包）→ ADR-006。
 - **chat / judge / sanitize 默认 qwen3.7-plus** → ADR-019（取代 ADR-015 的当前 chat 模型结论）。
 - **CSP `script-src 'self'` 无 inline script** → ADR-008。
+- **北京以专用用户 + Docker 隔离部署，独立回环验收，旧源站保留** → ADR-021（取代 ADR-020 的杭州部署方式）；公网切换状态见 DEPLOYMENT。
+- **北京 IP 直连仅开放独立 HTTP 端口，管理入口继续隔离** → ADR-022；该入口独立于域名和共享网关。
+- **阿里云备案与 DNS 直连方案，备案期间域名离线** → ADR-023；权威 DNS 已迁移，预置记录暂停，备案与可信 HTTPS 尚未完成。
 
 ## 禁改项 / Forbidden Refactors
 - **CSP 兼容硬约束**：禁止写 inline `<script>`。初始化脚本提取到外部 .js（`reveal.js` / `detail-init.js`）。`detail-init.js` 被 V1 主页 + 详情页（`../`）共用，**根目录 + `/v1/` 两处都必须部署到位**，任一 404 → 该路径页面整页空白（deploy.sh Stage 4+5 已串好）。
@@ -60,5 +67,5 @@ maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, 含 hdu 等经过筛选
 - **前端不 hardcode 后端参数**：模型名由 SSE `meta.model` 动态填，不写死。
 - **system-prompt 防御段不删**：防伪造历史 / 防 injection / 求职过滤 / 雇主机密过滤 / 骑行数据回避 / 禁止伪造归属 hard rule，改 prompt 不能删这些。
 - **4 层求职过滤的关键词列表 4 处必须同步**（route.ts / system-prompt.ts / scan-sources.mjs / build-embeddings.mjs）。
-- **nginx.conf 是唯一权威**：所有 location 块必须完整保存在仓库（曾因整 server 块覆盖丢掉 `/api/chat` 导致 405，见 MEMORY）。
+- **反代配置必须完整入库**：旧机使用 `site/nginx.conf`，北京使用 `ops/caddy/`；所有静态路由、API / admin / Next 资源反代和 SSE 不缓冲规则必须保留，不能整块覆盖共享网关或遗漏 `/api/chat`（历史 405 事故见 MEMORY）。
 - **sanitize KEEP 白名单**（本人 7 写法 + 9 宠物名 + 公开公司）绝不脱敏。

@@ -1,5 +1,5 @@
 # RELATIONS — maxwell-homepage
-<!-- 生态连接。出向用相对路径 ../<proj>/AIREADME/。被 ≥2 项目依赖的共享底座 → 抽独立节点，这里只指向。 -->
+<!-- 生态连接。出向用相对路径 ../<proj>/AIREADME/。共享底座指向属主项目根 AIREADME，不另建节点。 -->
 
 ## 出向依赖（我用了谁）
 
@@ -8,6 +8,8 @@
 | **阿里云百炼 Qwen**（文本上游，直连）| 在线对话 + RAG 审稿和脱敏，默认 `qwen3.7-plus` | 百炼控制台；配置与用途约束见 DEPLOYMENT |
 | **火山方舟 Ark**（仅保留 embedding）| `doubao-embedding-vision`，2048 维，原索引保留；账号失效时无法向量检索 | 火山 console；后续迁移另行安排 |
 | **worklog**（wiki 数据 + 简历源） | ① `build.js` 读 `wiki/projects/<wiki_slug>.md` 抽详情页 fact ② chat-api `loadResume()` 读 `wiki/job/me/resume/MaxwellLi-AIPMorFDE.md` 入 RAG | `../worklog/AIREADME/SPEC.md` |
+| **北京共享 edge 基础设施** | 候选容器复用既有 Docker 网络，未来公网接入复用 Caddy；当前未改共享网关 | `../newapi-proxy/AIREADME/DEPLOYMENT.md` |
+| **阿里云域名与 DNS** | 权威 DNS 已迁移；主域与 `www` 的北京 A 记录预置但暂停，备案后再验收 HTTPS 直连 | 阿里云域名、云解析 DNS 与 ICP 备案控制台；当前状态见 DEPLOYMENT |
 
 ### 模型供应商（2026-10-28 起分离文本与向量）
 - 文本生成调用 `${CHAT_LLM_BASE_URL}/chat/completions`，直连百炼；在线与离线模型分别配置，当前均为 `qwen3.7-plus`，HTTP 请求使用 `enable_thinking:false`。
@@ -28,6 +30,6 @@
 
 ## 共享底座 / 复用资产
 - **chat-api 不是共享底座** —— 仅被 maxwellii.com 站点消费（单一消费方 < 2），且是本仓库专属子模块 → **是组件不是独立 AIREADME 节点**（架构见 ARCHITECTURE）。
-- **（历史）newapi-proxy**：chat-api 曾使用该中转服务，当前直连 Qwen，本项目不再依赖或维护其接入支持。历史节点为 `../newapi-proxy/AIREADME/`，本次不修改该项目或其运行服务。
-- **SSL 证书 `*.maxwellii.com`** 与子站 naming.maxwellii.com / tale.maxwellii.com 共用 SNI（部署细节见 DEPLOYMENT）。
+- **newapi-proxy 的模型中转为历史依赖**：chat-api 当前直连 Qwen，不再依赖或维护 new-api 的模型接入。北京复用的是该项目维护的 `edge` 网络与未来 HTTP 网关，属于基础设施依赖，不是重新引入模型中转；共享配置真相源为 `../newapi-proxy/AIREADME/DEPLOYMENT.md`，本轮不修改该仓库或其已有服务。
+- **历史共享 Origin CA 证书**：旧机主页与 `naming`、`oracle`、`tale` 虚拟主机引用同一证书，现有证书和配置不撤销。用户已确认三个子域停用，不恢复解析；主页无代理直连上线需另配公有可信证书（部署细节见 DEPLOYMENT）。
 - **求职活动归 worklog**：面试 / 求职沟通文案 / 谈薪 / 公司情报 等全在 worklog（私密），本仓库不维护其正文；本项目仅维护"文案产品规则"（字数算法 / 平台机制 / 排序原则）—— 边界判断「会随求职阶段变 → worklog；产品规则不变 → homepage」见 CONVENTIONS。
