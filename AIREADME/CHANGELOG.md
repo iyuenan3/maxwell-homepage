@@ -3,6 +3,17 @@
 
 > 迁自仓库根 `CHANGELOG.md`（Keep a Changelog 风格）+ 补齐 v2.3 / v2.4。理由链 DECISIONS，运行时踩坑见 MEMORY。
 
+## 2026-10-31 · 新加坡旧规则与闲置图形组件清理
+
+- Removed: 按追加授权移除 UFW 中 TCP 80、443、22222 至 22226 的 IPv4/IPv6 放行规则，保留 SSH 22；卸载 Chromium 的 APT 过渡包与 Snap、无消费者的 GNOME/GTK/Mesa 图形组件及四个 Snap 基础镜像。
+- Cleanup: 删除核实归属的已卸载组件安装包缓存、Chromium/Mesa 与 CUPS 空临时目录，清除已不存在的 Mesa 挂载失败状态，不创建 Snap 快照；Ubuntu、snapd、系统网络服务与 SSH 保留。
+- Validation: Snap 任务全部完成，仅保留 snapd；系统 failed units 为 0，独立 SSH 登录成功且服务 PID、配置与授权密钥指纹不变。释放约 3.5 GiB，根分区使用率降至 9%；未修改云安全组、北京环境或 DNS。
+
+## 2026-10-31 · 新加坡打印服务补充清理
+
+- Removed: 用户单独授权移除无打印机、无任务的 CUPS Snap，断开 Chromium 打印接口，删除打印服务与数据，不创建快照；Chromium、SSH 和其他系统组件保留。
+- Validation: 卸载任务完成，CUPS 包及数据目录不存在，631 不再监听，新的 SSH 会话正常且配置与授权密钥指纹未变。未修改北京环境或 DNS；Chromium 后续升级可能重新引入打印依赖，运维边界见 DEPLOYMENT。
+
 ## 2026-10-31 · 新加坡旧源站退役
 
 - Removed: 按用户明确授权且不新增备份，清理新加坡全部业务、Redis 数据、共享 TLS 副本、业务日志与历史业务备份，移除 PM2、nginx、Redis、FRP 和业务自启动项；系统、SSH 与 ECS 实例保留。

@@ -11,7 +11,7 @@
 | RELATIONS | ✅ | 文本→Qwen、embedding 暂留 Ark；build→worklog；北京 edge 指向属主；DNS→阿里云 |
 | SPEC | ✅ | chat-api HTTP/SSE 契约 + 站点 URL 路由 + 详情页数据 frontmatter 契约 |
 | ARCHITECTURE | ✅ | 2 组件（site / chat-api）+ hdu RAG 源 + 分层隐私防御 + 禁改项 |
-| DEPLOYMENT | ✅ | 默认发布北京；新加坡业务已退役且无新备份，域名备案期间暂停 |
+| DEPLOYMENT | ✅ | 默认发布北京；新加坡业务与闲置组件已清理，UFW 仅显式放行 SSH；域名备案期间暂停 |
 | PRD | ✅ | 个人品牌 + 可对话化身；求职=隐含价值主张、具体材料明确排除 |
 | ROADMAP | ✅ | Now=Qwen 文本迁移 + 公开画像与隐私；Next=Embedding 独立迁移与通用 API 凭证 |
 | CONVENTIONS | ✅ | kebab-case slug / 双名 frontmatter / 敏感词只走 env / RAG 本地产物不入库 / CSP 无 inline |
@@ -54,3 +54,7 @@
 按用户要求，将静态站与后端默认发布目标改为北京，旧机保留显式发布入口。配置变更阶段未备份、清理、实际部署或切换 DNS；域名仍待备案与可信 HTTPS 验收。实现提交为 `1a2af91`，同步锚点覆盖至该提交；Shell 语法与 10 项离线配置分支检查通过，检查未触发网络或部署动作。
 
 同日旧机退役：用户进一步明确授权无新备份删除新加坡全部业务与数据，已完成并现场读回。旧 PM2/nginx 命令仅作历史参考，不能再切 DNS 回旧机；系统、SSH 和实例保留。北京容器、索引及公开入口未受影响，DNS 仍暂停，未进行新的模型问答验收。清理范围与恢复边界见 DEPLOYMENT。
+
+同日打印服务补充清理：用户单独授权删除不需要的 CUPS，已核对无打印机和打印任务后卸载，631 监听消失，该阶段仍保留 SSH 与 Chromium。随后追加授权的收尾结果见下文。
+
+同日闲置组件与旧规则收尾：已撤掉旧业务端口的 UFW IPv4/IPv6 放行规则，卸载 Chromium、无依赖的图形组件和 Snap 基础镜像，删除核实归属的安装包缓存与空目录。Snap 当前仅保留 snapd，UFW 仅显式放行 SSH 22，独立登录及系统状态核验通过；系统和 SSH 保留，北京环境与 DNS 未动，详细范围及恢复边界见 DEPLOYMENT。

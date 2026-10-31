@@ -108,9 +108,12 @@ cd chat-api && npm run scan:force  # 改了 judge prompt 必须全量重 judge�
 ### 新加坡业务退役（2026-10-31）
 
 - **授权与范围**：用户明确要求不做新备份，删除全部业务、Redis 数据、共享 TLS 副本和业务日志，保留系统、SSH 和 ECS 实例。已移除六条 PM2 进程记录、PM2 守护及自启动、唯一业务 cron、nginx 与 Redis 软件包、FRP 残留，以及核对过的业务目录、历史业务备份、配置和日志。Redis 清理前有 13 个键，持久文件随服务一起删除；没有可用于本次恢复的新备份，也未声称磁盘取证级擦除。
-- **保留边界**：不清空用户主目录，不删除 SSH 配置、授权密钥、系统日志、系统服务或通用运行时，不释放 ECS。保留原有 CUPS 系统服务，其 631 端口仍监听；不能将“业务清理完成”描述为“只剩 SSH 端口”。
+- **保留边界**：不清空用户主目录，不删除 SSH 配置、授权密钥或系统日志，不释放 ECS。初次业务清理保留系统服务和通用运行时；随后用户分别授权移除 CUPS、Chromium 及无依赖的图形组件和 Snap 基础镜像。Ubuntu 系统、snapd、SSH、DNS、DHCP 和时间同步保留。
 - **读回验收**：新的 SSH 会话可登录，sshd PID、配置及授权密钥指纹未变；业务服务为 not-found/inactive，精确删除目标均不存在，80/443/3002/6379 不再监听。北京容器 ID、启动时间、重启次数和索引 SHA256 不变，本机及旧机访问北京公网首页均为 200，V1 为 200，管理路径为 404。未重新部署北京、调用模型或修改 DNS。
 - **恢复边界**：新加坡本次业务数据及历史日志无法通过本次备份恢复。北京运行副本、代码仓库和此前杭州迁移备份仍保留，但不等于已保存全部新加坡业务数据。后续上线与回滚按北京配置和域名暂停方案执行，不恢复三个已停用子域。
+- **CUPS 补充清理**：同日确认 CUPS Snap 未配置打印机、无打印任务，连接方只有 Chromium 的打印接口。按用户授权断开该接口，停用服务后执行 `snap remove --purge cups`，移除全部 CUPS 版本及数据，不创建快照；该阶段仍保留 Chromium 和其他 Snap。独立 SSH 会话读回卸载任务完成、包与数据目录不存在、631 无监听，非回环 TCP 监听仅剩 SSH 22。当时 Chromium 仍声明 `default-provider: cups`，存在重新安装打印依赖的可能，见 [Snap 官方接口说明](https://snapcraft.io/docs/reference/interfaces/cups-interface/)；随后 Chromium 已按追加授权卸载，见下项，不将卸载等同于永久禁止安装。
+- **闲置组件与旧规则收尾**：用户追加授权撤掉旧端口规则、卸载 Chromium 和无用图形依赖、删除 CUPS 空目录。已删除 UFW 中 TCP 80、443、22222 至 22226 的 IPv4/IPv6 放行规则，仅保留 SSH 22 的显式放行，入站默认拒绝；本次未操作云安全组。已卸载 `chromium-browser` APT 过渡包、Chromium Snap、GNOME/GTK/Mesa 图形 Snap，以及核实无消费者的 `bare`、`core22`、`core24`、`core26` 基础镜像，保留 snapd 当前和上一版本。另逐项核对并删除已卸载组件的 18 个安装包缓存、Chromium/Mesa 空临时目录和 CUPS 空目录；未创建快照，软件可按需重装，已清除的数据不由本次备份恢复。
+- **收尾验收**：Snap 卸载任务全部完成，仅剩 snapd，无快照；清除已不存在的 Mesa 挂载失败记录后，系统 failed units 为 0。新建 SSH 会话正常，sshd PID、配置与授权密钥指纹未变；非回环 TCP 监听仍仅 22。此次收尾释放约 3.5 GiB，根分区使用率从 17% 降至 9%；未操作北京环境或 DNS。
 
 ## 运维约束
 - ⚠️ **SSH mux 挂死**：`~/.ssh/config` ControlMaster auto 的 mux socket 偶发挂死 → 所有走 alicloud-sg 的 ssh/rsync 无限挂起（deploy 卡 Stage 1）。修复一行 `ssh -O exit alicloud-sg`。预防：久未用先 `ssh alicloud-sg "date"` 烫连接。
