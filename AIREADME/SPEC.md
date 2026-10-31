@@ -13,7 +13,7 @@
 
 ### 鉴权
 - `/api/chat`：无鉴权（公开化身），靠限流 + prefilter 防滥用。
-- `/admin/logs`：query `token` 必须等于服务器 `.env.local` 的非空 `ADMIN_TOKEN`；每天北京时间 7:00 清空，旧生产使用 cron，北京候选使用 systemd timer。无效或缺失 token 显示 `401 unauthorized`，当前页面 HTTP 状态仍为 200，不返回日志数据；运行命令见 DEPLOYMENT。
+- `/admin/logs`：query `token` 必须等于服务器 `.env.local` 的非空 `ADMIN_TOKEN`；每天北京时间 7:00 清空，当前北京使用 systemd timer，旧机 cron 已退役。无效或缺失 token 显示 `401 unauthorized`，当前页面 HTTP 状态仍为 200，不返回日志数据；运行命令见 DEPLOYMENT。
 
 ### CORS 白名单
 `https://maxwellii.com` · `https://www.maxwellii.com` · `http://localhost:4567` · `http://localhost:8080` · `http://127.0.0.1:4567`（其余 origin 回落到第一个）。

@@ -3,6 +3,12 @@
 
 > 迁自仓库根 `CHANGELOG.md`（Keep a Changelog 风格）+ 补齐 v2.3 / v2.4。理由链 DECISIONS，运行时踩坑见 MEMORY。
 
+## 2026-10-31 · 新加坡旧源站退役
+
+- Removed: 按用户明确授权且不新增备份，清理新加坡全部业务、Redis 数据、共享 TLS 副本、业务日志与历史业务备份，移除 PM2、nginx、Redis、FRP 和业务自启动项；系统、SSH 与 ECS 实例保留。
+- Changed: 旧源站不再具备直接回滚能力，部署文档将旧 PM2/nginx 流程降为历史恢复参考，后续发布继续默认北京。
+- Validation: 业务路径和进程已移除，旧业务端口不再监听，新的 SSH 登录及配置指纹核对通过。北京容器身份与索引未变，独立公网首页 200、V1 200、管理路径 404；不改 DNS，不重新部署北京，不将这些检查等同于新的模型问答验收。
+
 ## 2026-10-31 · 默认发布目标切换北京
 
 - Changed: 静态站默认发布到 `alicloud-bj:/srv/maxwell-homepage/current/site`；后端默认 `PROCESS_MANAGER=docker`，使用北京 Compose 目标。旧机 PM2 发布保留为显式选项，静态站旧机发布须同时覆盖主机和目录。
