@@ -2,7 +2,7 @@
 # Deploy maxwellii-chat-api (LLM chat backend for maxwellii.com)
 # Usage: bash chat-api/deploy.sh
 #
-# 默认目标保留旧机 PM2。北京候选环境显式指定 PROCESS_MANAGER=docker。
+# 默认发布到北京 Docker。旧机发布显式指定 PROCESS_MANAGER=pm2。
 # 新机首次配置与迁移阻断状态见 AIREADME/DEPLOYMENT.md。
 # .env.local 始终由服务器保管，不随代码发布。
 
@@ -12,7 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 [ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"
 
-PROCESS_MANAGER="${PROCESS_MANAGER:-pm2}"
+PROCESS_MANAGER="${PROCESS_MANAGER:-docker}"
 case "$PROCESS_MANAGER" in
   docker)
     SSH_HOST="${SSH_HOST:-alicloud-bj}"
@@ -117,7 +117,7 @@ fi
 
 echo
 if [ "$PROCESS_MANAGER" = docker ]; then
-  echo "✓ Beijing candidate deployed. Public DNS is unchanged; see AIREADME/DEPLOYMENT.md for acceptance."
+  echo "✓ Beijing origin deployed. Domain availability is managed separately; see AIREADME/DEPLOYMENT.md."
   echo "  log: ssh $SSH_HOST 'sudo docker compose -f /srv/maxwell-homepage/current/ops/compose.yaml logs --tail 50 chat-api'"
 else
   echo "✓ Legacy origin deployed. Domain availability is managed separately; see AIREADME/DEPLOYMENT.md."

@@ -3,7 +3,7 @@
 # Usage: bash site/deploy.sh
 #
 # 部署后服务器结构：
-#   /home/admin/maxwellii-site/
+#   /srv/maxwell-homepage/current/site/
 #     ├── index.html         ← V2 (主域 maxwellii.com/)
 #     ├── styles.css / chat.js / emotes.js / commands.js / token-hud.js
 #     ├── data/home-data.js  ← V1 + V2 共用真相源
@@ -17,9 +17,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 [ -f "$SCRIPT_DIR/.env" ] && source "$SCRIPT_DIR/.env"
 
-# 北京候选已部署，公网仍有备案阻断，生产默认值保留旧机。
-SSH_HOST="${SSH_HOST:-alicloud-sg}"
-REMOTE_DIR="${REMOTE_DIR:-/home/admin/maxwellii-site}"
+# 默认发布到北京；域名备案与 HTTPS 上线独立验收。
+SSH_HOST="${SSH_HOST:-alicloud-bj}"
+REMOTE_DIR="${REMOTE_DIR:-/srv/maxwell-homepage/current/site}"
 
 LOCAL_PUBLIC="$SCRIPT_DIR/public"
 V2_DIR="$SCRIPT_DIR/v2-redesign"
@@ -98,6 +98,5 @@ echo "=== Remote v1/ listing ==="
 ssh "$SSH_HOST" "ls -la $REMOTE_DIR/v1/"
 echo
 echo "✓ Deploy complete:"
-echo "  V2 (主域): https://maxwellii.com/"
-echo "  V1:        https://maxwellii.com/v1/"
-echo "  详情页:     https://maxwellii.com/p/<slug>.html"
+echo "  Target: $SSH_HOST:$REMOTE_DIR"
+echo "  Domain availability is managed separately; see AIREADME/DEPLOYMENT.md."
