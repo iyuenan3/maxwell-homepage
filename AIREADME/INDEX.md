@@ -1,6 +1,6 @@
 # maxwell-homepage · AIREADME
 > 李越男 (Maxwell) 的个人主页：终端体静态站 maxwellii.com（V1 简介 / V2 LLM 化身对话）+ chat-api RAG 后端 ｜ 生命周期: active
-> last-synced: 219aace · 2026-10-30
+> last-synced: 1a2af91 · 2026-10-31
 
 <!-- 路由器：只指路，不放实质内容。INDEX 不列自己。符号：✅已填 / ⚑占位 / —N/A -->
 
@@ -11,13 +11,13 @@
 | RELATIONS | ✅ | 文本→Qwen、embedding 暂留 Ark；build→worklog；北京 edge 指向属主；DNS→阿里云 |
 | SPEC | ✅ | chat-api HTTP/SSE 契约 + 站点 URL 路由 + 详情页数据 frontmatter 契约 |
 | ARCHITECTURE | ✅ | 2 组件（site / chat-api）+ hdu RAG 源 + 分层隐私防御 + 禁改项 |
-| DEPLOYMENT | ✅ | 阿里云 DNS 已迁移，备案期间域名暂停；北京 IP:18080 保留，旧机保留 |
+| DEPLOYMENT | ✅ | 默认发布到北京 Docker 与静态站；备案期间域名暂停，旧机发布须显式指定 |
 | PRD | ✅ | 个人品牌 + 可对话化身；求职=隐含价值主张、具体材料明确排除 |
 | ROADMAP | ✅ | Now=Qwen 文本迁移 + 公开画像与隐私；Next=Embedding 独立迁移与通用 API 凭证 |
 | CONVENTIONS | ✅ | kebab-case slug / 双名 frontmatter / 敏感词只走 env / RAG 本地产物不入库 / CSP 无 inline |
 | DECISIONS | ✅ | 23 条 ADR，含阿里云备案与 DNS、独立 IP 隔离、北京候选及隐私边界 |
 | MEMORY | ✅ | 18 条事故，含安全组未放行、SNI 重置、备案拦截与 Caddy capability |
-| CHANGELOG | ✅ | 1.0 → 3.1.0，另含 Qwen、迁移回退、北京 IP 入口及阿里云 DNS 暂停方案 |
+| CHANGELOG | ✅ | 1.0 → 3.1.0，另含 Qwen、迁移回退、北京 IP/DNS 与默认发布目标切换 |
 
 ## 按任务读
 - 跨项目了解 → CORE + RELATIONS（+ SPEC 若要调 chat-api 或读详情页数据）
@@ -48,3 +48,7 @@
 同日 DNS 与备案方案更新：用户决定迁入阿里云 DNS，备案期间域名离线。权威 NS 已迁移并多层读回确认，主域与 `www` 的北京 A 记录保持暂停；三个停用子域不恢复，旧服务器和北京 IP 入口保留。同账号已有变更备案在审核，主页备案尚未提交，可信 HTTPS 尚未上线。此状态取代上文“当前仍由旧生产服务”的历史快照，详情见 DEPLOYMENT 与 ADR-023。
 
 本轮迁移实现提交为 `219aace`，同步锚点覆盖至该提交。提交前静态站隔离构建、后端 lint/build、Shell/Node 语法、token 清空合成样例、北京 Compose 与 Caddy 配置校验通过。本轮提交不触发重新部署、RAG 重建或启用域名解析。
+
+## 定向更新 · 2026-10-31
+
+按用户要求，将静态站与后端默认发布目标改为北京，旧机保留显式发布入口。配置变更阶段未备份、清理、实际部署或切换 DNS；域名仍待备案与可信 HTTPS 验收。实现提交为 `1a2af91`，同步锚点覆盖至该提交；Shell 语法与 10 项离线配置分支检查通过，检查未触发网络或部署动作。

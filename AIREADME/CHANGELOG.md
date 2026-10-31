@@ -3,6 +3,11 @@
 
 > 迁自仓库根 `CHANGELOG.md`（Keep a Changelog 风格）+ 补齐 v2.3 / v2.4。理由链 DECISIONS，运行时踩坑见 MEMORY。
 
+## 2026-10-31 · 默认发布目标切换北京
+
+- Changed: 静态站默认发布到 `alicloud-bj:/srv/maxwell-homepage/current/site`；后端默认 `PROCESS_MANAGER=docker`，使用北京 Compose 目标。旧机 PM2 发布保留为显式选项，静态站旧机发布须同时覆盖主机和目录。
+- Scope: 只修改本地脚本、示例与运维文档，不执行部署，不备份或清理旧机，不启用域名解析。原有索引校验、发布备份和原子替换机制不变。
+
 ## 2026-10-30 · 阿里云 DNS 迁移与备案期间暂停
 
 - Changed: 权威 DNS 迁至阿里云，主域与 `www` 预置北京 A 记录、TTL 600 秒并保持暂停，按用户决定在备案期间保持域名离线，见 ADR-023。

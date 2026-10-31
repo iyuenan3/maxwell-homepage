@@ -3,8 +3,8 @@
 
 ## 主机 + 环境
 - **当前域名状态**：2026-10-30 用户选择阿里云备案并将权威 DNS 迁入阿里云，备案期间主页域名离线。主域与 `www` 已预置北京 A 记录但保持暂停，尚未完成备案或北京域名 HTTPS 上线，见下方 DNS 与备案流程。
-- **旧生产 Origin 保留**：`alicloud-sg`（`admin@47.84.100.47`），PM2 + nginx。此前杭州切换出现 525 后回退旧机的 200 结果为历史验收，不代表当前域名在线；旧机服务、数据和证书保留，发布脚本默认目标未变。
-- **北京候选 Origin**：`alicloud-bj`（`admin@39.96.12.136:22`），Ubuntu 24.04，Docker + Compose。域名在杭州和北京的公网 HTTP 均返回明确的 `403 Non-compliance ICP Filing`；北京仍属于中国内地，更换地域或 8443 不能视为解决备案阻断。
+- **旧生产 Origin 保留**：`alicloud-sg`（`admin@47.84.100.47`），PM2 + nginx。此前杭州切换出现 525 后回退旧机的 200 结果为历史验收，不代表当前域名在线。2026-10-31 起不再作为默认发布目标；本次只修改本地发布配置，未备份、停止或清理旧机。
+- **默认发布 Origin（域名待验收）**：2026-10-31 起为 `alicloud-bj`（`admin@39.96.12.136:22`），Ubuntu 24.04，Docker + Compose。此前域名在杭州和北京的公网 HTTP 均返回明确的 `403 Non-compliance ICP Filing`；默认发布目标改变不代表备案阻断解决或域名 HTTPS 已上线。
 - **发布目录**：`/srv/maxwell-homepage/current -> releases/20261030-64a0093`。Compose 项目为 `maxwellii-homepage`，配置在 `current/ops/compose.yaml`。旧机静态站与后端分别仍位于 `/home/admin/maxwellii-site/`、`/home/admin/maxwellii-chat-api/`。
 - **北京 chat-api**：容器 `maxwellii-chat-api`，Node.js 24.14.0、Next.js 16.3.0，UID/GID 10001（专用用户 `maxwellii`），主机仅发布 `127.0.0.1:3002`，CPU 1 核、内存 768 MiB。镜像版本与摘要固定；只读容器根文件系统、禁止提权、丢弃全部 capability。应用及日志目录为可写挂载，日志位于 `/var/lib/maxwellii/chat-api-logs/`。
 - **北京静态站**：容器 `maxwellii-site`，Caddy 2.11.3，只读挂载 `current/site/`。私有入口保持 `127.0.0.1:3080 -> :8080`，另发布独立公网 `0.0.0.0:18080 -> :8081`。`ops/caddy/site.Caddyfile` 保留静态路由、缓存、HSTS 和即时 SSE 反代；SSE 路径不启用 gzip。CPU 0.25 核、内存 128 MiB，非 root 用户，保留官方 Caddy 二进制所需的 `NET_BIND_SERVICE` bounding capability，见 MEMORY。
@@ -19,19 +19,19 @@
 ### 静态站点（改 site/* 后）
 ```bash
 bash site/deploy.sh
-# 当前仍默认旧机，公网切换验收完成前不改生产默认值
+# 默认 alicloud-bj:/srv/maxwell-homepage/current/site（目录归 admin 所有）
 # build.js（V1 index + 12 详情页）→ 5 stage rsync：
 #   Stage1 V2→根 / Stage2 data/→data/ / Stage3 p/→p/(--delete) / Stage4 V1→v1/ / Stage5 detail-init.js→根
-# 北京候选发布必须显式指定两个参数（目标 site 目录归 admin 所有）：
-SSH_HOST=alicloud-bj REMOTE_DIR=/srv/maxwell-homepage/current/site bash site/deploy.sh
+# 仅显式发布旧机时，同时覆盖两个参数：
+# SSH_HOST=alicloud-sg REMOTE_DIR=/home/admin/maxwellii-site bash site/deploy.sh
 ```
 
 ### chat-api（改后端 / 重建索引后）
 ```bash
 (cd chat-api && npm run lint && npm run build && npm audit --omit=dev)
 bash chat-api/deploy.sh
-# 默认 PROCESS_MANAGER=pm2，目标仍为旧生产机
-# 北京候选发布：PROCESS_MANAGER=docker bash chat-api/deploy.sh（仓库根执行）
+# 默认 PROCESS_MANAGER=docker，目标为北京 current/chat-api（仓库根执行）
+# 仅显式发布旧机时：PROCESS_MANAGER=pm2 bash chat-api/deploy.sh
 # build 失败即中止；代码同步排除 .env*、data/、node_modules、构建缓存
 # 索引单文件上传 → SHA256 校验 → 备份旧索引 → 原子替换
 # docker 分支：容器内以专用用户 npm ci --omit=dev → 只重建 chat-api 容器
@@ -52,6 +52,8 @@ bash chat-api/deploy.sh
 北京每日 token 失效使用 `ops/systemd/maxwellii-admin-token-reset-docker.service`，安装时名称为 `maxwellii-admin-token-reset.service`，配合同目录 `.timer`，执行 `ops/reset-admin-token.mjs` 后仅重启本项目 chat-api。原 systemd 后端与非 Docker reset 模板保留用于历史恢复，不用于北京部署，`PROCESS_MANAGER=systemd` 已拒绝。
 
 日常发布不修改共享网关、unit 或其他服务。当前采用原目录同步与重启，可能短暂停顿，不承诺零停机或自动代码回滚。
+
+本地 `.env` 或环境变量中的发布参数仍可覆盖默认值。默认目标切换只改变后续发布去向，不会自动同步代码、重启容器、备份或清理旧机，也不启用 DNS；原有发布时索引校验、备份及原子替换机制保留。
 
 ### RAG 索引更新（知识源变动后，本地跑 ~30 min）
 ```bash
@@ -101,7 +103,7 @@ ssh alicloud-sg "set -e; sudo -n cp -p /etc/nginx/sites-available/maxwellii /etc
 ## 备份 / 升级 / 回滚
 - **embeddings.json** 不入 git。2026-10-30 迁移的旧产物约 104 MB、2932 个 2048 维片段，新旧 SHA256 一致；本次未重新审稿、脱敏或 embedding。后续部署在共享数据目录保留 `embeddings.json.bak.*`，再原子替换索引。
 - **manifest.json**（LLM judge 结果）不入 git，可 `npm run scan` 复现。
-- **历史杭州切换回退**：2026-10-30 曾将 Cloudflare 主域与 `www` 的代理 A 记录改回 `47.84.100.47`，确认两域恢复 200，旧机服务、数据、证书和 cron 均保留。随后用户改选阿里云备案与 DNS，当前域名已暂停解析，以本文件 DNS 与备案流程为准；默认发布仍面向旧机。
+- **历史杭州切换回退**：2026-10-30 曾将 Cloudflare 主域与 `www` 的代理 A 记录改回 `47.84.100.47`，确认两域恢复 200，旧机服务、数据、证书和 cron 均保留。随后用户改选阿里云备案与 DNS，当前域名已暂停解析，以本文件 DNS 与备案流程为准；2026-10-31 起默认发布面向北京，旧机发布须显式指定。
 - **杭州离机备份与退役**：用户授权的本机私有目录保存 `115-migration-backup.tar.gz` 和 `nginx-generated-state.tar.gz`，权限 600、目录 700，均完成传输前后 SHA256 与压缩完整性校验。包含应用、环境文件、索引、证书、项目日志、nginx 配置、unit 及补充运行状态，可用于恢复。清理仅针对本次新增的项目目录、证书副本、专用用户、unit、nginx 与 nginx-common；不卸载既有 Node.js，不清除共享系统 journal 或原有业务历史。备份具体本机路径不写入公开仓库。
 - **代码回滚**：本地 build 失败会阻断发布；同步开始后的失败不具备自动回滚，需要恢复已备份的制品或回退 DNS。索引恢复后必须重启本项目服务，避免进程继续持有旧内存索引。
 - **admin token**：北京由 `maxwellii-admin-token-reset.timer` 每天 `07:00 Asia/Shanghai` 清空，再重启本项目容器。续期只修改获准的北京 `shared/.env.local`，然后 `sudo docker compose -f /srv/maxwell-homepage/current/ops/compose.yaml restart chat-api`；旧生产仍保留原有 PM2/cron，不能混用两套运维命令。
