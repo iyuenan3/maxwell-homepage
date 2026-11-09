@@ -1,7 +1,8 @@
 /**
  * OpenAI-compatible AI client.
- * Direct Qwen requests through its OpenAI-compatible API.
+ * DeepSeek requests through the configured OpenAI-compatible API.
  */
+import { getTextRequestOptions } from "../../llm-config.mjs";
 export interface AIClientConfig {
   baseUrl: string;
   apiKey: string;
@@ -26,7 +27,7 @@ export function createAIClient(config: AIClientConfig) {
         model: config.model,
         temperature: options.temperature ?? 0.7,
         max_tokens: options.maxTokens ?? 2048,
-        enable_thinking: false,
+        ...getTextRequestOptions(),
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userMessage },

@@ -11,6 +11,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadLocalEnv } from "./load-env.mjs";
+import { requestEmbeddings, assertEmbeddingIndex, assertIndexMatchesConfig } from "../embedding-contract.mjs";
 import { getEmbedConfig } from "../llm-config.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -18,14 +20,7 @@ const __dirname = path.dirname(__filename);
 const CHAT_API_ROOT = path.resolve(__dirname, "..");
 const EMBED_PATH = path.join(CHAT_API_ROOT, "data/embeddings.json");
 
-function loadEnv() {
-  const envPath = path.join(CHAT_API_ROOT, ".env.local");
-  for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
-    const m = line.match(/^([A-Z_]+)\s*=\s*(.*)$/);
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
-  }
-}
-loadEnv();
+loadLocalEnv(CHAT_API_ROOT);
 
 const EMBED_CONFIG = getEmbedConfig();
 
@@ -55,6 +50,8 @@ if (!query) {
 process.stderr.write("loading embeddings.json... ");
 const t0 = Date.now();
 const idx = JSON.parse(fs.readFileSync(EMBED_PATH, "utf8"));
+assertEmbeddingIndex(idx);
+assertIndexMatchesConfig(idx, EMBED_CONFIG);
 process.stderr.write(`${idx.count} chunks (${idx.dim}d) in ${Date.now() - t0}ms\n`);
 
 // ── embed query ─────────────────────────────────────────
@@ -63,19 +60,7 @@ const t1 = Date.now();
 if (!EMBED_CONFIG.baseUrl || !EMBED_CONFIG.apiKey) {
   throw new Error("EMBED_LLM_BASE_URL / EMBED_LLM_API_KEY missing");
 }
-const res = await fetch(`${EMBED_CONFIG.baseUrl}/embeddings`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${EMBED_CONFIG.apiKey}`,
-  },
-  body: JSON.stringify({ model: EMBED_CONFIG.model, input: [query] }),
-});
-if (!res.ok) {
-  console.error(`\nembedding failed ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  process.exit(1);
-}
-const queryVec = (await res.json()).data[0].embedding;
+const [queryVec] = await requestEmbeddings(EMBED_CONFIG, [query]);
 process.stderr.write(`${Date.now() - t1}ms\n`);
 
 // ── cosine similarity ──────────────────────────────────

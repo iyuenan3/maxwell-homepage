@@ -6,6 +6,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createEmbedClient } from "./embed-client";
+import { assertEmbeddingIndex, assertIndexMatchesConfig } from "../../embedding-contract.mjs";
 
 export interface RagChunk {
   id: string;
@@ -63,7 +64,9 @@ export function loadIndex(): RagIndex {
       `embeddings.json not found at ${indexPath} — run \`npm run reindex\``,
     );
   }
-  _index = JSON.parse(fs.readFileSync(indexPath, "utf8")) as RagIndex;
+  const parsed = JSON.parse(fs.readFileSync(indexPath, "utf8")) as RagIndex;
+  assertEmbeddingIndex(parsed);
+  _index = parsed;
   console.log(
     `[rag] loaded ${_index.count} chunks (${_index.dim}d, builtAt ${_index.builtAt})`,
   );
@@ -103,6 +106,7 @@ export async function retrieve(
 ): Promise<RetrieveResult[]> {
   const { topK = 8, perCategoryMax = 3, perSourceMax = 2 } = opts;
   const idx = loadIndex();
+  assertIndexMatchesConfig(idx, embedClient);
 
   const [queryVec] = await embedClient.embed(query);
   if (!queryVec) return [];

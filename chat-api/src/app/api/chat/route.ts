@@ -3,7 +3,7 @@ import { buildSystemPrompt } from "./system-prompt";
 import { createEmbedClient } from "@/lib/embed-client";
 import { retrieve, formatContext } from "@/lib/rag";
 import { logChat } from "@/lib/chat-logger";
-import { getChatConfig, getEmbedConfig } from "../../../../llm-config.mjs";
+import { getChatConfig, getEmbedConfig, getTextRequestOptions } from "../../../../llm-config.mjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -331,7 +331,7 @@ export async function POST(req: Request) {
 
   const systemPrompt = buildSystemPrompt(contextBlock);
 
-  // Qwen direct stream call (OpenAI-compatible)
+  // OpenAI-compatible DeepSeek stream through the configured provider.
   const upstream = await fetch(`${apiBase}/chat/completions`, {
     method: "POST",
     headers: {
@@ -344,7 +344,7 @@ export async function POST(req: Request) {
       stream_options: { include_usage: true },  // 让最后一个 chunk 带 usage（OpenAI 兼容）
       temperature: 0.7,
       max_tokens: 2000,  // 体验优先：放宽（pro 版套餐 token 充足）
-      enable_thinking: false,
+      ...getTextRequestOptions(),
       messages: [
         { role: "system", content: systemPrompt },
         ...messages,

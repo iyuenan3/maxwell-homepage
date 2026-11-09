@@ -26,8 +26,11 @@ import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
 import os from "node:os";
-import { getEmbedConfig, getRagConfig } from "../llm-config.mjs";
-import { qwenCompletion } from "./qwen-completion.mjs";
+import { requestEmbeddings, assertEmbeddingIndex } from "../embedding-contract.mjs";
+import { loadLocalEnv } from "./load-env.mjs";
+import { hasJobInterviewContent, isJobInterviewSource, hasEmployerConfidential, isPrivateSource } from "./rag-privacy.mjs";
+import { getEmbedConfig, getRagConfig, getTextRequestOptions } from "../llm-config.mjs";
+import { textCompletion } from "./text-completion.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,72 +53,12 @@ const MANIFEST_PATH = path.join(__dirname, "manifest.json");
 const OUT_PATH = path.join(CHAT_API_ROOT, "data/embeddings.json");
 const SANITIZE_CACHE_PATH = path.join(CHAT_API_ROOT, "data/sanitize-cache.json");
 
-// chunk 参数：体验优先，每 chunk 更大语义更完整（doubao-embedding 上限 8K tokens）
+// chunk 参数：体验优先，每 chunk 更大语义更完整。
 const TARGET_CHUNK_CHARS = 2000; // 中文 ~1300 token / chunk
 const MAX_CHUNK_CHARS = 3000;
 const MIN_CHUNK_CHARS = 200;     // 提高最小 → 过滤碎片噪声
 const EMBED_BATCH_SIZE = 10;
 const SANITIZE_CONCURRENCY = 5;
-
-// chunk-level 求职/面试关键词过滤（P0 隐私边界第 4 层防御）
-// 防御漏网：wiki:projects/* / detail / home-data 等 hardcoded 源不走 LLM judge,
-// 可能含求职 mention（如 worklog.md changelog 提到面试活动 / chemai-demo 关联段提及）.
-// 匹配的 chunk 整段丢弃，不入索引。
-const JOB_INTERVIEW_CHUNK_FILTER = /面试|面经|面试官|面试题|面试录音|求职|找工作|应聘|招聘|投简历|投了几家|在面|跳槽|HR\s*面|CEO\s*面|终面|一面|二面|三面|谈薪|薪资期望|期望薪资|当前薪资|\bOffer\b|BOSS\s*直聘|招呼语|offerhelper/i;
-
-// source 整源黑名单：项目本身就是求职/面试辅助工具的，所有 chunks 一律 drop
-// 即使 chunk text 不含明显关键词（如功能模块设计表格），仍然完整排除
-const JOB_INTERVIEW_SOURCE_BLACKLIST = [
-  /^wiki:jobs-hunt$/,    // 求职神器（原 offerhelper，5/20 改名），含正在进行的公司面试进度，整源排除
-  /^wiki:offerhelper$/,  // 兼容旧名（防回退 / 历史 chunk）
-  // ⚠️ 教训：求职类项目改名会让此黑名单失效（offerhelper→jobs-hunt 即漏过一次）。
-  //    新增/改名求职相关 wiki 项目时务必同步此处。
-];
-
-function hasJobInterviewContent(text) {
-  return JOB_INTERVIEW_CHUNK_FILTER.test(text);
-}
-
-function isJobInterviewSource(source) {
-  return JOB_INTERVIEW_SOURCE_BLACKLIST.some((p) => p.test(source));
-}
-
-// ── 雇主机密过滤（P0 隐私边界，与求职/面试同级，但 universal 不豁免任何源）──
-// 当前雇主的内部平台项目：访客=潜在雇主/同行，绝不能被问出当前雇主的产品/项目。
-// 雇主名/项目名散落在 wiki/index.md（头部+日记表+项目表）/ log.md / todos.md /
-// worklog.md / claude-financial-research.md 等多个 chunk，任何含此词的 chunk 整段 drop。
-// 与"面试官"等正当产品叙事不同，雇主名无正当理由出现在任何对外输出（含 resume/
-// home-data/detail），故 universal、不走 FILTER_EXEMPT。
-// ⚠️ 敏感词本身绝不入公开仓：从 gitignore 的 .env.local 读 EMPLOYER_CONFIDENTIAL_TERMS
-//    （逗号分隔）+ PRIVATE_SOURCE_SLUGS。懒加载缓存，不依赖 loadEnv 调用顺序。
-function escapeRe(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-function envList(name) {
-  return (process.env[name] || "").split(",").map((s) => s.trim()).filter(Boolean);
-}
-
-let _employerRe; // undefined=未初始化, null=无配置词
-function hasEmployerConfidential(text) {
-  if (_employerRe === undefined) {
-    const terms = envList("EMPLOYER_CONFIDENTIAL_TERMS");
-    _employerRe = terms.length ? new RegExp(terms.map(escapeRe).join("|"), "i") : null;
-  }
-  return _employerRe ? _employerRe.test(text) : false;
-}
-
-// 私有/雇主源整源黑名单（兜底）：主防线是 loadWiki 的 frontmatter flag 自动排除
-// （visibility:private / rag_exclude:true），此处按 slug 防 frontmatter 漏写/typo。
-let _privateSlugRe;
-function isPrivateSource(source) {
-  if (_privateSlugRe === undefined) {
-    const slugs = envList("PRIVATE_SOURCE_SLUGS");
-    _privateSlugRe = slugs.length
-      ? new RegExp(`^wiki:(${slugs.map(escapeRe).join("|")})$`)
-      : null;
-  }
-  return _privateSlugRe ? _privateSlugRe.test(source) : false;
-}
 
 // frontmatter flag 通用私有判定：未来同类雇主/机密 wiki 项目零改动自动排除
 function isFrontmatterPrivate(meta) {
@@ -125,17 +68,7 @@ function isFrontmatterPrivate(meta) {
 const DRY_RUN = process.argv.includes("--dry-run");
 
 // ── env ──────────────────────────────────────────────────
-function loadEnv() {
-  const envPath = path.join(CHAT_API_ROOT, ".env.local");
-  if (!fs.existsSync(envPath)) {
-    throw new Error(`.env.local not found at ${envPath}`);
-  }
-  for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
-    const m = line.match(/^([A-Z_]+)\s*=\s*(.*)$/);
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
-  }
-}
-loadEnv();
+loadLocalEnv(CHAT_API_ROOT);
 
 const EMBED_CONFIG = getEmbedConfig();
 const RAG_CONFIG = getRagConfig();
@@ -513,7 +446,7 @@ ${chunkText}
 直接给脱敏后的文本，不加任何解释、标注、JSON 包裹、代码块包裹。保持原段落结构与标点。`;
 
 async function sanitizeText(text) {
-  let result = await qwenCompletion(RAG_CONFIG, {
+  let result = await textCompletion(RAG_CONFIG, {
     model: SANITIZE_MODEL,
     prompt: SANITIZE_PROMPT(text),
     maxTokens: 2000,
@@ -529,7 +462,7 @@ async function sanitizeWithRetry(text) {
     try {
       return await sanitizeText(text);
     } catch (e) {
-      if (/AccountQuotaExceeded/i.test(e.message || "")) throw e;
+      if (/AccountQuotaExceeded|quota|insufficient/i.test(e.message || "") || (e.status >= 400 && e.status < 500 && e.status !== 429 && e.status !== 408)) throw e;
       if (attempt === 5) throw e;
       await new Promise((r) => setTimeout(r, waits[attempt - 1]));
     }
@@ -538,7 +471,7 @@ async function sanitizeWithRetry(text) {
 
 function sanitizeCacheKey(text) {
   return createHash("sha256")
-    .update(`${RAG_CONFIG.baseUrl}\0${SANITIZE_MODEL}\0enable_thinking=false\0${SANITIZE_PROMPT(text)}`)
+    .update(`${RAG_CONFIG.baseUrl}\0${SANITIZE_MODEL}\0${JSON.stringify(getTextRequestOptions())}\0${SANITIZE_PROMPT(text)}`)
     .digest("hex");
 }
 
@@ -618,21 +551,7 @@ async function sanitizeChunks(chunks) {
 
 // ── embedding ───────────────────────────────────────────
 async function embedBatch(texts) {
-  const url = `${EMBED_CONFIG.baseUrl}/embeddings`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${EMBED_CONFIG.apiKey}`,
-    },
-    body: JSON.stringify({ model: EMBED_MODEL, input: texts }),
-  });
-  if (!res.ok) {
-    const err = await res.text().catch(() => "");
-    throw new Error(`embed batch failed ${res.status}: ${err.slice(0, 300)}`);
-  }
-  const json = await res.json();
-  return [...json.data].sort((a, b) => a.index - b.index).map((d) => d.embedding);
+  return requestEmbeddings(EMBED_CONFIG, texts, { timeoutMs: 60_000 });
 }
 
 async function embedWithRetry(texts, label) {
@@ -642,7 +561,7 @@ async function embedWithRetry(texts, label) {
     try {
       return await embedBatch(texts);
     } catch (e) {
-      if (/AccountQuotaExceeded/i.test(e.message || "")) throw e;
+      if (/AccountQuotaExceeded|quota|insufficient/i.test(e.message || "") || (e.status >= 400 && e.status < 500 && e.status !== 429 && e.status !== 408)) throw e;
       if (attempt === 5) {
         console.log(`\n  ${label} batch failed 5x, falling back to single`);
         const out = [];
@@ -674,7 +593,7 @@ async function embedWithRetry(texts, label) {
   throw new Error("unreachable");
 }
 
-const EMBED_BATCH_INTERVAL_MS = 600; // 控速：每 batch 间隔，防火山方舟账户级限流
+const EMBED_BATCH_INTERVAL_MS = 600; // 控速：每 batch 间隔，防供应商账户级限流
 
 async function embedAll(chunks) {
   const out = new Array(chunks.length);
@@ -800,8 +719,16 @@ async function main() {
     chunks,
   };
 
+  assertEmbeddingIndex(payload);
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
-  fs.writeFileSync(OUT_PATH, JSON.stringify(payload));
+  const temporary = `${OUT_PATH}.${process.pid}.tmp`;
+  fs.writeFileSync(temporary, JSON.stringify(payload), { mode: 0o600, flag: "wx" });
+  if (fs.existsSync(OUT_PATH)) {
+    const backup = `${OUT_PATH}.bak.${Date.now()}`;
+    fs.copyFileSync(OUT_PATH, backup, fs.constants.COPYFILE_EXCL);
+    fs.chmodSync(backup, 0o600);
+  }
+  fs.renameSync(temporary, OUT_PATH);
   const sizeMB = (fs.statSync(OUT_PATH).size / 1024 / 1024).toFixed(2);
   console.log(
     `\n✓ wrote ${OUT_PATH}\n  ${chunks.length} chunks · ${dim} dim · ${sizeMB} MB · ${Math.round((Date.now() - t0) / 1000)}s`,

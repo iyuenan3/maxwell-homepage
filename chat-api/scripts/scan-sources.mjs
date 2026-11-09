@@ -4,7 +4,7 @@
  *
  * 流程：
  *   walk → (skip 二进制/代码/excludeDirs) → readContent (md/pdf) → regex 隐私扫
- *   → Qwen file-level judge → 自动决策 → 输出 manifest.json + report.md
+ *   → DeepSeek file-level judge → 自动决策 → 输出 manifest.json + report.md
  *
  * 增量：mtime 没变就复用上次 LLM 结果（manifest.json 持久化）
  *
@@ -17,25 +17,16 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import os from "node:os";
+import { loadLocalEnv } from "./load-env.mjs";
 import { getRagConfig } from "../llm-config.mjs";
-import { qwenCompletion } from "./qwen-completion.mjs";
+import { textCompletion } from "./text-completion.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const CHAT_API_ROOT = path.resolve(__dirname, "..");
 
 // ── ENV ─────────────────────────────────────────────────
-function loadEnv() {
-  const envPath = path.join(CHAT_API_ROOT, ".env.local");
-  if (!fs.existsSync(envPath)) {
-    throw new Error(`.env.local not found at ${envPath}`);
-  }
-  for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
-    const m = line.match(/^([A-Z_]+)\s*=\s*(.*)$/);
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
-  }
-}
-loadEnv();
+loadLocalEnv(CHAT_API_ROOT);
 
 const RAG_CONFIG = getRagConfig();
 const JUDGE_MODEL = RAG_CONFIG.judgeModel;
@@ -245,7 +236,7 @@ async function llmJudge(filepath, parent_dir, content) {
     : head;
   const prompt = buildJudgePrompt(filepath, parent_dir, preview);
 
-  let text = await qwenCompletion(RAG_CONFIG, {
+  let text = await textCompletion(RAG_CONFIG, {
     model: JUDGE_MODEL,
     prompt,
     maxTokens: 300,

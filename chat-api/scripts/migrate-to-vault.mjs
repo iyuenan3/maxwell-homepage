@@ -25,8 +25,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
 import os from "node:os";
+import { loadLocalEnv } from "./load-env.mjs";
 import { getRagConfig } from "../llm-config.mjs";
-import { qwenCompletion } from "./qwen-completion.mjs";
+import { textCompletion } from "./text-completion.mjs";
 
 const DRY_RUN = process.argv.includes("--dry-run");
 
@@ -40,14 +41,7 @@ const MANIFEST_PATH = path.join(__dirname, "manifest.json");
 const REPORT_PATH = path.join(__dirname, "migration-report.md");
 
 // ── env ─────────────────────────────────────────────
-function loadEnv() {
-  const envPath = path.join(CHAT_API_ROOT, ".env.local");
-  for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
-    const m = line.match(/^([A-Z_]+)\s*=\s*(.*)$/);
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
-  }
-}
-loadEnv();
+loadLocalEnv(CHAT_API_ROOT);
 const RAG_CONFIG = getRagConfig();
 const SANITIZE_MODEL = RAG_CONFIG.sanitizeModel;
 
@@ -216,7 +210,7 @@ ${text}
 直接给脱敏后的文本，不加任何解释、标注、JSON 包裹、代码块包裹。保持原段落结构与标点。`;
 
 async function sanitizeOnce(text) {
-  let out = await qwenCompletion(RAG_CONFIG, {
+  let out = await textCompletion(RAG_CONFIG, {
     model: SANITIZE_MODEL,
     prompt: SANITIZE_PROMPT(text),
     maxTokens: 4000,

@@ -90,6 +90,8 @@ rsync -avz "${RSYNC_PRIVILEGE[@]}" -e "ssh ${SSH_OPTS[*]}" \
   --exclude '.next/cache' \
   --exclude '.next/dev' \
   --exclude 'data/' \
+  --exclude 'scripts/manifest*' \
+  --exclude 'scripts/migration-report.md' \
   --exclude '.DS_Store' \
   "$SCRIPT_DIR/" "$SSH_HOST:$REMOTE_DIR/"
 

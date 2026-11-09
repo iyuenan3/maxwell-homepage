@@ -1,15 +1,15 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { getChatConfig, getEmbedConfig, getRagConfig } from "../llm-config.mjs";
-import { qwenCompletion } from "../scripts/qwen-completion.mjs";
+import { textCompletion } from "../scripts/text-completion.mjs";
 
-test("Qwen text configuration never supplies embedding credentials", () => {
+test("text configuration never supplies embedding credentials", () => {
   const env = { CHAT_LLM_API_KEY: "text-test-key" };
-  assert.equal(getChatConfig(env).model, "qwen3.7-plus");
-  assert.equal(getRagConfig(env).judgeModel, "qwen3.7-plus");
-  assert.equal(getRagConfig(env).sanitizeModel, "qwen3.7-plus");
+  assert.equal(getChatConfig(env).model, "deepseek-flash");
+  assert.equal(getRagConfig(env).judgeModel, "deepseek-flash");
+  assert.equal(getRagConfig(env).sanitizeModel, "deepseek-flash");
   assert.deepEqual(getEmbedConfig(env), {
-    baseUrl: "", apiKey: "", model: "doubao-embedding-vision",
+    baseUrl: "https://api.lmuai.com/v1", apiKey: "", model: "qwen3.7-text-embedding", dimensions: 2048,
   });
   const config = getEmbedConfig({
     ...env, EMBED_LLM_API_KEY: "embed-test-key", EMBED_LLM_BASE_URL: "https://embed.example/v1/",
@@ -22,29 +22,29 @@ test("RAG model overrides do not change online chat", () => {
   const env = { RAG_JUDGE_MODEL: "judge-test-model", RAG_SANITIZE_MODEL: "sanitize-test-model" };
   assert.equal(getRagConfig(env).judgeModel, "judge-test-model");
   assert.equal(getRagConfig(env).sanitizeModel, "sanitize-test-model");
-  assert.equal(getChatConfig(env).model, "qwen3.7-plus");
+  assert.equal(getChatConfig(env).model, "deepseek-flash");
 });
 
-const config = { baseUrl: "https://qwen.example/v1", apiKey: "text-test-key" };
+const config = { baseUrl: "https://llm.example/v1", apiKey: "text-test-key" };
 
-test("judge and sanitizer send direct Qwen requests with thinking disabled", async (t) => {
+test("judge and sanitizer send DeepSeek requests with thinking disabled", async (t) => {
   const requests = [];
   t.mock.method(globalThis, "fetch", async (url, options) => {
     requests.push({ url, options, body: JSON.parse(options.body) });
     return Response.json({ choices: [{ finish_reason: "stop", message: { content: "safe output" } }] });
   });
   for (const json of [true, false]) {
-    assert.equal(await qwenCompletion(config, {
-      model: "qwen3.7-plus", prompt: "synthetic input", maxTokens: 100, json,
+    assert.equal(await textCompletion(config, {
+      model: "deepseek-flash", prompt: "synthetic input", maxTokens: 100, json,
     }), "safe output");
   }
   assert.equal(requests.length, 2);
   for (const r of requests) {
-    assert.equal(r.url, "https://qwen.example/v1/chat/completions");
+    assert.equal(r.url, "https://llm.example/v1/chat/completions");
     assert.equal(r.options.headers.Authorization, "Bearer text-test-key");
-    assert.equal(r.body.enable_thinking, false);
-    assert.equal(r.body.thinking, undefined);
-    assert.equal(r.body.model, "qwen3.7-plus");
+    assert.equal(r.body.enable_thinking, undefined);
+    assert.deepEqual(r.body.thinking, { type: "disabled" });
+    assert.equal(r.body.model, "deepseek-flash");
     assert.ok(r.options.signal instanceof AbortSignal);
   }
   assert.deepEqual(requests[0].body.response_format, { type: "json_object" });
@@ -59,8 +59,8 @@ test("RAG requests reject empty, truncated, and refused responses", async (t) =>
     { finish_reason: "stop", message: { reasoning_content: "only reasoning" } },
   ]) {
     const mock = t.mock.method(globalThis, "fetch", async () => Response.json({ choices: [choice] }));
-    await assert.rejects(qwenCompletion(config, {
-      model: "qwen3.7-plus", prompt: "synthetic input", maxTokens: 100,
+    await assert.rejects(textCompletion(config, {
+      model: "deepseek-flash", prompt: "synthetic input", maxTokens: 100,
     }), /incomplete response/);
     mock.mock.restore();
   }
@@ -70,7 +70,16 @@ test("upstream errors expose only status and code, not request contents", async 
   t.mock.method(globalThis, "fetch", async () => Response.json({
     error: { code: "AccountQuotaExceeded", message: "private input and key" },
   }, { status: 403 }));
-  await assert.rejects(qwenCompletion(config, {
-    model: "qwen3.7-plus", prompt: "synthetic input", maxTokens: 100,
-  }), { message: "Qwen 403: AccountQuotaExceeded" });
+  await assert.rejects(textCompletion(config, {
+    model: "deepseek-flash", prompt: "synthetic input", maxTokens: 100,
+  }), { message: "Text API 403: AccountQuotaExceeded" });
+});
+
+test("embedding model and dimensions are configurable and validated", () => {
+  const config = getEmbedConfig({ EMBED_LLM_MODEL: "test-model", EMBED_LLM_DIMENSIONS: "1024" });
+  assert.equal(config.model, "test-model");
+  assert.equal(config.dimensions, 1024);
+  for (const value of ["0", "-1", "abc", "1.5", "Infinity"]) {
+    assert.throws(() => getEmbedConfig({ EMBED_LLM_DIMENSIONS: value }), /positive integer/);
+  }
 });
