@@ -13,11 +13,13 @@
 - **可选读 worklog wiki**：`git_log`/`decisions`/`stats`/`ps` 组件按 `wiki_slug` 从 worklog 抽 fact（数据契约见 RELATIONS / SPEC）。
 
 ### 2. `chat-api/` —— LLM 化身后端（Next.js 16 + React 19，API-only）
-- **运行时**（`src/app/api/chat/route.ts`）：3 层限流 → injection prefilter → 求职/面试 prefilter（P0）→ 雇主机密 prefilter（P0）→ RAG 检索（embed query → cosine retrieve）→ `buildSystemPrompt(context)` → 百炼 Qwen `chat/completions`（stream，`enable_thinking:false`）→ SSE 转发 + usage 解析 + `chat-logger` 落日志。查询 embedding 保留原 Ark 模型和独立凭证，最多等待 5 秒，失败降级为空 context 后继续 Qwen 对话。
+- **运行时**（`src/app/api/chat/route.ts`）：3 层限流 → injection prefilter → 求职/面试 prefilter（P0）→ 雇主机密 prefilter（P0）→ RAG 检索 → `buildSystemPrompt(context)` → 灵眸的 DeepSeek `chat/completions`（stream，`thinking:{type:"disabled"}`）→ SSE 转发 + usage 解析 + `chat-logger` 落日志。向量模型默认 Qwen，凭证独立；索引模型或维度不匹配时，在发送查询前拒绝检索，向量请求最多等待 10 秒，失败以空 context 继续对话。
 - **system-prompt**（`src/app/api/chat/system-prompt.ts`）：12 段防御 prompt（身份 / 9 个主页精选项目 + 2 个历史归档详情 / 常识题 fallback / 禁止伪造归属 hard rule / 核心事实 7 猫 2 狗+姓名等价 / 回复风格 / 项目聚焦 / 范围含代码边界 B / 防 RAG 污染 / 防伪造历史 / 防 injection / [context] 段）。「输出前最后过滤」段在 [context] 前、凌驾所有规则。
 - **lib**：`embed-client.ts`（OpenAI 兼容 embedding client）/ `rag.ts`（运行时 cosine + perCategoryMax/perSourceMax）/ `rate-limit.ts`（in-memory）/ `chat-logger.ts`（按 IP 分文件 JSONL）。
-- **离线 RAG 管线**（`scripts/`，本地跑）：`scan-sources.mjs`（LLM judge 各源文件 P/V 隐私分级 → `manifest.json`）→ `build-embeddings.mjs`（chunk + sanitize + 4 层求职过滤 + embed → `embeddings.json`）。调试：`rag-search.mjs`。judge/sanitize 通过 `qwen-completion.mjs` 直连百炼，默认 `qwen3.7-plus`，关闭思考，judge 使用 JSON 输出；`migrate-to-vault.mjs` 的脱敏入口同步使用该实现。非完整结束、空内容或上游错误均阻断下游，原有 fail-closed 与额度 fail-fast 保留。脱敏并发为 5，瞬时连接错误做 5 次有界退避；成功缓存按端点、模型、关闭思考参数、prompt 与原文内容哈希区分，新 Qwen 不复用旧模型缓存。Embedding 构建仍使用原 Ark 配置，本次不重建索引。
-- **模型配置**（`llm-config.mjs`）：在线与离线文本请求共用 `CHAT_LLM_API_KEY` / `CHAT_LLM_BASE_URL`；在线模型读 `CHAT_LLM_MODEL`，审稿与脱敏分别读 `RAG_JUDGE_MODEL` / `RAG_SANITIZE_MODEL`。Embedding 只读 `EMBED_LLM_API_KEY` / `EMBED_LLM_BASE_URL`，不回退到 chat 凭证，模型保持 `doubao-embedding-vision`。本项目不再维护 new-api 接入或自签证书绕过逻辑。
+- **离线 RAG 管线**（`scripts/`，本地跑）：`scan-sources.mjs`（LLM judge → `manifest.json`）→ `build-embeddings.mjs`（chunk + sanitize + 隐私过滤 + embed → `embeddings.json`）。judge/sanitize 共用 `text-completion.mjs`，默认 `deepseek-flash`，关闭思考，judge 使用 JSON 输出；`migrate-to-vault.mjs` 同步使用该入口。空内容、截断或上游错误保持 fail-closed，缓存按端点、模型、请求参数和 prompt 内容哈希区分。`load-env.mjs` 使用与 Next.js 一致的 dotenv 解析，并只报告被继承环境覆盖的变量名。
+- **模型配置**（`llm-config.mjs`）：在线与离线文本共用 `CHAT_LLM_API_KEY` / `CHAT_LLM_BASE_URL`，模型分别读 `CHAT_LLM_MODEL` / `RAG_JUDGE_MODEL` / `RAG_SANITIZE_MODEL`。Embedding 读取独立的 `EMBED_LLM_API_KEY` / `EMBED_LLM_BASE_URL` / `EMBED_LLM_MODEL` / `EMBED_LLM_DIMENSIONS`，默认 `qwen3.7-text-embedding`、2048 维，不回退到文本凭证。`embedding-contract.mjs` 统一校验模型、数量、顺序、维度和有限非零向量；运行时、全量构建、仅重向量化和调试脚本共用，不恢复自建 new-api 或不安全 TLS 兼容。
+
+- **仅更换向量模型**：`reembed-index.mjs` 只读现有索引，复用 `rag-privacy.mjs` 的本地隐私规则，拒绝未完成脱敏的输入，排除受保护片段；仅把保留片段的 section/text 发给 Embedding。原始资料、manifest、judge 和 sanitize 均不读取或调用。旧索引经私有备份和哈希核验后，完整候选才可原子替换；片段文本、元数据及旧 `sanitize_model` 不改写，迁移来源记录在 `reembedding` 字段。当前运行进度见 DEPLOYMENT。
 
 **RAG 数据流**：
 ```
@@ -52,10 +54,10 @@ maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, 含 hdu 等经过筛选
 - **部署方案 C**：V2 占主域 / V1 退 `/v1/` / `/p/` 共享 → ADR-001。
 - **RAG 独立 Obsidian Vault**（仓库外，不入 git）→ ADR-002。
 - **求职内容 4 层防御**（单层 system-prompt 不足）→ ADR-003。
-- **文本 LLM 上游：直连百炼 Qwen；Embedding 暂留 Ark** → ADR-019（取代 ADR-009 的文本上游结论）。
+- **模型上游：灵眸 OpenAI 兼容接口，文本 DeepSeek、向量 Qwen** → ADR-025（取代 ADR-019 的当前模型方案；生产未在本轮发布）。
 - **env 变量 `CHAT_LLM_*` 前缀**（避开 shell rc 污染）→ ADR-005。
 - **build.js 纯 Node 零依赖**（详情页无 npm 包）→ ADR-006。
-- **chat / judge / sanitize 默认 qwen3.7-plus** → ADR-019（取代 ADR-015 的当前 chat 模型结论）。
+- **chat / judge / sanitize 默认 deepseek-flash** → ADR-025，统一关闭思考。
 - **CSP `script-src 'self'` 无 inline script** → ADR-008。
 - **北京以专用用户 + Docker 隔离部署，独立回环验收** → ADR-021（取代 ADR-020 的杭州部署方式）；2026-10-31 新加坡旧源站已按 ADR-024 退役，公网域名上线状态见 DEPLOYMENT。
 - **北京 IP 直连仅开放独立 HTTP 端口，管理入口继续隔离** → ADR-022；该入口独立于域名和共享网关。
@@ -66,6 +68,6 @@ maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, 含 hdu 等经过筛选
 - **终端隐喻 / 文案禁动**（HANDOFF 设计边界）：bash 隐喻不能换（titlebar `~/iyuenan3 — bash`，不写 zsh）；文案不要"优化"润色；有禁词清单（私人生活类词，见 CONVENTIONS）。
 - **前端不 hardcode 后端参数**：模型名由 SSE `meta.model` 动态填，不写死。
 - **system-prompt 防御段不删**：防伪造历史 / 防 injection / 求职过滤 / 雇主机密过滤 / 骑行数据回避 / 禁止伪造归属 hard rule，改 prompt 不能删这些。
-- **4 层求职过滤的关键词列表 4 处必须同步**（route.ts / system-prompt.ts / scan-sources.mjs / build-embeddings.mjs）。
+- **4 层求职过滤的关键词必须同步**：route.ts / system-prompt.ts / scan-sources.mjs / rag-privacy.mjs。构建与仅重向量化共用最后一份规则，不能在新入口绕过。
 - **反代配置必须完整入库**：北京使用 `ops/caddy/`，`site/nginx.conf` 仅保留旧机历史配置；所有静态路由、API / admin / Next 资源反代和 SSE 不缓冲规则必须保留，不能整块覆盖共享网关或遗漏 `/api/chat`（历史 405 事故见 MEMORY）。
 - **sanitize KEEP 白名单**（本人 7 写法 + 9 宠物名 + 公开公司）绝不脱敏。

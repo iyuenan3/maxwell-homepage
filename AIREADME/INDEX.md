@@ -1,6 +1,6 @@
 # maxwell-homepage · AIREADME
 > 李越男 (Maxwell) 的个人主页：终端体静态站 maxwellii.com（V1 简介 / V2 LLM 化身对话）+ chat-api RAG 后端 ｜ 生命周期: active
-> last-synced: 1a2af91 · 2026-10-31
+> last-synced: a92a41f · 2026-11-09
 
 <!-- 路由器：只指路，不放实质内容。INDEX 不列自己。符号：✅已填 / ⚑占位 / —N/A -->
 
@@ -8,16 +8,16 @@
 | 文件 | 状态 | 摘要 |
 |---|:--:|---|
 | CORE | ✅ | 身份=个人品牌主页 + 可对话 AI 化身；红线 = key/PII/求职面试/雇主机密绝不外泄 |
-| RELATIONS | ✅ | 文本→Qwen、embedding 暂留 Ark；build→worklog；北京 edge 指向属主；DNS→阿里云 |
+| RELATIONS | ✅ | 模型方案→灵眸 DeepSeek/Qwen；build→worklog；北京 edge 指向属主；DNS→阿里云 |
 | SPEC | ✅ | chat-api HTTP/SSE 契约 + 站点 URL 路由 + 详情页数据 frontmatter 契约 |
-| ARCHITECTURE | ✅ | 2 组件（site / chat-api）+ hdu RAG 源 + 分层隐私防御 + 禁改项 |
-| DEPLOYMENT | ✅ | 默认发布北京；新加坡业务与闲置组件已清理，UFW 仅显式放行 SSH；域名备案期间暂停 |
+| ARCHITECTURE | ✅ | 2 组件 + 文本/向量独立配置、仅重向量化与索引兼容性校验 |
+| DEPLOYMENT | ✅ | 北京灵眸模型已上线；2,929 条新向量、生产召回、SSE 与隔离验证通过 |
 | PRD | ✅ | 个人品牌 + 可对话化身；求职=隐含价值主张、具体材料明确排除 |
-| ROADMAP | ✅ | Now=Qwen 文本迁移 + 公开画像与隐私；Next=Embedding 独立迁移与通用 API 凭证 |
+| ROADMAP | ✅ | Now=北京新模型运行与隐私维护；Next=模型稳态观察及独立运维事项 |
 | CONVENTIONS | ✅ | kebab-case slug / 双名 frontmatter / 敏感词只走 env / RAG 本地产物不入库 / CSP 无 inline |
-| DECISIONS | ✅ | 24 条 ADR，含新加坡退役、阿里云备案与 DNS、北京隔离及隐私边界 |
-| MEMORY | ✅ | 18 条事故，含安全组未放行、SNI 重置、备案拦截与 Caddy capability |
-| CHANGELOG | ✅ | 1.0 → 3.1.0，另含 Qwen、北京 IP/DNS、默认发布切换与新加坡退役 |
+| DECISIONS | ✅ | 25 条 ADR，新增灵眸文本与向量迁移，保留历史决策 |
+| MEMORY | ✅ | Embedding 分组 Key、物化索引隐私与本地配置不自动生效经验 |
+| CHANGELOG | ✅ | 版本与迁移历史保留；新增北京灵眸模型生产发布与验收 |
 
 ## 按任务读
 - 跨项目了解 → CORE + RELATIONS（+ SPEC 若要调 chat-api 或读详情页数据）
@@ -58,3 +58,15 @@
 同日打印服务补充清理：用户单独授权删除不需要的 CUPS，已核对无打印机和打印任务后卸载，631 监听消失，该阶段仍保留 SSH 与 Chromium。随后追加授权的收尾结果见下文。
 
 同日闲置组件与旧规则收尾：已撤掉旧业务端口的 UFW IPv4/IPv6 放行规则，卸载 Chromium、无依赖的图形组件和 Snap 基础镜像，删除核实归属的安装包缓存与空目录。Snap 当前仅保留 snapd，UFW 仅显式放行 SSH 22，独立登录及系统状态核验通过；系统和 SSH 保留，北京环境与 DNS 未动，详细范围及恢复边界见 DEPLOYMENT。
+
+## 定向更新 · 2026-11-09
+
+本地模型配置与代码已改为灵眸 DeepSeek 文本和 Qwen Embedding 方案，文档区分文本实测通过、向量凭证阻塞与未部署状态，详情见 DEPLOYMENT。旧索引完整保留，仅重向量化入口不重新扫描原始资料。实现尚未提交，因此保留原内容同步锚点，不把未提交改动宣称为已发布或已覆盖的新提交。
+
+同日补记：独立 Embedding 分组 Key 已通过实测，2,929 条新向量已完成并启用本地索引，四类检索样例和真实 RAG 对话通过。此结果取代上文的“向量凭证阻塞”状态；生产未部署，旧索引与原配置仍有私有备份，内容提交锚点继续保留。
+
+同日生产补记：用户授权部署到北京后，后端、模型配置与新索引已同步，公网对话和真实 RAG 召回恢复，生产隐私及隔离检查通过。此结果取代上文的“生产未部署”状态；其他服务、DNS 与静态站未变，旧代码、依赖、配置和索引已备份。代码与文档尚未提交，内容同步锚点继续保留。
+
+同日连续验收补记：向量在线超时由 5 秒调整为 10 秒，解决本次新接口慢请求触发的检索降级；18 项离线测试和补充生产验收通过，冷启动、连续与空闲后请求均有 RAG 命中。具体样本和恢复边界见 DEPLOYMENT / MEMORY，不声明长期性能保证。
+
+本轮实现已提交为 `a92a41f`，内容同步锚点更新至该提交；上文“尚未提交”保留为当时阶段记录。本轮文档同步覆盖灵眸模型接入、索引迁移、北京发布与在线超时适配，不触发再次部署、原始资料重扫或 DNS 操作。

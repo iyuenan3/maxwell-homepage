@@ -48,7 +48,7 @@ IP 站点前端使用相对 `/api/chat` 同源请求，不新增跨源调用许�
 per-IP 20/min（429）· per-IP 100/day（429）· global 5000/day（503）。
 
 ### 运行时参数（contract-relevant）
-模型 = env `CHAT_LLM_MODEL`（当前默认 `qwen3.7-plus`）· `enable_thinking:false` · `temperature 0.7` · `max_tokens 2000` · RAG `topK 12` / `perCategoryMax 4` / `perSourceMax 2`。上游为百炼直连的 OpenAI 兼容 `chat/completions`（`stream:true` + `stream_options.include_usage`）。向量查询最多等待 5 秒，失败继续使用空 context；SSE 事件和前端模型显示契约不变。
+模型 = env `CHAT_LLM_MODEL`（代码默认 `deepseek-flash`）· `thinking:{type:"disabled"}` · `temperature 0.7` · `max_tokens 2000` · RAG `topK 12` / `perCategoryMax 4` / `perSourceMax 2`。上游默认 `https://api.lmuai.com/v1/chat/completions`（Bearer、`stream:true`、`stream_options.include_usage`）。Embedding 默认 `/v1/embeddings`，模型 `qwen3.7-text-embedding`，显式 `dimensions:2048`、`encoding_format:"float"`；须使用支持该能力的分组 Key。索引模型和维度必须与查询配置一致；不匹配或向量查询超过 10 秒时使用空 context，SSE 与前端模型显示契约不变。代码默认值不代表生产已同步，实际状态见 DEPLOYMENT。
 
 ## ② 站点 URL 路由
 | 路径 | 内容 |

@@ -31,7 +31,7 @@ bash site/deploy.sh
 bash chat-api/deploy.sh
 # 默认 PROCESS_MANAGER=docker，目标为北京 current/chat-api（仓库根执行）
 # PROCESS_MANAGER=pm2 仅保留历史兼容分支，原目标已清理，不可直接用于发布
-# build 失败即中止；代码同步排除 .env*、data/、node_modules、构建缓存
+# build 失败即中止；代码同步排除 .env*、data/、node_modules、构建缓存、RAG 清单与迁移报告
 # 索引单文件上传 → SHA256 校验 → 备份旧索引 → 原子替换
 # docker 分支：容器内以专用用户 npm ci --omit=dev → 只重建 chat-api 容器
 ```
@@ -64,6 +64,31 @@ cd chat-api && npm run scan:force  # 改了 judge prompt 必须全量重 judge�
 
 2026-10-28 仅迁移 chat / judge / sanitize，不运行 `npm run update` 或全量 reindex。`npm run scan` 的新审稿请求使用 Qwen，既有 manifest 仍按 mtime 增量复用；需要全部重新审稿时单独运行 `npm run scan:force`。Embedding 待后续迁移，当前不能以文本接口成功宣称完整 RAG 恢复。
 
+### 仅重建现有脱敏片段的向量
+
+以下命令在 `chat-api/` 执行，不扫描原始知识库、不运行 judge/sanitize，也不触发部署：
+
+```bash
+npm run reembed -- --dry-run  # 本地检查、计数，无外部调用
+npm run check:models         # 少量纯合成样例，实际调用收费接口
+npm run reembed -- --activate # 备份旧索引、重建并校验候选、原子替换本地索引
+```
+
+若只需要候选而不替换，使用 `npm run reembed`（与上面的 activate 模式二选一），输出 `data/embeddings.candidate.json`；已有候选会拒绝覆盖。旧索引保存在用户私有数据目录 `.local/share/maxwell-homepage/backups/reembed-*/`，目录 700、文件 600，复制后验证 SHA256。任何上游错误、向量异常或源文件变动都阻断替换。当前进程缓存索引，替换后须重启本项目后端，配置与索引应一起发布或回滚。
+
+2026-11-09 本地验收已完成：DeepSeek JSON 审稿、合成脱敏、SSE/usage、关闭思考，以及真实本地 RAG 对话与合成隐私词的 0-token 拦截通过；17 项离线测试、lint/build 通过。初验曾被通用 Key 的 Embedding 端点限制阻断，补充独立分组 Key 后已生成并启用 2,929 条 `qwen3.7-text-embedding` 2048 维向量。旧索引的 2,932 条片段完整私有备份，排除 3 条命中现行敏感词表的片段，其余文本、元数据和旧 `sanitize_model` 均逐条核对不变。新索引 SHA256 为 `9855f450f18d8ec3ad909315e75c530c47a3b19b49c8630a19e83f3bb55e5b42`。四类公开查询均召回相关内容，真实 HTTP/SSE 日志证明检索未降级为空 context。未部署、切域名、重新扫描原始资料或批量重跑脱敏，代码与文档尚未提交，不宣称生产环境已迁移。
+
+### 北京灵眸模型发布（2026-11-09）
+
+用户单独授权后，已同步后端制品、9 项模型变量和上述新索引，仅重建 `maxwellii-chat-api`。此生产结果取代上段本地阶段的“未部署”状态；未重新扫描原始资料、批量审稿或脱敏，未发布静态站、修改 DNS 或共享网关。发布时尚未提交，模型迁移与超时适配实现后续记录于 `a92a41f`。
+
+- **运行态**：容器健康、重启次数为 0；文本、审稿和脱敏为 `deepseek-flash`，向量为 `qwen3.7-text-embedding`、2048 维。生产索引 2,929 条，SHA256 与本地一致，按生产隐私规则逐条检查为 0 个问题。独立只读、禁网校验容器已退出，不与线上进程共享内存限额。
+- **实际请求**：公网 `hi` 和公开项目问答均为 200，返回完整 SSE、目标模型和非零 usage；项目问答的生产日志保留 10 条检索命中，包含目标项目。通用求职与提示词注入测试为 0-token 拦截。北京端 Embedding、JSON 审稿、合成脱敏和关闭思考的流式探针全部通过。
+- **隔离验证**：首页与 V1 均为 200，管理、配置、Git 和 Next 内部路径为 404；非模型配置逐行不变，生产管理口令和隐私词表保留。Compose/Caddy 配置哈希以及其余容器的 ID、启动时间和重启次数均不变。
+- **发布备份**：`shared/config-backups/20261109-before-lmuai-u0nbOh/` 保存发布前的 `env.local`、`embeddings.json` 和含生产依赖的 `chat-api.tar.gz`，目录 700、敏感文件 600；部署脚本另保留 `shared/data/embeddings.json.bak.20261109-193248`。配置、代码与索引必须成套恢复并仅重建后端；旧配置已出现上游异常，恢复旧状态不等于恢复模型可用性。
+
+同日连续验收发现初版 5 秒向量上限导致两次降级，随后只将在线默认上限放宽到 10 秒，离线显式超时保持不变。18 项离线测试与 lint/build 通过后补充发布，配置和索引哈希不变。修正前的新模型代码与配置保存在 `shared/config-backups/20261109-before-embed-timeout-8Zb97L/`，不替代上面的迁移前完整备份。最终冷启动、连续调用、45 秒空闲后调用及问候共 5 次正常请求均召回 12 条片段，日志各保留前 10 条，RAG 错误与超时均为 0；两次隐私拦截仍为 0 token。冷启动 RAG 约 6.8 秒，其余四次约 0.2 至 0.3 秒，这是本次样例，不是长期延迟保证。
+
 ### 旧生产 nginx 配置（仅历史恢复参考）
 
 2026-10-31 新加坡 nginx 软件包、虚拟主机配置和证书副本已清理，不再执行旧推送命令。`site/nginx.conf` 仍保留历史根目录与路由契约，不能用于北京。未来若获准重建旧环境，须先重新准备服务、目录、凭证与证书，再核对所有 location（尤其 `/api/chat`）和安全头，配置校验通过后才能启用；这不是现有生产回滚路径。
@@ -89,8 +114,8 @@ cd chat-api && npm run scan:force  # 改了 judge prompt 必须全量重 judge�
 - 路由 / 缓存 / 安全头细节见 SPEC ② + 下方运维约束。
 
 ## 共享底座引用
-- **文本 LLM = 百炼 Qwen（直连）**：`CHAT_LLM_BASE_URL=https://coding.dashscope.aliyuncs.com/v1`，`CHAT_LLM_MODEL` / `RAG_JUDGE_MODEL` / `RAG_SANITIZE_MODEL` 当前均为 `qwen3.7-plus`，共享 `CHAT_LLM_API_KEY`。本次按用户指定使用 Coding Plan；[官方用途限制](https://help.aliyun.com/zh/model-studio/coding-plan-faq) 将其定位于交互式编程工具，网站后端与自动化脚本不在允许用途内，长期运行应换成通用按量 API。通用 API 可以通过同一变量改用账号对应的业务空间端点，无需 new-api 或关闭 TLS 校验。
-- **Embedding 暂留 Ark**：`EMBED_LLM_BASE_URL` / `EMBED_LLM_API_KEY` 保存迁移前的向量端点和凭证，与 Qwen 完全分离。火山不可用时，查询最长等待 5 秒后使用空 context 对话；模型和 `embeddings.json` 本次不变。
+- **文本 LLM（2026-11-09 北京已部署）**：灵眸 `https://api.lmuai.com/v1`，`CHAT_LLM_MODEL` / `RAG_JUDGE_MODEL` / `RAG_SANITIZE_MODEL` 均为 `deepseek-flash`，共享 `CHAT_LLM_API_KEY`。保留标准 TLS 校验，不恢复自建 new-api。旧百炼配置只作历史，不继续推荐 Coding Plan 用于网站后端。
+- **Embedding（2026-11-09 北京已部署）**：同一灵眸 base URL，`EMBED_LLM_MODEL=qwen3.7-text-embedding`、`EMBED_LLM_DIMENSIONS=2048`，使用独立的 `EMBED_LLM_API_KEY` 分组密钥。合成请求及全量既有片段重向量化均已验证；通用 Key 虽可列出该型号，但该端点限制不能以模型列表替代验收，事故见 MEMORY。模型、维度、Key 与新索引已一起同步并完成生产读回。
 - **权威 DNS = 阿里云 DNS 免费版**：主域与 `www` 预置北京 A 记录但暂停；备案后计划公有可信 HTTPS 直连，不再以 Cloudflare 代理或 Tunnel 作为当前上线方案。旧 Cloudflare zone 保留作历史与回退参考。
 
 ## 缓存策略
