@@ -12,7 +12,6 @@ commands:
   - readme
   - links
   - git_log
-  - decisions
   - stats
   - stack
   - notes
