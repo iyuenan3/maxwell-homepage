@@ -22,19 +22,16 @@
 - Alternatives（否决）: 只加强 system-prompt（实测不足）；完全不索引 worklog（项目能力展示也丢了 → 改为只排除 diaries + wiki/job）。
 - Tradeoff: 化身失去讲日记内容能力（用户接受）；关键词列表 4 处必须同步维护。被屏蔽的具体词表不进 AIREADME（红线）。
 
-## ADR-004 · LLM 上游切到自建 newapi-proxy 中转站 · 2026-05-19
-- Problem: 原直连火山方舟原生 API，想统一网关 + 多上游聚合 + 成本控制。
-- Constraint: newapi-proxy 是 IP 直连自签证书；embedding 须与旧 embeddings.json 同向量空间（零迁移）。
-- Decision: chat completions + embeddings 都走 newapi-proxy（OpenAI 兼容）；embedding 经 newapi 路由到火山 `doubao-embedding-vision`（2048 dim，与旧索引一致）。
-- Alternatives（否决）: 继续直连火山原生（放弃多上游聚合 + 统一计费）。
-- Tradeoff: 自签证书要关 SSL verify；newapi 端点/IP 会变（已现 drift，见 RELATIONS）；prompt cache 透传依模型而定（见 ADR-007）。
+## ADR-004 · 历史条目已移出当前文档 · 2026-05-19
+
+2026-11-10 按用户要求移除外部项目的接入内容，编号保留，原文可从 Git 历史恢复。当前模型方案见 ADR-025。
 
 ## ADR-005 · chat-api env 变量用 CHAT_LLM_* 前缀 · 2026-05-19
-- Problem: 切 newapi 时第一版用 `NEWAPI_*`，本地 dev embedding 端拿到 HTML（newapi 前端 SPA）而非 JSON。
-- Constraint: 用户 shell rc 已全局 export `NEWAPI_*`（给 newapi 后台工具用）；chat-api `loadEnv()` 有 `!process.env[m]` 保护 → .env.local 的值被 shell 污染值跳过。
+- Problem: 第一版复用其他工具的环境变量前缀，本地 dev embedding 端拿到 HTML 而非 JSON。
+- Constraint: 用户 shell rc 已全局 export 同名变量；chat-api `loadEnv()` 有 `!process.env[m]` 保护，.env.local 的值被继承环境覆盖。
 - Decision: 用 `CHAT_LLM_*` 干净 prefix，与任何全局 env 隔离。
 - Alternatives（否决）: 删 loadEnv 的保护逻辑（治标）；改 shell rc（影响其他工具）。
-- Tradeoff: 与外部 newapi 文档的 `NEWAPI_*` 示例不一致，需记住映射。
+- Tradeoff: 配置示例须使用本模块变量名，不能直接照搬其他工具的环境变量。
 
 ## ADR-006 · 详情页构建器用纯 Node 零依赖 · 2026-05-08
 - Problem: 二级详情页要从 markdown 数据生成静态 HTML。
@@ -44,7 +41,7 @@
 - Tradeoff: markdown 能力有限（自维护 mdToHtml）；但够用且零供应链风险。
 
 ## ADR-007 · chat 模型用 doubao-seed-2.0-lite（替代 deepseek-v4-flash）· 2026-05-21
-- Problem: 5/19 用的 `deepseek-v4-flash` 在 newapi 5/21 清单更新后升级为 `deepseek-v4-flash[1m]`（18× 价 / ¥18/36），化身场景性价比不合适。
+- Problem: 5/19 用的 `deepseek-v4-flash` 在 5/21 上游型号更新后升级为 `deepseek-v4-flash[1m]`，化身场景性价比不合适。
 - Constraint: 化身体验优先但要控成本；TTFT 要快；最好保留 prompt cache。
 - Decision: 切 `doubao-seed-2.0-lite`（1.5× / ¥1.8/10.8）；doubao 系列保留 prompt cache 透传（deepseek 上游预计无命中）。
 - Alternatives（否决）: 留 deepseek-v4-flash[1m]（贵）；用 auto-llm 动态调度（化身要稳定行为）。
@@ -57,12 +54,12 @@
 - Alternatives（否决）: CSP 加 `'unsafe-inline'`（破坏防护意义）；用 nonce（静态站无后端注入 nonce 不便）。
 - Tradeoff: `detail-init.js` 多处共用引发部署陷阱（见 MEMORY）；仓库 nginx.conf 当前缺这 4 头（drift，见 MEMORY / DEPLOYMENT 待核实）。
 
-## ADR-009 · chat-api 直连火山方舟 Ark，取代 newapi-proxy 中转站 · 2026-05-24
-- Problem: 经 newapi-proxy 中转后，newapi v2 迁移导致端点 drift + embedding 渠道「暂不可用」阻塞 chat-api RAG；中转层多一跳依赖 + 自签证书 TLS hack。
-- Constraint: 体验优先（TTFT / embedding 必须可用）；不想被 newapi 迁移/渠道状态卡住；env 命名保持 `CHAT_LLM_*`（ADR-005 仍成立）。
+## ADR-009 · chat-api 直连火山方舟 Ark · 2026-05-24
+- Problem: chat-api 需要稳定的文本与向量接口，避免上游接入变动阻塞 RAG。
+- Constraint: 体验优先，TTFT 与 embedding 必须可用；env 命名保持 `CHAT_LLM_*`（ADR-005 仍成立）。
 - Decision: chat-api（chat + embedding + 离线 judge/sanitize）改**直连火山方舟 Ark**（`/api/coding/v3`，OpenAI 兼容，`ark-` key）；`doubao-seed-2.0-lite` 加 `thinking:{type:"disabled"}` 关深度思考（实测 reasoning 245→0）。**取代 ADR-004**。
-- Alternatives（否决）: 继续等 newapi v2 接通 embedding 渠道（受制于人 + 仍有 drift）；切 newapi `auto-llm`（化身要稳定行为）。
-- Tradeoff: 放弃 newapi 的多上游聚合 / 统一计费（化身只需单一火山上游，不需要）；逻辑代码零改（早已通用 OpenAI 兼容），仅 .env 值 + 注释变更；`embeddings.json` 零重建（同模型同向量空间）。已线上验证 RAG + chat 全链路通。
+- Alternatives（否决）: 动态模型调度（化身要稳定行为）；切换向量模型（本次没有必要）。
+- Tradeoff: 使用 OpenAI 兼容协议，逻辑代码不变，仅调整配置与注释；同模型同向量空间，`embeddings.json` 无须重建。当时已验证 RAG 与 chat 全链路。
 
 ## ADR-010 · 简历真相源迁至 worklog · 2026-05-26
 - Problem: 简历此前由 maxwell-homepage 维护（根目录 + `versions/`），但 Maxwell 的求职 / 简历活动统一在 worklog 知识库管理，两处分散。
@@ -129,9 +126,9 @@
 
 ## ADR-019 · 文本能力迁移 Qwen，Embedding 暂缓 · 2026-10-28
 - Problem: 火山账号过期，在线对话、RAG 审稿和脱敏共用的文本上游不可用；公开对话入口出现 502。
-- Constraint: 用户明确要求先迁移在线对话和 RAG 审稿、脱敏到 Qwen，暂不处理 Embedding，且不再维护 new-api 接入；旧向量空间和索引必须保留。
+- Constraint: 用户明确要求先迁移在线对话和 RAG 审稿、脱敏到 Qwen，暂不处理 Embedding；旧向量空间和索引必须保留。
 - Decision: 按用户指定的百炼直连端点，三个文本角色默认使用 `qwen3.7-plus`，关闭思考；judge 使用 JSON 输出，sanitize 和 judge 对空内容或截断响应 fail-closed。Embedding 改为独立 `EMBED_LLM_*` 配置，保留原 Ark 模型与凭证，不回退到 Qwen key；运行时向量查询最多等待 5 秒，失败按既有逻辑以空 context 继续对话。
-- Alternatives（否决）: 只修改 chat 的共享端点（会把旧 embedding 请求发给 Qwen）；顺带迁移向量模型并重建索引（超出本次范围）；重新接入 new-api（用户明确取消该需求）。
+- Alternatives（否决）: 只修改 chat 的共享端点（会把旧 embedding 请求发给 Qwen）；顺带迁移向量模型并重建索引（超出本次范围）。
 - Tradeoff: 在线文本恢复不等于 RAG 向量检索恢复，后续仍需单独迁移 embedding。用户本次提供 Coding Plan 凭证，其官方用途限制不覆盖网站后端和自动化批量脚本，长期需使用通用按量 API；运行结果不能替代产品用途许可。
 
 ## ADR-020 · 新 ECS 独立部署与可回退切换 · 2026-10-30
@@ -145,7 +142,7 @@
 - Problem: 杭州域名回源发生 SNI 重置，换 8443 未解决；用户决定改迁北京并清理杭州本次新增资源。北京已有共享 Caddy 和多个容器，不能按杭州方式再安装独占 80/443 的 nginx。
 - Constraint: 保留旧生产、现有服务 PID 和配置；不重建共享网络，不先切 DNS。敏感文件迁移及包含日志的本机私有备份已单独获准。公网明确返回备案拦截时，不能把私有验收当作生产切换成功。
 - Decision: 北京使用独立 Compose 项目、专用 UID、资源限制和回环端口；静态 Caddy 与 Next.js 分容器。用可选独立 TLS preview 复用未来公网路由完成严格验收，暂不修改或 reload 共享网关。后续备案与接入问题解决后，按共享底座属主规范追加本项目路由并另行验收。杭州完整离机备份和补充备份校验后，只移除本次新增的服务、软件、用户、配置和私钥副本。此决策取代 ADR-020 的当前候选部署方式，其敏感传输授权与旧生产回退约束继续有效。
-- Alternatives（否决）: 在北京替换既有网关或安装抢占端口的 nginx（影响已有服务）；直接复用 new-api 模型中转（与 ADR-019 和用户范围不符）；改地域或端口后直接切域名（没有解决备案验收）；未备份就清除杭州资源（丢失可恢复性）。
+- Alternatives（否决）: 在北京替换既有网关或安装抢占端口的 nginx（影响已有服务）；改地域或端口后直接切域名（没有解决备案验收）；未备份就清除杭州资源（丢失可恢复性）。
 - Tradeoff: 需维护 Docker 与静态 Caddy 配置，公网切换仍依赖备案和接入条件。候选发布会短暂重建本项目容器，不承诺零停机；保留离机私有备份以支持恢复。
 
 ## ADR-022 · 北京独立公网 IP 端口与管理入口隔离 · 2026-10-30
@@ -171,9 +168,16 @@
 
 ## ADR-025 · 灵眸 DeepSeek 文本与 Qwen 向量迁移，复用已有脱敏片段 · 2026-11-09
 - Problem: 用户报告 Qwen 账号过期，要求文本能力改用灵眸 `deepseek-flash`，Embedding 改为 `qwen3.7-text-embedding`。
-- Constraint: 保留旧索引，只使用已有脱敏片段重建向量；不重新扫描原始知识库或批量脱敏，不恢复自建 new-api，不默认部署、commit 或 push。
+- Constraint: 保留旧索引，只使用已有脱敏片段重建向量；不重新扫描原始知识库或批量脱敏，不默认部署、commit 或 push。
 - Decision: 三个文本角色统一 DeepSeek 非思考请求，向量模型和维度显式配置且凭证独立。运行时在查询前验证索引模型/维度；离线重向量化沿用原片段文本与脱敏来源元数据，先做本地隐私检查、旧索引私有备份，再生成和校验候选。已命中现行隐私规则的片段不外发，未完成脱敏的输入阻断任务。此决策取代 ADR-019 的当前模型选择与 Embedding 暂缓范围。
 - Alternatives（否决）: 只改查询模型复用旧向量（不同向量空间不可比较）；为换向量重新读取和脱敏全部原始资料（超出范围）；用文本 Key 隐式兜底向量 Key（灵眸通用 Key 当前不支持 Embedding）。
 - Tradeoff: 增加第三方处理方，错误日志可能含请求片段；当前仍依赖分组 Key 才能完成真实向量验收。代码和文本测试通过不等于索引或生产迁移完成，实际状态见 DEPLOYMENT。
 
 - Follow-up（2026-11-09）: 用户补充独立 Embedding 分组 Key 后，已完成既有安全片段的本地重向量化和检索验收；无需改动本 ADR 的数据范围、旧索引保留或生产授权边界。当前状态见 DEPLOYMENT。
+
+## ADR-026 · 公开仓库仅保留主页相关内容与运行契约 · 2026-11-10
+- Problem: 主页文档与项目详情仍包含用户要求移出公开范围的外部项目内容，自动导入的 wiki 决策摘要也会重新带回相关描述。
+- Constraint: 用户仅授权清理本仓库内容和引用并提交、推送；独立仓库、服务器及业务数据保留，不重写 Git 历史，不部署或重建 RAG。
+- Decision: 移除外部项目展示描述、相邻仓库指针及运维记录；本项目的通用经验和实际网络、证书契约保留。三处会回流内容的详情页通过既有 `commands` 配置关闭自动决策摘要。按用户本次明确要求，早期文档中的相关引用同步清理，原始记录保留于 Git 历史，ADR-004 保留编号墓碑。
+- Alternatives（否决）: 删除独立仓库或服务器数据（超出范围）；仅删除本地正文却继续自动导入旧摘要（无法完成清理）；顺带部署或更新线上向量索引（未获本次授权）。
+- Tradeoff: 三个详情页暂不展示外部 wiki 决策摘要，其他栏目继续保留。仓库清理不等于线上页面或已有 RAG 索引同步更新，后续发布须另行授权并验收。

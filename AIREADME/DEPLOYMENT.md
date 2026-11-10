@@ -1,15 +1,13 @@
 # DEPLOYMENT — maxwell-homepage
 <!-- 跑哪/怎么跑/共享什么。共享底座自身配置→其独立节点；key→哪都不写。 -->
 
-## 同机服务停机后的边界（2026-11-10）
+## 个人主页运行与维护边界（2026-11-10）
 
-用户另行授权关闭 `new-api`、`xhs-license` 与 `edge-caddy`，保留个人主页、FRP 和所有数据。三个容器已停止且自动重启设为 `no`；此前已停止的 `doublel-site` 未恢复。共享网络与证书目录仍保留，尤其不能删除被 `maxwellii-preview` 只读挂载的 Origin CA 目录。
-
-- 个人主页三个容器的启动时间均未变化；公网首页与源站 V1 为 `200`，公开 `hi` 对话返回完整 SSE、`deepseek-flash` 和非零用量，无流式错误。
-- FRP 主进程未变化，`22221/22222` 公网 TCP 连通；没有改 DNS、防火墙或备案申请。
-- 主机 `80/443/8888` 已无监听，主页仍经独立 `18080` 提供服务。原共享网关接入流程不能直接作为当前上线步骤执行。
-- 后续域名 HTTPS 上线须另行选择独立入口，或明确授权只恢复所需网关路由；不能顺带重启已停用的中转、授权或工作室站点。
-- 用户已于 2026-11-09 报告提交 maxwellii.com 新增备案，本轮未查询审核进度，也未撤回或重复提交。下方较早备案状态保留为历史。
+- 最近一次验收中，主页三个容器的启动时间未变化；公网首页与源站 V1 为 `200`，公开 `hi` 对话返回完整 SSE、`deepseek-flash` 和非零用量，无流式错误。
+- 主页仍经独立 `18080` 提供服务。域名 HTTPS 上线须另行确认仅面向主页的入口方案，不以其他服务的历史接入流程作为默认步骤。
+- 本仓库只维护主页部署。外部 Docker 网络 `edge` 和被 `maxwellii-preview` 只读挂载的 Origin CA 目录仍是当前配置引用的资源，不能因移除文档关联而删除。
+- 用户已于 2026-11-09 报告提交 maxwellii.com 新增备案，本次未查询审核进度，也未撤回或重复提交。下方较早备案状态保留为历史。
+- 本次仅清理仓库内容和引用，不部署、不重建 RAG，不修改 DNS、服务器、其他仓库或业务数据。
 
 ## 主机 + 环境
 - **当前域名状态**：2026-10-30 用户选择阿里云备案并将权威 DNS 迁入阿里云，备案期间主页域名离线。主域与 `www` 已预置北京 A 记录但保持暂停，尚未完成备案或北京域名 HTTPS 上线，见下方 DNS 与备案流程。
@@ -18,9 +16,8 @@
 - **发布目录**：`/srv/maxwell-homepage/current -> releases/20261030-64a0093`。Compose 项目为 `maxwellii-homepage`，配置在 `current/ops/compose.yaml`。旧机原 `/home/admin/maxwellii-site/`、`/home/admin/maxwellii-chat-api/` 已删除。
 - **北京 chat-api**：容器 `maxwellii-chat-api`，Node.js 24.14.0、Next.js 16.3.0，UID/GID 10001（专用用户 `maxwellii`），主机仅发布 `127.0.0.1:3002`，CPU 1 核、内存 768 MiB。镜像版本与摘要固定；只读容器根文件系统、禁止提权、丢弃全部 capability。应用及日志目录为可写挂载，日志位于 `/var/lib/maxwellii/chat-api-logs/`。
 - **北京静态站**：容器 `maxwellii-site`，Caddy 2.11.3，只读挂载 `current/site/`。私有入口保持 `127.0.0.1:3080 -> :8080`，另发布独立公网 `0.0.0.0:18080 -> :8081`。`ops/caddy/site.Caddyfile` 保留静态路由、缓存、HSTS 和即时 SSE 反代；SSE 路径不启用 gzip。CPU 0.25 核、内存 128 MiB，非 root 用户，保留官方 Caddy 二进制所需的 `NET_BIND_SERVICE` bounding capability，见 MEMORY。
-- **独立 HTTPS 验收**：`preview` profile 的 `maxwellii-preview` 仅发布 `127.0.0.1:3443`，加载 `ops/caddy/edge-homepage.caddy`，使用真实 Origin CA 证书严格校验。它不占用公网端口，不修改或 reload 现有 `edge-caddy`。
+- **独立 HTTPS 验收**：`preview` profile 的 `maxwellii-preview` 仅发布 `127.0.0.1:3443`，加载 `ops/caddy/edge-homepage.caddy`，使用真实 Origin CA 证书严格校验。它不占用公网端口，不修改其他服务。
 - **持久数据**：`shared/.env.local` 与 `shared/data/` 通过软链接入应用目录，归 `maxwellii` 所有。共享目录权限 700，配置与索引权限 600；配置备份位于 `shared/config-backups/`。本轮经单独授权传输，未重跑索引。
-- **共享网关**：Docker 外部网络 `edge` 仍保留，本项目尚未接入共享网关。`edge-caddy` 已于 2026-11-10 按用户单独授权停止，属主与恢复约束见 RELATIONS 及本文件顶部；个人主页不依赖其运行。
 - **SSL 证书**：北京副本位于 `/home/admin/edge/caddy_data/maxwellii-origin/maxwellii.com.{pem,key}`，私钥 root:root、600，证书与私钥公钥摘要一致。2026-10-31 仅删除新加坡机的共享证书副本，未撤销证书，北京副本保留，已停用子域不恢复。Origin CA 不是浏览器公有信任证书，阿里云 DNS 直连上线前须配置公有可信证书，不能把当前 preview 的 Origin CA 校验等同于浏览器直连验收。
 - **杭州候选退役**：`115.29.187.72` 的本次新增资源在完整离机备份校验后清理，具体范围见本文件备份节。原有业务和原先已安装的 Node.js 保留。
 
@@ -105,7 +102,7 @@ npm run reembed -- --activate # 备份旧索引、重建并校验候选、原子
 
 ### 北京公网切换前置条件
 
-先完成备案并解决接入阻断，再为主域和 `www` 配置浏览器公有可信证书。`edge-homepage.caddy` 当前引用 Origin CA，不能直接照搬到无 Cloudflare 代理的公网入口。单独备份共享网关配置，按属主文档追加本项目路由，校验后仅 reload 网关，不重建已有容器。原配置为单文件挂载，写入与回滚必须保留 inode，不能直接用原子替换假设容器已读取新文件。先指定目标 IP 完成携带域名的公网严格 TLS、页面与真实对话验收，同时确认已有入口不变，再启用已暂停的两条 A 记录。失败时恢复北京已验收配置或暂停解析，不能再切回已清理的新加坡机。当前尚未执行网关接入或域名 HTTPS 上线。
+先完成备案并解决接入阻断，再为主域和 `www` 配置浏览器公有可信证书。`edge-homepage.caddy` 当前引用 Origin CA，不能直接照搬到无 Cloudflare 代理的公网入口。后续仅面向主页确定入口与端口，先备份本项目配置并完成校验，不默认修改其他服务。先指定目标 IP 完成携带域名的公网严格 TLS、页面与真实对话验收，同时确认已有入口不变，再启用已暂停的两条 A 记录。失败时恢复北京已验收配置或暂停解析，不能再切回已清理的新加坡机。当前尚未执行域名 HTTPS 上线。
 
 ### 阿里云 DNS 与备案流程
 
@@ -119,12 +116,12 @@ npm run reembed -- --activate # 备份旧索引、重建并校验候选、原子
 
 ## 域名 / 入口
 - 预期域名路由：`https://maxwellii.com/` → V2 化身主页 · `/v1/` → V1 · `/p/<slug>.html` → 详情页 · `/api/chat` → SSE · `/admin/logs?token=` → 日志页。当前域名按备案方案暂停解析，不表示这些公网 URL 已可用。
-- 北京独立公网入口：`http://39.96.12.136:18080/`，公开页面与对话可用，管理日志页与 Next 内部资源在此入口统一 404；现有 80/443/8888 和域名入口不变。
+- 北京独立公网入口：`http://39.96.12.136:18080/`，公开页面与对话可用，管理日志页与 Next 内部资源在此入口统一 404；域名上线仍需单独验收。
 - 北京私有预览：本机运行 `ssh -N -L 13080:127.0.0.1:3080 alicloud-bj` 后访问 `http://127.0.0.1:13080/`。传输经 SSH 加密，不要求安装 Origin CA；不要把 3080、3443 或 3002 直接暴露公网。
 - 路由 / 缓存 / 安全头细节见 SPEC ② + 下方运维约束。
 
 ## 共享底座引用
-- **文本 LLM（2026-11-09 北京已部署）**：灵眸 `https://api.lmuai.com/v1`，`CHAT_LLM_MODEL` / `RAG_JUDGE_MODEL` / `RAG_SANITIZE_MODEL` 均为 `deepseek-flash`，共享 `CHAT_LLM_API_KEY`。保留标准 TLS 校验，不恢复自建 new-api。旧百炼配置只作历史，不继续推荐 Coding Plan 用于网站后端。
+- **文本 LLM（2026-11-09 北京已部署）**：灵眸 `https://api.lmuai.com/v1`，`CHAT_LLM_MODEL` / `RAG_JUDGE_MODEL` / `RAG_SANITIZE_MODEL` 均为 `deepseek-flash`，共享 `CHAT_LLM_API_KEY`。保留标准 TLS 校验。旧百炼配置只作历史，不继续推荐 Coding Plan 用于网站后端。
 - **Embedding（2026-11-09 北京已部署）**：同一灵眸 base URL，`EMBED_LLM_MODEL=qwen3.7-text-embedding`、`EMBED_LLM_DIMENSIONS=2048`，使用独立的 `EMBED_LLM_API_KEY` 分组密钥。合成请求及全量既有片段重向量化均已验证；通用 Key 虽可列出该型号，但该端点限制不能以模型列表替代验收，事故见 MEMORY。模型、维度、Key 与新索引已一起同步并完成生产读回。
 - **权威 DNS = 阿里云 DNS 免费版**：主域与 `www` 预置北京 A 记录但暂停；备案后计划公有可信 HTTPS 直连，不再以 Cloudflare 代理或 Tunnel 作为当前上线方案。旧 Cloudflare zone 保留作历史与回退参考。
 

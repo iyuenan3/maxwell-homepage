@@ -5,11 +5,12 @@
 - **slug 一律 kebab-case**：项目目录 / GitHub repo / wiki 文件名 / URL slug / package.json name 都用（`eastern-wisdom` / `claude-financial-research`）。
 - **详情页双名 frontmatter**：`site/data/projects/<slug>.md` 必含 `slug` / `name_en` / `name_zh` / `wiki_slug`，双名格式 `品牌名 · 定位短语`，中英用 ` · ` 分隔；中英对照场合用 `|` 管道符（呼应终端隐喻）。
 - **简历约定已迁 worklog**：简历 2026-05-26 起归 worklog 维护（命名 `MaxwellLi-<TargetRole>` 无日期常驻 / versions/ 归档 / 纯文本链接 / short-story 不写正文等约定随之）；本仓库不再涉及简历文件。
-- **chat-api env 前缀用 `CHAT_LLM_*`**：绝不用 `NEWAPI_*` / `VOLCANO_*`（用户 shell rc 已全局 export，会污染 process.env，见 MEMORY + ADR-005）。
+- **chat-api env 使用模块级前缀**：文本使用 `CHAT_LLM_*`，向量使用 `EMBED_LLM_*`，不复用其他工具全局导出的变量，避免 shell 环境污染 process.env，见 MEMORY + ADR-005。
 - 命名美学：用户对"难听 / 系统日志感"命名敏感（否决过 `Resume-20260507` / `equity-200b`）。
 
 ## 偏好模式
 - **内容同步（跨项目）**：定位语 / 能力定位句 / 主页精选项目 / 项目命名任一变化 → 本仓库主页(`site/data/home-data.js` → index.html) + README **都改**，并以 worklog 的最新简历和项目状态为上游事实（简历已迁 worklog，见 RELATIONS）。
+- **公开范围收敛**：用户要求移出本仓的外部项目，不保留其展示、接入或运维引用，不从旧文档或外部 wiki 自动补回。2026-11-10 起，个人知识系统、小红书与 larkflow 详情页不再启用 `decisions` 自动摘要，其他栏目保持；外部仓库、服务器数据和 Git 历史不随内容清理而删除，见 ADR-026。
 - **静态履历与化身披露分离**：用户明确批准的简历任职事实可以写入 V1 静态页；由于 `home-data.js` 和简历同时是 RAG 主源，发布前必须跑 `npm run reindex:dry`，确认相关 resume / home-data chunks 被雇主 universal filter 丢弃，并先同步本地与生产 `.env.local` 词表再重载 chat-api。静态可见不代表化身可回答。
 - **主页 ls 三层 stacked**：slug(cyan) / name_zh 仅中文(amber) / 一句话 desc 聚焦"做什么+1 亮点"(接近白)。排序按 status 分层 + 段内"求职亮点驱动"手排，非严格 since 倒序。
 - **详情页板块**：最终 8 板块 `readme/links/decisions/stats/stack/notes`（当前项目按资料可用性配置）+ `git_log`（仅有 wiki Git 数据的项目）+ `history`（仅按需 cfr/petslog）。`next` 已废弃并入 notes「项目方向」。主页精选当前 10 项（含一个 planned 项目），历史归档详情可保留但不占主页卡片。

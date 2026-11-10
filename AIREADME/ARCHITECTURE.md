@@ -17,7 +17,7 @@
 - **system-prompt**（`src/app/api/chat/system-prompt.ts`）：12 段防御 prompt（身份 / 9 个主页精选项目 + 2 个历史归档详情 / 常识题 fallback / 禁止伪造归属 hard rule / 核心事实 7 猫 2 狗+姓名等价 / 回复风格 / 项目聚焦 / 范围含代码边界 B / 防 RAG 污染 / 防伪造历史 / 防 injection / [context] 段）。「输出前最后过滤」段在 [context] 前、凌驾所有规则。
 - **lib**：`embed-client.ts`（OpenAI 兼容 embedding client）/ `rag.ts`（运行时 cosine + perCategoryMax/perSourceMax）/ `rate-limit.ts`（in-memory）/ `chat-logger.ts`（按 IP 分文件 JSONL）。
 - **离线 RAG 管线**（`scripts/`，本地跑）：`scan-sources.mjs`（LLM judge → `manifest.json`）→ `build-embeddings.mjs`（chunk + sanitize + 隐私过滤 + embed → `embeddings.json`）。judge/sanitize 共用 `text-completion.mjs`，默认 `deepseek-flash`，关闭思考，judge 使用 JSON 输出；`migrate-to-vault.mjs` 同步使用该入口。空内容、截断或上游错误保持 fail-closed，缓存按端点、模型、请求参数和 prompt 内容哈希区分。`load-env.mjs` 使用与 Next.js 一致的 dotenv 解析，并只报告被继承环境覆盖的变量名。
-- **模型配置**（`llm-config.mjs`）：在线与离线文本共用 `CHAT_LLM_API_KEY` / `CHAT_LLM_BASE_URL`，模型分别读 `CHAT_LLM_MODEL` / `RAG_JUDGE_MODEL` / `RAG_SANITIZE_MODEL`。Embedding 读取独立的 `EMBED_LLM_API_KEY` / `EMBED_LLM_BASE_URL` / `EMBED_LLM_MODEL` / `EMBED_LLM_DIMENSIONS`，默认 `qwen3.7-text-embedding`、2048 维，不回退到文本凭证。`embedding-contract.mjs` 统一校验模型、数量、顺序、维度和有限非零向量；运行时、全量构建、仅重向量化和调试脚本共用，不恢复自建 new-api 或不安全 TLS 兼容。
+- **模型配置**（`llm-config.mjs`）：在线与离线文本共用 `CHAT_LLM_API_KEY` / `CHAT_LLM_BASE_URL`，模型分别读 `CHAT_LLM_MODEL` / `RAG_JUDGE_MODEL` / `RAG_SANITIZE_MODEL`。Embedding 读取独立的 `EMBED_LLM_API_KEY` / `EMBED_LLM_BASE_URL` / `EMBED_LLM_MODEL` / `EMBED_LLM_DIMENSIONS`，默认 `qwen3.7-text-embedding`、2048 维，不回退到文本凭证。`embedding-contract.mjs` 统一校验模型、数量、顺序、维度和有限非零向量；运行时、全量构建、仅重向量化和调试脚本共用，保持标准 TLS 校验。
 
 - **仅更换向量模型**：`reembed-index.mjs` 只读现有索引，复用 `rag-privacy.mjs` 的本地隐私规则，拒绝未完成脱敏的输入，排除受保护片段；仅把保留片段的 section/text 发给 Embedding。原始资料、manifest、judge 和 sanitize 均不读取或调用。旧索引经私有备份和哈希核验后，完整候选才可原子替换；片段文本、元数据及旧 `sanitize_model` 不改写，迁移来源记录在 `reembedding` 字段。当前运行进度见 DEPLOYMENT。
 
@@ -48,7 +48,7 @@ maxwell-rag-sources/ (独立 Obsidian Vault, 不在 git, 含 hdu 等经过筛选
 
 ### 北京运行结构（域名待上线）
 
-两个业务组件不变，运行于独立 Compose 项目：`maxwellii-site`（静态文件与 SSE 反代）→ `maxwellii-chat-api`（Next.js）。二者复用已有外部网络 `edge`，后端和管理入口只发布回环端口。站点容器另设独立公网 HTTP 监听，拒绝管理路径并重写客户端地址头后，转发到同容器私有站点入口，不经过共享网关。可选 `maxwellii-preview` 加载未来域名路由与真实证书，提供独立回环 HTTPS 验收，不承载生产流量。共享 `edge-caddy` 的配置和进程尚未改动，域名接入因备案阻断待验收。权威 DNS 已迁入阿里云，主域与 `www` 的北京 A 记录保持暂停；无代理直连上线须另配公有可信证书，现有 Origin CA 预览不能替代该验收。路径、资源限额与发布方式见 DEPLOYMENT，共享底座属主见 RELATIONS。
+两个业务组件不变，运行于独立 Compose 项目：`maxwellii-site`（静态文件与 SSE 反代）→ `maxwellii-chat-api`（Next.js）。二者复用已有外部网络 `edge`，后端和管理入口只发布回环端口。站点容器另设独立公网 HTTP 监听，拒绝管理路径并重写客户端地址头后，转发到同容器私有站点入口。可选 `maxwellii-preview` 加载未来域名路由与真实证书，提供独立回环 HTTPS 验收，不承载生产流量。域名接入仍待备案结果与 HTTPS 验收，须单独确认主页入口方案。权威 DNS 已迁入阿里云，主域与 `www` 的北京 A 记录保持暂停；无代理直连上线须另配公有可信证书，现有 Origin CA 预览不能替代该验收。路径、资源限额与发布方式见 DEPLOYMENT，仅保留主页自身所需的网络和证书约束。
 
 ## 关键技术选型（结论 + 链 DECISIONS）
 - **部署方案 C**：V2 占主域 / V1 退 `/v1/` / `/p/` 共享 → ADR-001。

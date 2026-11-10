@@ -3,6 +3,12 @@
 
 > 迁自仓库根 `CHANGELOG.md`（Keep a Changelog 风格）+ 补齐 v2.3 / v2.4。理由链 DECISIONS，运行时踩坑见 MEMORY。
 
+## 2026-11-10 · 公开内容范围收敛
+
+- Removed: 按用户要求清理三项外部项目的展示描述、关联引用和运维记录，旧原文保留在 Git 历史，不删除独立仓库或服务器数据。
+- Changed: 三个受影响的详情页关闭外部 wiki 决策摘要，避免构建重新带回已移除内容；项目正文、Git 活动、指标和技术栈继续保留。理由见 ADR-026。
+- Scope: 仅更新仓库与本地静态产物，不部署、不重建 RAG，不更改 DNS、服务器或其他仓库。
+
 ## 2026-11-09 · 新向量接口在线超时适配
 
 - Fixed: 北京初次发布后发现部分向量查询超过原 5 秒上限，在线默认等待放宽到 10 秒，保留失败时空 context 降级；离线批处理的显式超时不变。
@@ -83,7 +89,7 @@
 
 ## 2026-10-28 · Qwen 文本迁移
 
-- Changed: 在线对话、RAG 审稿与脱敏直连百炼 Qwen，默认 `qwen3.7-plus`，关闭思考，取消本项目的 new-api 接入支持。
+- Changed: 在线对话、RAG 审稿与脱敏直连百炼 Qwen，默认 `qwen3.7-plus`，关闭思考。
 - Fixed: Embedding 使用独立 `EMBED_LLM_*` 凭证，保留 Ark 模型和旧索引，向量查询失败时最多等待 5 秒后继续对话。
 - Security: RAG 文本调用拒绝空内容和截断响应；脱敏缓存绑定端点、模型和参数，配置备份排除于部署同步。
 - Validation: 真实 Qwen 流式对话、JSON 判断与虚构样例脱敏通过；未运行全量审稿、脱敏或 reindex。
@@ -151,12 +157,11 @@
 - Removed: `ai-knowledge` 移出 RAG 源（项目归档，scan-sources.mjs 不再索引该目录；build-embeddings/rag.ts 残留 category 为无害死键，待下次重构清）。
 
 ## v2.5.0 · 2026-05-24
-- Changed: chat-api LLM 上游由 newapi-proxy 中转**切回直连火山方舟 Ark**（`/api/coding/v3`，OpenAI 兼容，`ark-` key）→ ADR-009（取代 ADR-004）；`doubao-seed-2.0-lite` 加 `thinking:{type:"disabled"}` 关深度思考（reasoning 245→0，TTFT / 成本降）。
-- Fixed: 绕过 newapi v2 embedding 渠道「暂不可用」阻塞（直连 Ark 原生支持 `doubao-embedding-vision`）。
+- Changed: chat-api 直连火山方舟 Ark（`/api/coding/v3`，OpenAI 兼容）→ ADR-009；`doubao-seed-2.0-lite` 加 `thinking:{type:"disabled"}` 关深度思考（reasoning 245→0，TTFT / 成本降）。
 - Removed: `NODE_TLS_REJECT_UNAUTHORIZED=0`（Ark 公网有效证书，不再需要关 TLS 校验）。
 
 ## v2.4.0 · 2026-05-19
-- Changed: chat-api LLM 上游切到自建 newapi-proxy 中转站（IP 直连自签，OpenAI 兼容）→ ADR-004；env 变量 `VOLCANO_*`/`NEWAPI_*` → `CHAT_LLM_*`（避 shell rc 污染）→ ADR-005；chat 模型 → `deepseek-v4-flash`（2026-05-21 再切 `doubao-seed-2.0-lite` → ADR-007）。
+- Changed: chat-api env 变量统一使用 `CHAT_LLM_*`（避 shell rc 污染）→ ADR-005；chat 模型 → `deepseek-v4-flash`（2026-05-21 再切 `doubao-seed-2.0-lite` → ADR-007）。
 - Added: P0 隐私 4 层防御阻断求职/面试内容外泄（server prefilter + system-prompt 输出前过滤 + LLM judge 强制 exclude + chunk/整源黑名单）→ ADR-003。
 - Removed: RAG 源排除 worklog `diaries` 整源 + `wiki/job` 整目录（公司情报/面试录音/求职笔记）。
 - Fixed: V2 `/help` 命令描述对齐 V1 section 注释 + 删过时 hint；token-hud 不写死模型名，由 SSE `meta.model` 动态填充。

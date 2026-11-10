@@ -8,14 +8,13 @@
 | **灵眸 AI**（文本与向量上游）| 本地在线对话、RAG 审稿/脱敏使用 `deepseek-flash`；Embedding 使用 `qwen3.7-text-embedding`，独立分组 Key | [接入协议](https://docs.lmuai.com/docs/guide/api-protocols)；验证与发布边界见 DEPLOYMENT |
 | **火山方舟 Ark**（历史向量空间）| 旧 `doubao-embedding-vision` 索引保留以便恢复，不能与新查询向量混用 | 历史 ADR-009 / ADR-019；迁移状态见 DEPLOYMENT |
 | **worklog**（wiki 数据 + 简历源） | ① `build.js` 读 `wiki/projects/<wiki_slug>.md` 抽详情页 fact ② chat-api `loadResume()` 读 `wiki/job/me/resume/MaxwellLi-AIPMorFDE.md` 入 RAG | `../worklog/AIREADME/SPEC.md` |
-| **北京共享 edge 基础设施** | 候选容器复用既有 Docker 网络，未来公网接入复用 Caddy；当前未改共享网关 | `../newapi-proxy/AIREADME/DEPLOYMENT.md` |
 | **阿里云域名与 DNS** | 权威 DNS 已迁移；主域与 `www` 的北京 A 记录预置但暂停，备案后再验收 HTTPS 直连 | 阿里云域名、云解析 DNS 与 ICP 备案控制台；当前状态见 DEPLOYMENT |
 
 ### 模型供应商（2026-11-09 北京已上线）
 - 文本与向量通过独立配置调用灵眸，端点与请求契约见 SPEC，备份、实际验收及生产同步状态见 DEPLOYMENT。
 - 新供应商会接收在线消息与命中的 context。仅重向量化发送已有脱敏片段；全量 scan/sanitize 仍会发送待审或待脱敏原文，需要单独确认执行范围。
 - [供应商隐私声明](https://docs.lmuai.com/docs/guide/privacy)称正常正文不持久化，但错误日志可能含截断请求片段并保留 90 天，不作为无条件零留存保证。
-- 真实凭证只存本地及生产私有配置，不经自建 new-api。历史选择保留，当前取舍见 ADR-025。
+- 真实凭证只存本地及生产私有配置。当前取舍见 ADR-025。
 
 ### worklog（构建/索引期数据依赖 —— 合法回读例外，2 处）
 - **方向**：数据流 worklog → maxwell-homepage（build 期读 worklog wiki）；依赖方向上 maxwell-homepage 依赖 worklog，故记于出向。与 worklog 自己 SPEC 把 maxwell-homepage 列为 inbound 消费方一致。
@@ -31,6 +30,6 @@
 
 ## 共享底座 / 复用资产
 - **chat-api 不是共享底座** —— 仅被 maxwellii.com 站点消费（单一消费方 < 2），且是本仓库专属子模块 → **是组件不是独立 AIREADME 节点**（架构见 ARCHITECTURE）。
-- **newapi-proxy 的模型中转为历史依赖**：chat-api 的新模型方案使用灵眸，不恢复自建 new-api 模型接入。北京复用该项目维护的 `edge` 网络与未来 HTTP 网关，仅属基础设施依赖，属主为 `../newapi-proxy/AIREADME/DEPLOYMENT.md`。
+- **主页运行资源**：本项目 Compose 仍引用既有外部 Docker 网络 `edge`，私有预览仍挂载现有证书目录。仅保留主页所需的配置契约，见 `ops/compose.yaml` 与 DEPLOYMENT；本仓库不管理同机其他项目，移除文档引用不改变或删除实际资源。
 - **历史共享 Origin CA 证书**：旧机主页与 `naming`、`oracle`、`tale` 曾引用同一证书。2026-10-31 新加坡业务退役时已删除该机虚拟主机配置和证书副本，未撤销证书，北京副本保留。三个子域不恢复解析；主页无代理直连上线需另配公有可信证书（部署细节见 DEPLOYMENT）。
 - **求职活动归 worklog**：面试 / 求职沟通文案 / 谈薪 / 公司情报 等全在 worklog（私密），本仓库不维护其正文；本项目仅维护"文案产品规则"（字数算法 / 平台机制 / 排序原则）—— 边界判断「会随求职阶段变 → worklog；产品规则不变 → homepage」见 CONVENTIONS。

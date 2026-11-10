@@ -11,9 +11,9 @@
 - 根因: 从仓库整个 server 块覆盖推送时，把只在服务器上、没回写仓库的 `location /api/chat` 块整段丢了；请求 fallback 到 SPA index.html（只接 GET）。
 - 结论/避免: `site/nginx.conf` 是唯一权威，所有 location 必须完整存在仓库；推 nginx 前 ssh `grep -A 8 'location'` 对比本地确认无遗漏；只加 1 个 location 时可单独 ssh `sudo vi` 加，别整块覆盖。
 
-## env NEWAPI_* 被 shell rc 污染 → embedding 拿到 HTML · 2026-05-19
-- 现象: 本地 `npm run rag` 时 embedding 端返回 HTML（newapi 前端 SPA），`JSON.parse(<!doctype html>)` 报错；但 curl / node fetch 直打端点正常。
-- 根因: 第一版 env 用 `NEWAPI_*`，与用户 shell rc 全局 export 的同名变量撞；`loadEnv()` 的 `!process.env[m]` 保护让 .env.local 的值被跳过 → 用了 shell 的域名版端点（而非 IP 版）→ 命中 newapi 前端。
+## env 前缀被 shell rc 污染 → embedding 拿到 HTML · 2026-05-19
+- 现象: 本地 `npm run rag` 时 embedding 端返回 HTML，`JSON.parse(<!doctype html>)` 报错；但 curl / node fetch 直打端点正常。
+- 根因: 第一版 env 复用了其他工具的前缀，与用户 shell rc 全局 export 的同名变量冲突；`loadEnv()` 的 `!process.env[m]` 保护让 .env.local 的值被跳过，最终命中错误的网页端点。
 - 结论/避免: 内部 LLM 模块 env 用模块级 prefix（`CHAT_LLM_*`），别复用外部工具官方 prefix；排查"fetch 返回错误内容"先 `env | grep <前缀>` 查 shell 污染。见 ADR-005。
 
 ## SSH ControlMaster mux socket 挂死 → deploy 卡死 · 2026-05-13
